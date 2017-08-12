@@ -36,7 +36,6 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
                 });
             }
         } catch (error) {
-            vscode.window.showErrorMessage(`[Failed to find test methods] ${error.stderr}`);
             tests = [new vscode.TreeItem("Please open or set the test project")];
         }
 
