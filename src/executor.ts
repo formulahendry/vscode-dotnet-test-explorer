@@ -3,9 +3,12 @@ import { exec, execSync } from "child_process";
 import * as vscode from "vscode";
 
 export class Executor {
-    public static runInTerminal(command: string, addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
+    public static runInTerminal(command: string, cwd?: string, addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
         if (this.terminals[terminal] === undefined ) {
             this.terminals[terminal] = vscode.window.createTerminal(terminal);
+            if (cwd) {
+                this.terminals[terminal].sendText(`cd "${cwd}"`);
+            }
         }
         this.terminals[terminal].show();
         this.terminals[terminal].sendText(command, addNewLine);
@@ -15,7 +18,7 @@ export class Executor {
         return exec(command);
     }
 
-    public static execSync(command: string, cwd: string = undefined) {
+    public static execSync(command: string, cwd?: string) {
         return execSync(command, { encoding: "utf8", cwd });
     }
 
