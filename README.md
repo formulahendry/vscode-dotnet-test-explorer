@@ -17,6 +17,7 @@
 ## Settings
 
 * `dotnet-test-explorer.testProjectPath`: Folder path of .NET Core test project. (Default is **""**)
+* `dotnet-test-explorer.msbuildRootTestMsg`: A root message for dotnet test command. In English it is 'The following Tests are available:' but for example in Polish it is 'Dostępne są następujące testy:'
 
 ## Telemetry data
 
