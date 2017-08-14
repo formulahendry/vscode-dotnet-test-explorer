@@ -22,7 +22,7 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
         try {
             const testProjectPath = Utility.getConfiguration().get<string>("testProjectPath");
             let testProjectFullPath = testProjectPath ? testProjectPath : vscode.workspace.rootPath;
-            if(!path.isAbsolute(testProjectFullPath)){
+            if (!path.isAbsolute(testProjectFullPath)) {
                 testProjectFullPath = path.resolve(vscode.workspace.rootPath, testProjectPath);
             }
             this.cwd  = testProjectFullPath;
