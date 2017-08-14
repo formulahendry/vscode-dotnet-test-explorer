@@ -24,7 +24,9 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
             this.cwd = testProjectPath ? testProjectPath : vscode.workspace.rootPath;
             const testStrings = Executor.execSync("dotnet test -t", this. cwd)
                 .split(/[\r\n]+/g).filter((item) => item);
-            const index = testStrings.indexOf("The following Tests are available:");
+            let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
+            msBuildRootTestMsg = msBuildRootTestMsg ? msBuildRootTestMsg : "The following Tests are available:";
+            const index = testStrings.indexOf(msBuildRootTestMsg);
             if (index > -1) {
                 tests = testStrings.slice(index + 1).map((item) => {
                     const test = new vscode.TreeItem(item.trim());
