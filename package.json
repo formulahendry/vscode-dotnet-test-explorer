@@ -2,7 +2,7 @@
   "name": "dotnet-test-explorer",
   "displayName": ".NET Core Test Explorer",
   "description": "Test Explorer for .NET Core",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "formulahendry",
   "license": "MIT",
   "icon": "logo.png",
@@ -90,7 +90,7 @@
         "dotnet-test-explorer.testProjectPath": {
           "type": "string",
           "default": "",
-          "description": "Folder path of .NET Core test project."
+          "description": "Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path."
         },
         "dotnet-test-explorer.msbuildRootTestMsg": {
           "type": "string",
