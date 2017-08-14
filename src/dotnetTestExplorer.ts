@@ -27,7 +27,7 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
             }
             this.cwd  = testProjectFullPath;
             const testStrings = Executor.execSync("dotnet test -t", this.cwd)
-                .split(/[\r\n]+/g).filter((item) => item);
+                .split(/[\r\n]+/g).filter((item) => item && !item.startsWith("[xUnit.net"));
             let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
             msBuildRootTestMsg = msBuildRootTestMsg ? msBuildRootTestMsg : "The following Tests are available:";
             const index = testStrings.indexOf(msBuildRootTestMsg);
@@ -59,7 +59,7 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
     }
 
     public runTest(methodName: string): void {
-        Executor.runInTerminal(`dotnet test --filter Name=${methodName}`, this.cwd);
+        Executor.runInTerminal(`dotnet test --filter FullyQualifiedName~${methodName}`, this.cwd);
         AppInsightsClient.sendEvent("runTest");
     }
 }
