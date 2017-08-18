@@ -20,12 +20,7 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
         let tests = [];
 
         try {
-            const testProjectPath = Utility.getConfiguration().get<string>("testProjectPath");
-            let testProjectFullPath = testProjectPath ? testProjectPath : vscode.workspace.rootPath;
-            if (!path.isAbsolute(testProjectFullPath)) {
-                testProjectFullPath = path.resolve(vscode.workspace.rootPath, testProjectPath);
-            }
-            this.cwd  = testProjectFullPath;
+            this.evaluateWorkingDirectory();
             const testStrings = Executor.execSync("dotnet test -t", this.cwd)
                 .split(/[\r\n]+/g).filter((item) => item && !item.startsWith("[xUnit.net"));
             let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
@@ -54,6 +49,7 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
     }
 
     public runAllTests(): void {
+        this.evaluateWorkingDirectory();
         Executor.runInTerminal("dotnet test", this.cwd);
         AppInsightsClient.sendEvent("runAllTests");
     }
@@ -61,5 +57,14 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
     public runTest(methodName: string): void {
         Executor.runInTerminal(`dotnet test --filter FullyQualifiedName~${methodName}`, this.cwd);
         AppInsightsClient.sendEvent("runTest");
+    }
+
+    private evaluateWorkingDirectory(): void {
+        const testProjectPath = Utility.getConfiguration().get<string>("testProjectPath");
+        let testProjectFullPath = testProjectPath ? testProjectPath : vscode.workspace.rootPath;
+        if (!path.isAbsolute(testProjectFullPath)) {
+            testProjectFullPath = path.resolve(vscode.workspace.rootPath, testProjectPath);
+        }
+        this.cwd = testProjectFullPath;
     }
 }
