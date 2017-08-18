@@ -44,7 +44,6 @@ export class DotnetTestExplorer implements vscode.TreeDataProvider<vscode.TreeIt
     }
 
     public refreshTestExplorer(): void {
-        this.evaluateWorkingDirectory();
         this._onDidChangeTreeData.fire();
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
