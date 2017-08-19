@@ -2,7 +2,7 @@
 
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { DotnetTestExplorer } from "./dotnetTestExplorer";
+import { DotnetTestExplorer, TestNode } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -18,8 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
         dotnetTestExplorer.runAllTests();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test) => {
-        dotnetTestExplorer.runTest(test.label);
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
+        dotnetTestExplorer.runTest(test);
     }));
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
