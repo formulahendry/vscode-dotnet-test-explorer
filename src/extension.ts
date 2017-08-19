@@ -2,8 +2,9 @@
 
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { DotnetTestExplorer, TestNode } from "./dotnetTestExplorer";
+import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
+import { TestNode } from "./testNode";
 
 export function activate(context: vscode.ExtensionContext) {
     const dotnetTestExplorer = new DotnetTestExplorer(context);
