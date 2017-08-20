@@ -100,7 +100,7 @@
         "dotnet-test-explorer.useTreeView": {
           "type": "boolean",
           "default": true,
-          "description": "If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests."
+          "description": "If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Only xUnit tests will be listed in a tree view)"
         }
       }
     }

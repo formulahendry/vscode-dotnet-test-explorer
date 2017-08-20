@@ -47,7 +47,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             const structuredTests = {};
 
             fullNames.forEach((name: string) => {
-                const parts = name.trim().split(".");
+                const parts = name.split(".");
                 this.addToObject(structuredTests, parts);
             });
 
@@ -81,18 +81,20 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private addToObject(container: object, parts: string[]): void {
         const title = parts.splice(0, 1)[0];
 
-        if (parts.length === 1) {
+        if (parts.length > 1) {
+            if (!container[title]) {
+                container[title] = {};
+            }
+            this.addToObject(container[title], parts);
+        } else {
             if (!container[title]) {
                 container[title] = [];
             }
-            container[title].push(parts[0]);
-            return;
-        }
 
-        if (!container[title]) {
-            container[title] = {};
+            if (parts.length === 1) {
+                container[title].push(parts[0]);
+            }
         }
-        this.addToObject(container[title], parts);
     }
 
     private createTestNode(parentPath: string, test: object | string): TestNode[] {
@@ -120,7 +122,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 const testStrings = Executor
                     .execSync("dotnet test -t", this.testDirectoryPath)
                     .split(/[\r\n]+/g)
-                    .filter((item) => item && !item.startsWith("[xUnit.net"));
+                    .filter((item) => item && !item.startsWith("[xUnit.net"))
+                    .map((item) => item.trim());
 
                 const index = testStrings.indexOf(msBuildRootTestMsg);
                 if (index > -1) {
