@@ -9,7 +9,7 @@ export class TestNode {
     }
 
     public get fullName(): string {
-        return `${this._parentPath}.${this._name}`;
+        return (this._parentPath ? `${this._parentPath}.` : "") + this._name;
     }
 
     public get isFolder(): boolean {
