@@ -1,3 +1,7 @@
+## 0.1.0 (2017-08-21)
+* Support tree view for xUnit
+* Evaluate working dir before running all tests
+
 ## 0.0.3 (2017-08-14)
 * Add support for xUnit
 * Enable relative path of test project
