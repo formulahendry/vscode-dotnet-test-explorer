@@ -121,34 +121,22 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         return dotnetRestoreOption ? "" : "--no-restore";
     }
 
-    private loadExclusion(name: string, value: string): string {
-        const exclusion = Utility.getConfiguration().get<string>(name);
-        return exclusion ? exclusion : value;
-    }
-
     private loadTestStrings(): Thenable<string[]> {
         this.evaluateTestDirectory();
 
-        const exclusions = [];
-
-        exclusions.push("Build started");
-        exclusions.push("Build completed");
-        exclusions.push(this.loadExclusion("msbuildRootTestxUnitPrefix", "[xUnit.net"));
-        exclusions.push(this.loadExclusion("msbuildRootTestMsg", "The following Tests are available:"));
-        exclusions.push(this.loadExclusion("msbuildRootTestNotFoundMsg", "No test is available"));
-        exclusions.push(this.loadExclusion("msbuildRootTestCopyrightPrefix", "Copyright (c) Microsoft Corporation.  All rights reserved."));
-        exclusions.push(this.loadExclusion("msbuildRootTestVersionsPrefix", "Microsoft (R) Test Execution Command Line Tool Version"));
-        exclusions.push(this.loadExclusion("msbuildRootTestRunForPrefix", "Test run for"));
+        let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
+        msBuildRootTestMsg = msBuildRootTestMsg ? msBuildRootTestMsg : "The following Tests are available:";
 
         return new Promise((c, e) => {
             try {
-                const testStrings = Executor
+                const results = Executor
                     .execSync(`dotnet test -t -v=q ${this.enableBuild()} ${this.enableRestore()}`, this.testDirectoryPath)
                     .split(/[\r\n]+/g)
-                    .filter((item) => item && exclusions.every((v) => !item.startsWith(v)))
+                    .filter((item) => item && item.startsWith("  "))
+                    .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0 )
                     .map((item) => item.trim());
 
-                c(testStrings);
+                c(results);
 
             } catch (error) {
                 return e(["Please open or set the test project", "and ensure your project compiles."]);
