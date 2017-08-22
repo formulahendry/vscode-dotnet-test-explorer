@@ -1,4 +1,4 @@
-## 0.1.1 (2017-08-21)
+## 0.1.1 (2017-08-22)
 * Support for multiple projects
 * Added options for disabling rebuild and restore
 
