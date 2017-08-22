@@ -131,6 +131,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         const exclusions = [];
 
+        exclusions.push("Build started");
+        exclusions.push("Build completed");
         exclusions.push(this.loadExclusion("msbuildRootTestxUnitPrefix", "[xUnit.net"));
         exclusions.push(this.loadExclusion("msbuildRootTestMsg", "The following Tests are available:"));
         exclusions.push(this.loadExclusion("msbuildRootTestNotFoundMsg", "No test is available"));
