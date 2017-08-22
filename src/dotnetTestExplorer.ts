@@ -69,12 +69,12 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     public runAllTests(): void {
         this.evaluateTestDirectory();
-        Executor.runInTerminal("dotnet test", this.testDirectoryPath);
+        Executor.runInTerminal(`dotnet test -v=q ${this.enableBuild()} ${this.enableRestore()}`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runAllTests");
     }
 
     public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
+        Executor.runInTerminal(`dotnet test -v=q ${this.enableBuild()} ${this.enableRestore()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
     }
 
@@ -113,38 +113,41 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private enableBuild(): string {
         const dotnetBuildOption = Utility.getConfiguration().get<boolean>("build");
-        return dotnetBuildOption ? "--no-build" : "";
+        return dotnetBuildOption ? "" : "--no-build";
     }
 
     private enableRestore(): string {
         const dotnetRestoreOption = Utility.getConfiguration().get<boolean>("restore");
-        return dotnetRestoreOption ? "--no-restore" : "";
+        return dotnetRestoreOption ? "" : "--no-restore";
+    }
+
+    private loadExclusion(name: string, value: string): string {
+        const exclusion = Utility.getConfiguration().get<string>(name);
+        return exclusion ? exclusion : value;
     }
 
     private loadTestStrings(): Thenable<string[]> {
         this.evaluateTestDirectory();
 
-        let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
-        msBuildRootTestMsg = msBuildRootTestMsg ? msBuildRootTestMsg : "The following Tests are available:";
+        const exclusions = [];
 
-        const command = `dotnet test -t -v=q ${this.enableBuild()} ${this.enableRestore()}`;
+        exclusions.push(this.loadExclusion("msbuildRootTestxUnitPrefix", "[xUnit.net"));
+        exclusions.push(this.loadExclusion("msbuildRootTestMsg", "The following Tests are available:"));
+        exclusions.push(this.loadExclusion("msbuildRootTestNotFoundMsg", "No test is available"));
+        exclusions.push(this.loadExclusion("msbuildRootTestCopyrightPrefix", "Copyright (c) Microsoft Corporation.  All rights reserved."));
+        exclusions.push(this.loadExclusion("msbuildRootTestVersionsPrefix", "Microsoft (R) Test Execution Command Line Tool Version"));
+        exclusions.push(this.loadExclusion("msbuildRootTestRunForPrefix", "Test run for"));
 
         return new Promise((c, e) => {
             try {
                 const testStrings = Executor
-                    .execSync(command, this.testDirectoryPath)
+                    .execSync(`dotnet test -t -v=q ${this.enableBuild()} ${this.enableRestore()}`, this.testDirectoryPath)
                     .split(/[\r\n]+/g)
-                    .filter((item) => item && !item.startsWith("[xUnit.net"))
+                    .filter((item) => item && exclusions.every((v) => !item.startsWith(v)))
                     .map((item) => item.trim());
 
-                const index = testStrings.lastIndexOf(msBuildRootTestMsg);
-                if (index > -1) {
-                    const result = testStrings
-                        .slice(index + 1)
-                        .sort((a, b) => a > b ? 1 : b > a ? -1 : 0);
+                c(testStrings);
 
-                    c(result);
-                }
             } catch (error) {
                 return e(["Please open or set the test project", "and ensure your project compiles."]);
             }

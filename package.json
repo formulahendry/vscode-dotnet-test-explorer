@@ -97,6 +97,31 @@
           "default": "",
           "description": "A root message for dotnet test command. In English it is 'The following Tests are available:' but for example in Polish it is 'Dostępne są następujące testy:'"
         },
+        "dotnet-test-explorer.msbuildRootTestNotFoundMsg": {
+          "type": "string",
+          "default": "",
+          "description": "A root message for the dotnet test command when no tests are found. In English it is 'No test is available'."
+        },
+        "dotnet-test-explorer.msbuildRootTestxUnitPrefix": {
+          "type": "string",
+          "default": "",
+          "description": "A root message for the dotnet test command for xUnit's bracketed output. In English, it is '[xUnit.net'."
+        },
+        "dotnet-test-explorer.msbuildRootTestCopyrightPrefix": {
+          "type": "string",
+          "default": "",
+          "description": "A root message for the dotnet test command that is prefixed with the 'Copyright' disclaimer in the output. In English, it is 'Copyright (c) Microsoft Corporation.  All rights reserved.'."
+        },
+        "dotnet-test-explorer.msbuildRootTestVersionsPrefix": {
+          "type": "string",
+          "default": "",
+          "description": "A root message for the dotnet test command that is prefixed on lines displaying the command line tools version. In English, it is 'Microsoft (R) Test Execution Command Line Tool Version'."
+        },
+        "dotnet-test-explorer.msbuildRootTestRunForPrefix": {
+          "type": "string",
+          "default": "",
+          "description": "A root message for the dotnet test command that is prefixed on lines displaying the project where tests were sought. In English, it is 'Test run for'."
+        },
         "dotnet-test-explorer.useTreeView": {
           "type": "boolean",
           "default": true,
