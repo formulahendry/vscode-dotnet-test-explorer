@@ -101,6 +101,16 @@
           "type": "boolean",
           "default": true,
           "description": "If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Only xUnit tests will be listed in a tree view)"
+        },
+        "dotnet-test-explorer.build": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, projects will be built when refreshing the test explorer."
+        },
+        "dotnet-test-explorer.restore": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, dotnet restore will run when refreshing the test explorer."
         }
       }
     }

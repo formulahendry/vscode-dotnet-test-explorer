@@ -111,21 +111,33 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
     }
 
+    private enableBuild(): string {
+        const dotnetBuildOption = Utility.getConfiguration().get<boolean>("build");
+        return dotnetBuildOption ? "--no-build" : "";
+    }
+
+    private enableRestore(): string {
+        const dotnetRestoreOption = Utility.getConfiguration().get<boolean>("restore");
+        return dotnetRestoreOption ? "--no-restore" : "";
+    }
+
     private loadTestStrings(): Thenable<string[]> {
         this.evaluateTestDirectory();
 
         let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
         msBuildRootTestMsg = msBuildRootTestMsg ? msBuildRootTestMsg : "The following Tests are available:";
 
+        const command = `dotnet test -t -v=q ${this.enableBuild()} ${this.enableRestore()}`;
+
         return new Promise((c, e) => {
             try {
                 const testStrings = Executor
-                    .execSync("dotnet test -t", this.testDirectoryPath)
+                    .execSync(command, this.testDirectoryPath)
                     .split(/[\r\n]+/g)
                     .filter((item) => item && !item.startsWith("[xUnit.net"))
                     .map((item) => item.trim());
 
-                const index = testStrings.indexOf(msBuildRootTestMsg);
+                const index = testStrings.lastIndexOf(msBuildRootTestMsg);
                 if (index > -1) {
                     const result = testStrings
                         .slice(index + 1)
