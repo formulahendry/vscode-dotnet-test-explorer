@@ -1,3 +1,7 @@
+## 0.1.1 (2017-08-22)
+* Support for multiple projects
+* Added options for disabling rebuild and restore
+
 ## 0.1.0 (2017-08-21)
 * Support tree view for xUnit
 * Evaluate working dir before running all tests

@@ -2,7 +2,7 @@
   "name": "dotnet-test-explorer",
   "displayName": ".NET Core Test Explorer",
   "description": "Test Explorer for .NET Core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "formulahendry",
   "license": "MIT",
   "icon": "logo.png",
@@ -92,15 +92,20 @@
           "default": "",
           "description": "Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path."
         },
-        "dotnet-test-explorer.msbuildRootTestMsg": {
-          "type": "string",
-          "default": "",
-          "description": "A root message for dotnet test command. In English it is 'The following Tests are available:' but for example in Polish it is 'Dostępne są następujące testy:'"
-        },
         "dotnet-test-explorer.useTreeView": {
           "type": "boolean",
           "default": true,
           "description": "If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Only xUnit tests will be listed in a tree view)"
+        },
+        "dotnet-test-explorer.build": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, projects will be built when refreshing the test explorer."
+        },
+        "dotnet-test-explorer.restore": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, dotnet restore will run when refreshing the test explorer."
         }
       }
     }

@@ -17,8 +17,9 @@
 ## Settings
 
 * `dotnet-test-explorer.testProjectPath`: Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path. (Default is **""**)
-* `dotnet-test-explorer.msbuildRootTestMsg`: A root message for dotnet test command. In English it is 'The following Tests are available:' but for example in Polish it is 'Dostępne są następujące testy:'
 * `dotnet-test-explorer.useTreeView`: If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Only xUnit tests will be listed in a tree view) (Default is **true**)
+* `dotnet-test-explorer.build`: If true, projects will be built when refreshing the test explorer. (Default is **true**)
+* `dotnet-test-explorer.restore`: If true, dotnet restore will run when refreshing the test explorer. (Default is **true**)
 
 ## Telemetry data
 

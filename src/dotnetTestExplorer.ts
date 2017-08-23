@@ -10,9 +10,51 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
+    /**
+     * The directory where the dotnet-cli will
+     * execute commands.
+     */
     private testDirectoryPath: string;
 
-    constructor(private context: vscode.ExtensionContext) {
+    constructor(private context: vscode.ExtensionContext) {}
+
+    /**
+     * @description
+     * Refreshes the test explorer pane by running the
+     * `dotnet test` command and requesting information about
+     * discovered tests.
+     * @summary
+     * This method can cause the project to rebuild or try
+     * to do a restore, so it can be very slow.
+     */
+    public refreshTestExplorer(): void {
+        this._onDidChangeTreeData.fire();
+        AppInsightsClient.sendEvent("refreshTestExplorer");
+    }
+
+    /**
+     * @description
+     * Runs all tests discovered in the project directory.
+     * @summary
+     * This method can cause the project to rebuild or try
+     * to do a restore, so it can be very slow.
+     */
+    public runAllTests(): void {
+        this.evaluateTestDirectory();
+        Executor.runInTerminal(`dotnet test${this.checkBuildOption()}${this.checkRestoreOption()}`, this.testDirectoryPath);
+        AppInsightsClient.sendEvent("runAllTests");
+    }
+
+    /**
+     * @description
+     * Runs a specific test discovered from the project directory.
+     * @summary
+     * This method can cause the project to rebuild or try
+     * to do a restore, so it can be very slow.
+     */
+    public runTest(test: TestNode): void {
+        Executor.runInTerminal(`dotnet test${this.checkBuildOption()}${this.checkRestoreOption()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
+        AppInsightsClient.sendEvent("runTest");
     }
 
     public getTreeItem(element: TestNode): TreeItem {
@@ -62,22 +104,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
     }
 
-    public refreshTestExplorer(): void {
-        this._onDidChangeTreeData.fire();
-        AppInsightsClient.sendEvent("refreshTestExplorer");
-    }
-
-    public runAllTests(): void {
-        this.evaluateTestDirectory();
-        Executor.runInTerminal("dotnet test", this.testDirectoryPath);
-        AppInsightsClient.sendEvent("runAllTests");
-    }
-
-    public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
-        AppInsightsClient.sendEvent("runTest");
-    }
-
     private addToObject(container: object, parts: string[]): void {
         const title = parts.splice(0, 1)[0];
 
@@ -111,28 +137,69 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
     }
 
+    /**
+     * @description
+     * Checks to see if the options specify that the dotnet-cli
+     * should run `dotnet build` before loading tests.
+     * @summary
+     * If this is set to **false**, then `--no-build` is passed into the
+     * command line arguments. It is prefixed by a space only if **false**.
+     */
+    private checkBuildOption(): string {
+        const option = Utility.getConfiguration().get<boolean>("build");
+        return option ? "" : " --no-build";
+    }
+
+    /**
+     * @description
+     * Checks to see if the options specify that the dotnet-cli
+     * should run `dotnet restore` before loading tests.
+     * @summary
+     * If this is set to **false**, then `--no-restore` is passed into the
+     * command line arguments. It is prefixed by a space only if **false**.
+     */
+    private checkRestoreOption(): string {
+        const option = Utility.getConfiguration().get<boolean>("restore");
+        return option ? "" : " --no-restore";
+    }
+
+    /**
+     * @description
+     * Checks to see if the options specify a directory to run the
+     * dotnet-cli test commands in.
+     * @summary
+     * This will use the project root by default.
+     */
+    private checkTestDirectoryOption(): string {
+        const option = Utility.getConfiguration().get<string>("testProjectPath");
+        return option ? option : vscode.workspace.rootPath;
+    }
+
+    /**
+     * @description
+     * Executes the `dotnet test -t` command from the dotnet-cli to
+     * try and discover tests.
+     */
     private loadTestStrings(): Thenable<string[]> {
         this.evaluateTestDirectory();
 
-        let msBuildRootTestMsg = Utility.getConfiguration().get<string>("msbuildRootTestMsg");
-        msBuildRootTestMsg = msBuildRootTestMsg ? msBuildRootTestMsg : "The following Tests are available:";
-
         return new Promise((c, e) => {
             try {
-                const testStrings = Executor
-                    .execSync("dotnet test -t", this.testDirectoryPath)
+                const results = Executor
+                    .execSync(`dotnet test -t -v=q${this.checkBuildOption()}${this.checkRestoreOption()}`, this.testDirectoryPath)
                     .split(/[\r\n]+/g)
-                    .filter((item) => item && !item.startsWith("[xUnit.net"))
+                    /*
+                     * The dotnet-cli prefixes all discovered unit tests
+                     * with whitespace. We can use this to drop any lines of
+                     * text that are not relevant, even in complicated project
+                     * structures.
+                     **/
+                    .filter((item) => item && item.startsWith("  "))
+                    .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0 )
                     .map((item) => item.trim());
 
-                const index = testStrings.indexOf(msBuildRootTestMsg);
-                if (index > -1) {
-                    const result = testStrings
-                        .slice(index + 1)
-                        .sort((a, b) => a > b ? 1 : b > a ? -1 : 0);
+                c(results);
 
-                    c(result);
-                }
             } catch (error) {
                 return e(["Please open or set the test project", "and ensure your project compiles."]);
             }
@@ -141,12 +208,30 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
     }
 
+    /**
+     * @description
+     * Checks to see if the @see{vscode.workspace.rootPath} is
+     * the same as the directory given, and resolves the correct
+     * string to it if not.
+     * @param dir
+     * The directory specified in the options.
+     */
+    private resolvePath(dir: string): string {
+        return path.isAbsolute(dir)
+            ? dir
+            : path.resolve(vscode.workspace.rootPath, dir);
+    }
+
+    /**
+     * @description
+     * Discover the directory where the dotnet-cli
+     * will execute commands, taken from the options.
+     * @summary
+     * This will be the @see{vscode.workspace.rootPath}
+     * by default.
+     */
     private evaluateTestDirectory(): void {
-        const testProjectPath = Utility.getConfiguration().get<string>("testProjectPath");
-        let testProjectFullPath = testProjectPath ? testProjectPath : vscode.workspace.rootPath;
-        if (!path.isAbsolute(testProjectFullPath)) {
-            testProjectFullPath = path.resolve(vscode.workspace.rootPath, testProjectPath);
-        }
-        this.testDirectoryPath = testProjectFullPath;
+        const testProjectFullPath = this.checkTestDirectoryOption();
+        this.testDirectoryPath = this.resolvePath(testProjectFullPath);
     }
 }
