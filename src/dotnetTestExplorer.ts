@@ -219,7 +219,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private resolvePath(dir: string): string {
         return path.isAbsolute(dir)
             ? dir
-            : path.resolve(vscode.workspace.rootPath, dir !== vscode.workspace.rootPath ? dir : "");
+            : path.resolve(vscode.workspace.rootPath, dir);
     }
 
     /**
