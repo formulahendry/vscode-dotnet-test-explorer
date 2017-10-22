@@ -34,12 +34,15 @@
   "main": "./out/src/extension",
   "contributes": {
     "views": {
-      "explorer": [{
-        "id": "dotnetTestExplorer",
-        "name": ".NET Test Explorer"
-      }]
+      "explorer": [
+        {
+          "id": "dotnetTestExplorer",
+          "name": ".NET Test Explorer"
+        }
+      ]
     },
-    "commands": [{
+    "commands": [
+      {
         "command": "dotnet-test-explorer.refreshTestExplorer",
         "title": "Refresh",
         "icon": {
@@ -61,7 +64,8 @@
       }
     ],
     "menus": {
-      "view/title": [{
+      "view/title": [
+        {
           "command": "dotnet-test-explorer.refreshTestExplorer",
           "when": "view == dotnetTestExplorer",
           "group": "navigation@1"
@@ -72,11 +76,13 @@
           "group": "navigation@0"
         }
       ],
-      "view/item/context": [{
-        "command": "dotnet-test-explorer.runTest",
-        "when": "view == dotnetTestExplorer",
-        "group": "dotnetTestExplorer@0"
-      }]
+      "view/item/context": [
+        {
+          "command": "dotnet-test-explorer.runTest",
+          "when": "view == dotnetTestExplorer",
+          "group": "dotnetTestExplorer@0"
+        }
+      ]
     },
     "configuration": {
       "type": "object",

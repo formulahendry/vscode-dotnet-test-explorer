@@ -89,8 +89,20 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             const structuredTests = {};
 
             fullNames.forEach((name: string) => {
-                const parts = name.split(".");
-                this.addToObject(structuredTests, parts);
+                // this regex matches test names that include data in them - for e.g.
+                //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
+                const match = /([^\(]+)(.*)/g.exec(name);
+                if (match && match.length > 1) {
+                    const parts = match[1].split(".");
+                    if (match.length > 2 && match[2].trim().length > 0) {
+                        // append the data bit of the test to the test method name
+                        // so we can distinguish one test from another in the explorer
+                        // pane
+                        const testMethodName = parts[parts.length - 1];
+                        parts[parts.length - 1] = testMethodName + match[2];
+                    }
+                    this.addToObject(structuredTests, parts);
+                }
             });
 
             const root = this.createTestNode("", structuredTests);
