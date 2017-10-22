@@ -1,3 +1,6 @@
+## 0.1.2 (2017-10-22)
+* [#20](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/20): Add support for test names that contain data
+
 ## 0.1.1 (2017-08-23)
 * Support for multiple projects
 * Added options for disabling rebuild and restore
