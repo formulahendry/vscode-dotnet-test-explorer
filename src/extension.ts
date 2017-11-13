@@ -5,9 +5,14 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 import { TestNode } from "./testNode";
+import { TestResultsFile } from "./testResultsFile";
+import { Utility } from "./utility";
 
 export function activate(context: vscode.ExtensionContext) {
-    const dotnetTestExplorer = new DotnetTestExplorer(context);
+    const testResults = new TestResultsFile();
+    context.subscriptions.push(testResults);
+
+    const dotnetTestExplorer = new DotnetTestExplorer(context, testResults);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
