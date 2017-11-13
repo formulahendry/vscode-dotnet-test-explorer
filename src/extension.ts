@@ -6,6 +6,7 @@ import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
+import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -15,6 +16,12 @@ export function activate(context: vscode.ExtensionContext) {
     const dotnetTestExplorer = new DotnetTestExplorer(context, testResults);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
+
+    const codeLensProvider = new TestStatusCodeLensProvider(testResults);
+    context.subscriptions.push(codeLensProvider);
+    context.subscriptions.push(vscode.languages.registerCodeLensProvider(
+        { language: 'csharp', scheme: 'file' },
+        codeLensProvider));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.refreshTestExplorer", () => {
         dotnetTestExplorer.refreshTestExplorer();

@@ -13,7 +13,7 @@ function getAttributeValue(node, name: string): string {
 
 export class TestResultsFile implements Disposable {
     private static readonly ResultsFileName = "TestExplorerResults.trx";
-    private onNewResultsEmmitter = new EventEmitter<TestResult[]>();
+    private onNewResultsEmitter = new EventEmitter<TestResult[]>();
     private resultsFile: string;
     private watcher: fs.FSWatcher;
 
@@ -50,14 +50,15 @@ export class TestResultsFile implements Disposable {
     }
 
     public get onNewResults(): Event<TestResult[]> {
-        return this.onNewResultsEmmitter.event;
+        return this.onNewResultsEmitter.event;
     }
 
     private parseResults(): void {
-        console.log("Loading test results file '{0}'", this.resultsFile);
+        console.log("Loading test results file '%s'", this.resultsFile);
+        const emitter = this.onNewResultsEmitter
         fs.readFile(this.resultsFile, (err, data) => {
             if (err) {
-                console.log("Error reading test results file: '{0}'", err);
+                console.log("Error reading test results file: '%s'", err);
             } else {
                 let results: TestResult[] = [];
                 const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
@@ -69,7 +70,7 @@ export class TestResultsFile implements Disposable {
                     ));
                 }
 
-                this.onNewResultsEmmitter.fire(results);
+                emitter.fire(results);
             }
         });
     }
