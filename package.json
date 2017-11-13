@@ -131,6 +131,7 @@
     "vscode": "^1.0.0"
   },
   "dependencies": {
-    "applicationinsights": "^0.21.0"
+    "applicationinsights": "^0.21.0",
+    "xmldom": "^0.1.27"
   }
 }
