@@ -20,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
     const codeLensProvider = new TestStatusCodeLensProvider(testResults);
     context.subscriptions.push(codeLensProvider);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(
-        { language: 'csharp', scheme: 'file' },
+        { language: "csharp", scheme: "file" },
         codeLensProvider));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.refreshTestExplorer", () => {

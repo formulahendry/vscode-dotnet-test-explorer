@@ -17,7 +17,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     private testDirectoryPath: string;
 
-    constructor(private context: vscode.ExtensionContext, private resultsFile : TestResultsFile) { }
+    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) { }
 
     /**
      * @description

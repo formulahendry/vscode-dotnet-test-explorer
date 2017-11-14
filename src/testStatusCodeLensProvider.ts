@@ -1,5 +1,5 @@
 "use strict";
-import { CancellationToken, commands, CodeLens, CodeLensProvider, Disposable, Event, EventEmitter, Range, SymbolInformation, TextDocument, workspace, SymbolKind } from "vscode";
+import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument, workspace } from "vscode";
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
@@ -17,7 +17,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
 
     public constructor(testResultFile: TestResultsFile) {
         this.checkEnabledOption();
-        
+
         this.disposables.push(
             testResultFile.onNewResults(this.addTestResults, this));
 
@@ -42,13 +42,13 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
 
         const results = this.testResults;
         return commands.executeCommand<SymbolInformation[]>("vscode.executeDocumentSymbolProvider", document.uri)
-            .then(symbols => {
-                let mapped: CodeLens[] = [];
-                for (let symbol of symbols.filter(x => x.kind === SymbolKind.Method)) {
-                    let fullName = symbol.containerName + '.' + symbol.name;
-                    for (let result of results.values()) {
+            .then((symbols) => {
+                const mapped: CodeLens[] = [];
+                for (const symbol of symbols.filter((x) => x.kind === SymbolKind.Method)) {
+                    const fullName = symbol.containerName + "." + symbol.name;
+                    for (const result of results.values()) {
                         if (result.testName.endsWith(fullName)) {
-                            let state = TestStatusCodeLens.parseOutcome(result.outcome);
+                            const state = TestStatusCodeLens.parseOutcome(result.outcome);
                             if (state) {
                                 mapped.push(new TestStatusCodeLens(symbol.location.range, state));
                             }
@@ -65,9 +65,9 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     }
 
     private addTestResults(results: TestResult[]) {
-        for (let result of results) {
+        for (const result of results) {
             this.testResults.set(result.testName, result);
-        };
+        }
 
         this.onDidChangeCodeLensesEmitter.fire();
     }

@@ -2,15 +2,6 @@
 import { CodeLens, Range } from "vscode";
 
 export class TestStatusCodeLens extends CodeLens {
-    public constructor(range: Range, status: string) {
-        super(range);
-
-        this.command = {
-            title: status,
-            command: null
-        };
-    }
-
     public static parseOutcome(outcome: string): string {
         if (outcome === "Passed") {
             return "✔️";
@@ -21,5 +12,14 @@ export class TestStatusCodeLens extends CodeLens {
         } else {
             return null;
         }
+    }
+
+    public constructor(range: Range, status: string) {
+        super(range);
+
+        this.command = {
+            title: status,
+            command: null,
+        };
     }
 }
