@@ -24,15 +24,13 @@ export class TestResultsFile implements Disposable {
         // The change event gets called multiple times, so use a one-second
         // delay before we read anything to avoid doing too much work
         const me = this;
-        let timeout: NodeJS.Timer;
+        let changeDelay: NodeJS.Timer;
         this.watcher = fs.watch(tempFolder, (eventType, fileName) => {
             if ((fileName === TestResultsFile.ResultsFileName) && (eventType === "change")) {
-                if (!timeout) {
-                    timeout = setTimeout(() => {
-                        timeout = null;
-                        me.parseResults();
-                    }, 1000);
-                }
+                clearTimeout(changeDelay);
+                changeDelay = setTimeout(() => {
+                    me.parseResults();
+                }, 1000);
             }
         });
     }
@@ -41,7 +39,7 @@ export class TestResultsFile implements Disposable {
         try {
             this.watcher.close();
             fs.unlinkSync(this.resultsFile);
-        } catch {
+        } catch (error) {
         }
     }
 
