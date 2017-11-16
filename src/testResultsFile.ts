@@ -1,5 +1,6 @@
 "use strict";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import { setTimeout } from "timers";
 import { Disposable, Event, EventEmitter } from "vscode";
@@ -63,13 +64,13 @@ function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
 }
 
 export class TestResultsFile implements Disposable {
-    private static readonly ResultsFileName = "TestExplorerResults.trx";
+    private static readonly ResultsFileName = "Results.trx";
     private onNewResultsEmitter = new EventEmitter<TestResult[]>();
     private resultsFile: string;
     private watcher: fs.FSWatcher;
 
     public constructor() {
-        const tempFolder = process.platform === "win32" ? process.env.TEMP : "/tmp";
+        const tempFolder = fs.mkdtempSync(path.join(os.tmpdir(), "test-explorer-"));
         this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
 
         // The change event gets called multiple times, so use a one-second
@@ -89,7 +90,14 @@ export class TestResultsFile implements Disposable {
     public dispose(): void {
         try {
             this.watcher.close();
-            fs.unlinkSync(this.resultsFile);
+
+            // When we ask for a random directory it creates one for us,
+            // however, we can't delete it if there's a file inside of it
+            if (fs.existsSync(this.resultsFile)) {
+                fs.unlinkSync(this.resultsFile);
+            }
+
+            fs.rmdir(path.dirname(this.resultsFile));
         } catch (error) {
         }
     }
