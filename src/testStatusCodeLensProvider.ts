@@ -3,6 +3,7 @@ import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Ev
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
+import { Utility } from "./utility";
 
 export class TestStatusCodeLensProvider implements CodeLensProvider {
     private disposables: Disposable[] = [];
@@ -72,6 +73,6 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     }
 
     private checkEnabledOption(): void {
-        this.enabled = workspace.getConfiguration("csharp").get<boolean>("testsCodeLens.enabled", true);
+        this.enabled = Utility.getConfiguration().get<boolean>("showCodeLens", true);
     }
 }

@@ -112,6 +112,11 @@
           "type": "boolean",
           "default": true,
           "description": "If true, dotnet restore will run when refreshing the test explorer."
+        },
+        "dotnet-test-explorer.showCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Determines whether to show the CodeLens test status or not."
         }
       }
     }
