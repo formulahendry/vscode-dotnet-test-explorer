@@ -45,9 +45,8 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
             .then((symbols) => {
                 const mapped: CodeLens[] = [];
                 for (const symbol of symbols.filter((x) => x.kind === SymbolKind.Method)) {
-                    const fullName = symbol.containerName + "." + symbol.name;
                     for (const result of results.values()) {
-                        if (result.testName.endsWith(fullName)) {
+                        if (result.matches(symbol.containerName, symbol.name)) {
                             const state = TestStatusCodeLens.parseOutcome(result.outcome);
                             if (state) {
                                 mapped.push(new TestStatusCodeLens(symbol.location.range, state));
@@ -66,7 +65,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
 
     private addTestResults(results: TestResult[]) {
         for (const result of results) {
-            this.testResults.set(result.testName, result);
+            this.testResults.set(result.fullName, result);
         }
 
         this.onDidChangeCodeLensesEmitter.fire();

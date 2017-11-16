@@ -3,12 +3,63 @@ import * as fs from "fs";
 import * as path from "path";
 import { setTimeout } from "timers";
 import { Disposable, Event, EventEmitter } from "vscode";
-import { DOMParser } from "xmldom";
+import { DOMParser, Element, Node } from "xmldom";
 import { TestResult } from "./testResult";
 
-function getAttributeValue(node, name: string): string {
+function findChildElement(node: Node, name: string): Node {
+    let child = node.firstChild;
+    while (child) {
+        if (child.nodeName === name) {
+            return child;
+        }
+
+        child = child.nextSibling;
+    }
+
+    return null;
+}
+
+function getAttributeValue(node: Node, name: string): string {
     const attribute = node.attributes.getNamedItem(name);
     return (attribute === null) ? null : attribute.nodeValue;
+}
+
+function parseUnitTestResults(xml: Element): TestResult[] {
+    const results: TestResult[] = [];
+    const nodes = xml.getElementsByTagName("UnitTestResult");
+
+    // TSLint wants to use for-of here, but nodes doesn't support it
+    for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
+        results.push(new TestResult(
+            getAttributeValue(nodes[i], "testId"),
+            getAttributeValue(nodes[i], "outcome"),
+        ));
+    }
+
+    return results;
+}
+
+function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
+    const nodes = xml.getElementsByTagName("UnitTest");
+    const names = new Map<string, any>();
+
+    for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
+        const id = getAttributeValue(nodes[i], "id");
+        const testMethod = findChildElement(nodes[i], "TestMethod");
+        if (testMethod) {
+            names.set(id, {
+                className: getAttributeValue(testMethod, "className"),
+                method: getAttributeValue(testMethod, "name"),
+            });
+        }
+    }
+
+    for (const result of results) {
+        const name = names.get(result.id);
+        if (name) {
+            result.updateName(name.className, name.method);
+        }
+    }
 }
 
 export class TestResultsFile implements Disposable {
@@ -55,18 +106,9 @@ export class TestResultsFile implements Disposable {
         const emitter = this.onNewResultsEmitter;
         fs.readFile(this.resultsFile, (err, data) => {
             if (!err) {
-                const results: TestResult[] = [];
                 const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
-                const nodes = xdoc.documentElement.getElementsByTagName("UnitTestResult");
-
-                // TSLint wants to use for-of here, but nodes doesn't support it
-                for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
-                    results.push(new TestResult(
-                        getAttributeValue(nodes[i], "testName"),
-                        getAttributeValue(nodes[i], "outcome"),
-                    ));
-                }
-
+                const results = parseUnitTestResults(xdoc.documentElement);
+                updateUnitTestDefinitions(xdoc.documentElement, results);
                 emitter.fire(results);
             }
         });
