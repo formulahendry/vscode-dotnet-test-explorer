@@ -1,5 +1,5 @@
 "use strict";
-import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument, workspace } from "vscode";
+import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument } from "vscode";
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
@@ -7,7 +7,6 @@ import { Utility } from "./utility";
 
 export class TestStatusCodeLensProvider implements CodeLensProvider {
     private disposables: Disposable[] = [];
-    private enabled: boolean;
     private onDidChangeCodeLensesEmitter = new EventEmitter<void>();
 
     // Store everything in a map so we can remember old tests results for the
@@ -17,13 +16,8 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     private testResults = new Map<string, TestResult>();
 
     public constructor(testResultFile: TestResultsFile) {
-        this.checkEnabledOption();
-
         this.disposables.push(
             testResultFile.onNewResults(this.addTestResults, this));
-
-        this.disposables.push(
-            workspace.onDidChangeConfiguration(this.checkEnabledOption, this));
     }
 
     public dispose() {
@@ -37,7 +31,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     }
 
     public provideCodeLenses(document: TextDocument, token: CancellationToken): CodeLens[] | Thenable<CodeLens[]> {
-        if (!this.enabled) {
+        if (!Utility.codeLensEnabled()) {
             return [];
         }
 
@@ -70,9 +64,5 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
         }
 
         this.onDidChangeCodeLensesEmitter.fire();
-    }
-
-    private checkEnabledOption(): void {
-        this.enabled = Utility.getConfiguration().get<boolean>("showCodeLens", true);
     }
 }

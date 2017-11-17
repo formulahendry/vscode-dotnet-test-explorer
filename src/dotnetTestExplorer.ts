@@ -189,7 +189,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * Gets the dotnet test argument to speicfy the output for the test results.
      */
     private outputTestResults(): string {
-        return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
+        if (Utility.codeLensEnabled()) {
+            return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
+        } else {
+            return "";
+        }
     }
 
     /**

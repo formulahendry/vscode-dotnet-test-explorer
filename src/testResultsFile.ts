@@ -69,45 +69,40 @@ export class TestResultsFile implements Disposable {
     private resultsFile: string;
     private watcher: fs.FSWatcher;
 
-    public constructor() {
-        const tempFolder = fs.mkdtempSync(path.join(os.tmpdir(), "test-explorer-"));
-        this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
-
-        // The change event gets called multiple times, so use a one-second
-        // delay before we read anything to avoid doing too much work
-        const me = this;
-        let changeDelay: NodeJS.Timer;
-        this.watcher = fs.watch(tempFolder, (eventType, fileName) => {
-            if ((fileName === TestResultsFile.ResultsFileName) && (eventType === "change")) {
-                clearTimeout(changeDelay);
-                changeDelay = setTimeout(() => {
-                    me.parseResults();
-                }, 1000);
-            }
-        });
-    }
-
     public dispose(): void {
         try {
-            this.watcher.close();
-
-            // When we ask for a random directory it creates one for us,
-            // however, we can't delete it if there's a file inside of it
-            if (fs.existsSync(this.resultsFile)) {
-                fs.unlinkSync(this.resultsFile);
+            if (this.watcher) {
+                this.watcher.close();
             }
 
-            fs.rmdir(path.dirname(this.resultsFile));
+            if (this.resultsFile) {
+                // When we ask for a random directory it creates one for us,
+                // however, we can't delete it if there's a file inside of it
+                if (fs.existsSync(this.resultsFile)) {
+                    fs.unlinkSync(this.resultsFile);
+                }
+
+                fs.rmdir(path.dirname(this.resultsFile));
+            }
         } catch (error) {
         }
     }
 
     public get fileName(): string {
+        this.ensureTemproaryPathExists();
         return this.resultsFile;
     }
 
     public get onNewResults(): Event<TestResult[]> {
         return this.onNewResultsEmitter.event;
+    }
+
+    private ensureTemproaryPathExists(): void {
+        if (!this.resultsFile) {
+            const tempFolder = fs.mkdtempSync(path.join(os.tmpdir(), "test-explorer-"));
+            this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
+            this.watchFolder(tempFolder);
+        }
     }
 
     private parseResults(): void {
@@ -118,6 +113,21 @@ export class TestResultsFile implements Disposable {
                 const results = parseUnitTestResults(xdoc.documentElement);
                 updateUnitTestDefinitions(xdoc.documentElement, results);
                 emitter.fire(results);
+            }
+        });
+    }
+
+    private watchFolder(folder: string): void {
+        // The change event gets called multiple times, so use a one-second
+        // delay before we read anything to avoid doing too much work
+        const me = this;
+        let changeDelay: NodeJS.Timer;
+        this.watcher = fs.watch(folder, (eventType, fileName) => {
+            if ((fileName === TestResultsFile.ResultsFileName) && (eventType === "change")) {
+                clearTimeout(changeDelay);
+                changeDelay = setTimeout(() => {
+                    me.parseResults();
+                }, 1000);
             }
         });
     }
