@@ -28,9 +28,9 @@ export class Utility {
         const osx = platform() === "darwin";
 
         Utility.showCodeLens = configuration.get<boolean>("showCodeLens", true);
-        Utility.failed = Utility.getLensText(configuration, "codeLensPassed", "\u274c"); // Cross Mark
+        Utility.failed = Utility.getLensText(configuration, "codeLensFailed", "\u274c"); // Cross Mark
         Utility.passed = Utility.getLensText(configuration, "codeLensPassed", osx ? "\u2705" : "\u2714"); // White Heavy Check Mark / Heavy Check Mark
-        Utility.skipped = Utility.getLensText(configuration, "codeLensPassed", "\u26a0"); // Warning
+        Utility.skipped = Utility.getLensText(configuration, "codeLensSkipped", "\u26a0"); // Warning
     }
 
     private static showCodeLens: boolean;
