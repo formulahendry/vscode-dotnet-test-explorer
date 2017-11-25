@@ -3,11 +3,6 @@ import { platform } from "os";
 import * as vscode from "vscode";
 
 export class Utility {
-    private static showCodeLens: boolean;
-    private static failed: string;
-    private static passed: string;
-    private static skipped: string;
-
     public static get codeLensEnabled(): boolean {
         return Utility.showCodeLens;
     }
@@ -37,6 +32,11 @@ export class Utility {
         Utility.passed = Utility.getLensText(configuration, "codeLensPassed", osx ? "\u2705" : "\u2714"); // White Heavy Check Mark / Heavy Check Mark
         Utility.skipped = Utility.getLensText(configuration, "codeLensPassed", "\u26a0"); // Warning
     }
+
+    private static showCodeLens: boolean;
+    private static failed: string;
+    private static passed: string;
+    private static skipped: string;
 
     private static getLensText(configuration: vscode.WorkspaceConfiguration, name: string, fallback: string): string {
         // This is an invisible character that indicates the previous character
