@@ -117,6 +117,21 @@
           "type": "boolean",
           "default": true,
           "description": "Determines whether to show the CodeLens test status or not."
+        },
+        "dotnet-test-explorer.codeLensFailed": {
+          "type": "string",
+          "default": "",
+          "description": "The text to display in the code lens when a test has failed."
+        },
+        "dotnet-test-explorer.codeLensPassed": {
+          "type": "string",
+          "default": "",
+          "description": "The text to display in the code lens when a test has passed."
+        },
+        "dotnet-test-explorer.codeLensSkipped": {
+          "type": "string",
+          "default": "",
+          "description": "The text to display in the code lens when a test has been skipped."
         }
       }
     }

@@ -13,6 +13,11 @@ export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
     context.subscriptions.push(testResults);
 
+    Utility.updateCache();
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(() => {
+        Utility.updateCache();
+    }));
+
     const dotnetTestExplorer = new DotnetTestExplorer(context, testResults);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");

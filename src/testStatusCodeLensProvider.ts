@@ -31,7 +31,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     }
 
     public provideCodeLenses(document: TextDocument, token: CancellationToken): CodeLens[] | Thenable<CodeLens[]> {
-        if (!Utility.codeLensEnabled()) {
+        if (!Utility.codeLensEnabled) {
             return [];
         }
 

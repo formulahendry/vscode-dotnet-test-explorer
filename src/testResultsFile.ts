@@ -123,7 +123,7 @@ export class TestResultsFile implements Disposable {
         const me = this;
         let changeDelay: NodeJS.Timer;
         this.watcher = fs.watch(folder, (eventType, fileName) => {
-            if ((fileName === TestResultsFile.ResultsFileName) && (eventType === "change")) {
+            if (fileName === TestResultsFile.ResultsFileName) {
                 clearTimeout(changeDelay);
                 changeDelay = setTimeout(() => {
                     me.parseResults();

@@ -189,7 +189,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * Gets the dotnet test argument to speicfy the output for the test results.
      */
     private outputTestResults(): string {
-        if (Utility.codeLensEnabled()) {
+        if (Utility.codeLensEnabled) {
             return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
         } else {
             return "";

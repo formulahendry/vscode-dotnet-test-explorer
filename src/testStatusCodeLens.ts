@@ -1,14 +1,15 @@
 "use strict";
 import { CodeLens, Range } from "vscode";
+import { Utility } from "./utility";
 
 export class TestStatusCodeLens extends CodeLens {
     public static parseOutcome(outcome: string): string {
         if (outcome === "Passed") {
-            return "✔️";
+            return Utility.codeLensPassed;
         } else if (outcome === "Failed") {
-            return "❌";
+            return Utility.codeLensFailed;
         } else if (outcome === "NotExecuted") {
-            return "️️⚠️";
+            return Utility.codeLensSkipped;
         } else {
             return null;
         }
