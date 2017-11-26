@@ -14,7 +14,7 @@
 
 ![test-explorer](images/test-explorer.png)
 
-* Display test results in CodeLens for C# test projects (This feature depends on [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp))
+* After you run tests from Test Explorer, you could see test results in CodeLens for C# test projects (This feature depends on [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp))
 
 ![test-results](images/test-results.png)
 
