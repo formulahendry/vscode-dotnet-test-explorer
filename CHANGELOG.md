@@ -1,3 +1,6 @@
+## 0.2.0 (2017-11-26)
+* [#24](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/24): Display test results in CodeLens for C# test projects
+
 ## 0.1.2 (2017-10-22)
 * [#20](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/20): Add support for test names that contain data
 
