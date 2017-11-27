@@ -1,8 +1,8 @@
 {
   "name": "dotnet-test-explorer",
   "displayName": ".NET Core Test Explorer",
-  "description": "Test Explorer for .NET Core",
-  "version": "0.1.2",
+  "description": "Test Explorer for .NET Core (MSTest, xUnit, NUnit)",
+  "version": "0.2.0",
   "publisher": "formulahendry",
   "license": "MIT",
   "icon": "logo.png",
@@ -112,6 +112,26 @@
           "type": "boolean",
           "default": true,
           "description": "If true, dotnet restore will run when refreshing the test explorer."
+        },
+        "dotnet-test-explorer.showCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Determines whether to show the CodeLens test status or not."
+        },
+        "dotnet-test-explorer.codeLensFailed": {
+          "type": "string",
+          "default": "",
+          "description": "The text to display in the code lens when a test has failed."
+        },
+        "dotnet-test-explorer.codeLensPassed": {
+          "type": "string",
+          "default": "",
+          "description": "The text to display in the code lens when a test has passed."
+        },
+        "dotnet-test-explorer.codeLensSkipped": {
+          "type": "string",
+          "default": "",
+          "description": "The text to display in the code lens when a test has been skipped."
         }
       }
     }
@@ -131,6 +151,7 @@
     "vscode": "^1.0.0"
   },
   "dependencies": {
-    "applicationinsights": "^0.21.0"
+    "applicationinsights": "^0.21.0",
+    "xmldom": "^0.1.27"
   }
 }

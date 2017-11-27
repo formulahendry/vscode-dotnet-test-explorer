@@ -4,6 +4,7 @@ import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { TestNode } from "./testNode";
+import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
@@ -16,7 +17,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     private testDirectoryPath: string;
 
-    constructor(private context: vscode.ExtensionContext) {}
+    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) { }
 
     /**
      * @description
@@ -41,7 +42,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     public runAllTests(): void {
         this.evaluateTestDirectory();
-        Executor.runInTerminal(`dotnet test${this.checkBuildOption()}${this.checkRestoreOption()}`, this.testDirectoryPath);
+        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runAllTests");
     }
 
@@ -177,6 +178,26 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     /**
      * @description
+     * Gets the options for build/restore before running tests.
+     */
+    private getDotNetTestOptions(): string {
+        return this.checkBuildOption() + this.checkRestoreOption();
+    }
+
+    /**
+     * @description
+     * Gets the dotnet test argument to speicfy the output for the test results.
+     */
+    private outputTestResults(): string {
+        if (Utility.codeLensEnabled) {
+            return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * @description
      * Checks to see if the options specify a directory to run the
      * dotnet-cli test commands in.
      * @summary
@@ -198,7 +219,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         return new Promise((c, e) => {
             try {
                 const results = Executor
-                    .execSync(`dotnet test -t -v=q${this.checkBuildOption()}${this.checkRestoreOption()}`, this.testDirectoryPath)
+                    .execSync(`dotnet test -t -v=q${this.getDotNetTestOptions()}`, this.testDirectoryPath)
                     .split(/[\r\n]+/g)
                     /*
                      * The dotnet-cli prefixes all discovered unit tests
@@ -207,7 +228,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                      * structures.
                      **/
                     .filter((item) => item && item.startsWith("  "))
-                    .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0 )
+                    .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0)
                     .map((item) => item.trim());
 
                 c(results);
