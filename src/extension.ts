@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
         codeLensProvider));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.refreshTestExplorer", () => {
-        dotnetTestExplorer.refreshTestExplorer();
+        dotnetTestExplorer.refreshTestExplorer(true);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runAllTests", () => {

@@ -6,10 +6,14 @@ import { Executor } from "./executor";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
+import { TestResult } from "./testResult";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+
+    private fullNames: string[];
+    private testResults : TestResult[];
 
     /**
      * The directory where the dotnet-cli will
@@ -17,7 +21,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     private testDirectoryPath: string;
 
-    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) { }
+    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) {
+        resultsFile.onNewResults(this.addTestResults, this);
+     }
 
     /**
      * @description
@@ -28,7 +34,10 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * This method can cause the project to rebuild or try
      * to do a restore, so it can be very slow.
      */
-    public refreshTestExplorer(): void {
+    public refreshTestExplorer(clearCachedResult: boolean): void {
+        if(clearCachedResult) {
+            this.fullNames = null;    
+        }
         this._onDidChangeTreeData.fire();
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
@@ -63,12 +72,29 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return new TreeItem(element.name);
         }
 
+        let icon = "run.png"
+
+        if(!element.isFolder && this.testResults)
+        {
+            const resultForTest = this.testResults.find((tr) => tr.fullName == element.fullName);
+
+            if(resultForTest) {
+
+                icon = resultForTest.outcome == "Passed" ? "runPassed.png" : "runfailed.png";
+            }
+        }
+
         return {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
+            command: element.isFolder ? void 0 : {
+                command: "dotnet-test-explorer.runTest",
+                title: "asd",
+                arguments: [element],
+            },
             iconPath: {
-                dark: this.context.asAbsolutePath(path.join("resources", "dark", "run.png")),
-                light: this.context.asAbsolutePath(path.join("resources", "light", "run.png")),
+                dark: this.context.asAbsolutePath(path.join("resources", "dark", icon)),
+                light: this.context.asAbsolutePath(path.join("resources", "light", icon)),
             },
         };
     }
@@ -78,36 +104,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return element.children;
         }
 
-        const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
+        if(this.fullNames) {
+            return this.getChildrenFromFullnames(this.fullNames);
+        }
 
         return this.loadTestStrings().then((fullNames: string[]) => {
-            if (!useTreeView) {
-                return fullNames.map((name) => {
-                    return new TestNode("", name);
-                });
-            }
-
-            const structuredTests = {};
-
-            fullNames.forEach((name: string) => {
-                // this regex matches test names that include data in them - for e.g.
-                //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
-                const match = /([^\(]+)(.*)/g.exec(name);
-                if (match && match.length > 1) {
-                    const parts = match[1].split(".");
-                    if (match.length > 2 && match[2].trim().length > 0) {
-                        // append the data bit of the test to the test method name
-                        // so we can distinguish one test from another in the explorer
-                        // pane
-                        const testMethodName = parts[parts.length - 1];
-                        parts[parts.length - 1] = testMethodName + match[2];
-                    }
-                    this.addToObject(structuredTests, parts);
-                }
-            });
-
-            const root = this.createTestNode("", structuredTests);
-            return root;
+            this.fullNames = fullNames;
+            return this.getChildrenFromFullnames(fullNames);
         }, (reason: any) => {
             return reason.map((e) => {
                 const item = new TestNode("", null);
@@ -115,6 +118,44 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 return item;
             });
         });
+    }
+
+    private getChildrenFromFullnames(fullNames: string[]) : TestNode[] {
+        const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
+
+        if (!useTreeView) {
+            return fullNames.map((name) => {
+                return new TestNode("", name);
+            });
+        }
+
+        const structuredTests = {};
+
+        fullNames.forEach((name: string) => {
+            // this regex matches test names that include data in them - for e.g.
+            //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
+            const match = /([^\(]+)(.*)/g.exec(name);
+            if (match && match.length > 1) {
+                const parts = match[1].split(".");
+                if (match.length > 2 && match[2].trim().length > 0) {
+                    // append the data bit of the test to the test method name
+                    // so we can distinguish one test from another in the explorer
+                    // pane
+                    const testMethodName = parts[parts.length - 1];
+                    parts[parts.length - 1] = testMethodName + match[2];
+                }
+                this.addToObject(structuredTests, parts);
+            }
+        });
+
+        const root = this.createTestNode("", structuredTests);
+
+        return root;
+    }
+
+    private addTestResults(results: TestResult[]) {
+        this.testResults = results;
+        this.refreshTestExplorer(false);
     }
 
     private addToObject(container: object, parts: string[]): void {
