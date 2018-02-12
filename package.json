@@ -61,6 +61,10 @@
       {
         "command": "dotnet-test-explorer.runTest",
         "title": "Run Test"
+      },
+      {
+        "command": "dotnet-test-explorer.goToTest",
+        "title": "Go to Test"
       }
     ],
     "menus": {

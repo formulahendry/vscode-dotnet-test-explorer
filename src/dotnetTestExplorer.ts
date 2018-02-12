@@ -4,16 +4,16 @@ import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { TestNode } from "./testNode";
+import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
-import { TestResult } from "./testResult";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
-    private fullNames: string[];
-    private testResults : TestResult[];
+    private cacheOfFullNameFromListOfTests: string[];
+    private testResults: TestResult[];
 
     /**
      * The directory where the dotnet-cli will
@@ -35,8 +35,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public refreshTestExplorer(clearCachedResult: boolean): void {
-        if(clearCachedResult) {
-            this.fullNames = null;    
+        if (clearCachedResult) {
+            this.cacheOfFullNameFromListOfTests = null;
         }
         this._onDidChangeTreeData.fire();
         AppInsightsClient.sendEvent("refreshTestExplorer");
@@ -72,15 +72,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return new TreeItem(element.name);
         }
 
-        let icon = "run.png"
+        let icon = "run.png";
 
-        if(!element.isFolder && this.testResults)
-        {
-            const resultForTest = this.testResults.find((tr) => tr.fullName == element.fullName);
+        if (!element.isFolder && this.testResults) {
+            const resultForTest = this.testResults.find((tr) => tr.fullName === element.fullName);
 
-            if(resultForTest) {
-
-                icon = resultForTest.outcome == "Passed" ? "runPassed.png" : "runfailed.png";
+            if (resultForTest) {
+                icon = "run" + resultForTest.outcome + ".png";
             }
         }
 
@@ -88,8 +86,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
             command: element.isFolder ? void 0 : {
-                command: "dotnet-test-explorer.runTest",
-                title: "asd",
+                command: "dotnet-test-explorer.goToTest",
+                title: "Go to test",
                 arguments: [element],
             },
             iconPath: {
@@ -100,16 +98,17 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     public getChildren(element?: TestNode): TestNode[] | Thenable<TestNode[]> {
+
         if (element) {
             return element.children;
         }
 
-        if(this.fullNames) {
-            return this.getChildrenFromFullnames(this.fullNames);
+        if (this.cacheOfFullNameFromListOfTests) {
+            return this.getChildrenFromFullnames(this.cacheOfFullNameFromListOfTests);
         }
 
         return this.loadTestStrings().then((fullNames: string[]) => {
-            this.fullNames = fullNames;
+            this.cacheOfFullNameFromListOfTests = fullNames;
             return this.getChildrenFromFullnames(fullNames);
         }, (reason: any) => {
             return reason.map((e) => {
@@ -120,7 +119,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
     }
 
-    private getChildrenFromFullnames(fullNames: string[]) : TestNode[] {
+    private getChildrenFromFullnames(fullNames: string[]): TestNode[] {
         const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
 
         if (!useTreeView) {

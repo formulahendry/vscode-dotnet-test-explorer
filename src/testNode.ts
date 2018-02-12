@@ -8,6 +8,10 @@ export class TestNode {
         return this._name;
     }
 
+    public get parentPath(): string {
+        return this._parentPath;
+    }
+
     public get fullName(): string {
         return (this._parentPath ? `${this._parentPath}.` : "") + this._name;
     }
