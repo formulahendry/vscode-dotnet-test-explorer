@@ -42,7 +42,6 @@ export class TestNode {
     }
 
     private setIconFromTestResult(testResults: TestResult[]) {
-        // If the test node does not contain a namespace (nunit, mstest?) we have no real way of matching a test result to a test node
         if (!testResults) {
             this._icon = "run.png";
         } else {
