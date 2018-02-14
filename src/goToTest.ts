@@ -4,9 +4,7 @@ import { TestNode } from "./testNode";
 
 export function GoToTest(test: TestNode): void {
 
-    // Testname can be either Method (nunit, mstest) or Full.Name.Space.Class.Method (xunit)
-    // Symbol provider returns result in the format Class.Method()
-
+    // Testname can be either Method or Full.Name.Space.Class.Method (xunit when running without tree) but we must only search for Method
     let name = test.name;
 
     const lastDot = name.lastIndexOf(".");
@@ -26,6 +24,7 @@ export function GoToTest(test: TestNode): void {
 
         return symbolCandidates;
     }).then((symbolCandidates) => {
+        // If multiple results are found, try to match the uri of the match to the parent path of the test
         if (symbolCandidates.length > 0) {
             return symbolCandidates.filter((x) => x.location.uri.toString().replace(/\//g, ".").indexOf(test.parentPath) > -1);
         }
