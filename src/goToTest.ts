@@ -4,6 +4,9 @@ import { TestNode } from "./testNode";
 
 export function GoToTest(test: TestNode): void {
 
+    // Testname can be either Method (nunit, mstest) or Full.Name.Space.Class.Method (xunit)
+    // Symbol provider returns result in the format Class.Method()
+
     let name = test.name;
 
     const lastDot = name.lastIndexOf(".");

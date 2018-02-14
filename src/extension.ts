@@ -4,11 +4,11 @@ import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
+import {GoToTest} from "./goToTest";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
-import {GoToTest} from "./goToTest";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.goToTest", (test: TestNode) => {
         GoToTest(test);
-    }));    
+    }));
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
         Executor.onDidCloseTerminal(closedTerminal);

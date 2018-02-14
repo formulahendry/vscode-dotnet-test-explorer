@@ -11,7 +11,7 @@ export class Utility {
         return Utility.failed;
     }
 
-    public static get codeLensPassed(): string { 
+    public static get codeLensPassed(): string {
         return Utility.passed;
     }
 

@@ -72,16 +72,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return new TreeItem(element.name);
         }
 
-        let icon = "run.png";
-
-        if (!element.isFolder && this.testResults) {
-            const resultForTest = this.testResults.find((tr) => tr.fullName === element.fullName);
-
-            if (resultForTest) {
-                icon = "run" + resultForTest.outcome + ".png";
-            }
-        }
-
         return {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
@@ -91,8 +81,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 arguments: [element],
             },
             iconPath: {
-                dark: this.context.asAbsolutePath(path.join("resources", "dark", icon)),
-                light: this.context.asAbsolutePath(path.join("resources", "light", icon)),
+                dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
+                light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
             },
         };
     }
@@ -112,7 +102,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return this.getChildrenFromFullnames(fullNames);
         }, (reason: any) => {
             return reason.map((e) => {
-                const item = new TestNode("", null);
+                const item = new TestNode("", null, null);
                 item.setAsError(e);
                 return item;
             });
@@ -124,7 +114,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         if (!useTreeView) {
             return fullNames.map((name) => {
-                return new TestNode("", name);
+                return new TestNode("", name, this.testResults);
             });
         }
 
@@ -157,6 +147,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.refreshTestExplorer(false);
     }
 
+    private parseTestResultsForNode(results: TestResult[]) {
+        this.testResults = results;
+        this.refreshTestExplorer(false);
+    }
+
     private addToObject(container: object, parts: string[]): void {
         const title = parts.splice(0, 1)[0];
 
@@ -179,14 +174,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private createTestNode(parentPath: string, test: object | string): TestNode[] {
         if (Array.isArray(test)) {
             return test.map((t) => {
-                return new TestNode(parentPath, t);
+                return new TestNode(parentPath, t, this.testResults);
             });
         } else if (typeof test === "object") {
             return Object.keys(test).map((key) => {
-                return new TestNode(parentPath, key, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
+                return new TestNode(parentPath, key, this.testResults, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
             });
         } else {
-            return [new TestNode(parentPath, test)];
+            return [new TestNode(parentPath, test, this.testResults)];
         }
     }
 
