@@ -25,7 +25,7 @@ export function GoToTest(test: TestNode): void {
         return symbolCandidates;
     }).then((symbolCandidates) => {
         // If multiple results are found, try to match the uri of the match to the parent path of the test
-        if (symbolCandidates.length > 0) {
+        if (symbolCandidates.length > 1) {
             return symbolCandidates.filter((x) => x.location.uri.toString().replace(/\//g, ".").indexOf(test.parentPath) > -1);
         }
 
