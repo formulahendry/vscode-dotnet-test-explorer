@@ -34,7 +34,9 @@ export function GoToTest(test: TestNode): void {
         vscode.workspace.openTextDocument(symbol[0].location.uri).then((doc) => {
             vscode.window.showTextDocument(doc).then((editor) => {
                 const loc = symbol[0].location.range;
-                vscode.window.activeTextEditor.selection = new vscode.Selection(loc.start.line, loc.start.character, loc.start.line, loc.end.character);
+                const selection = new vscode.Selection(loc.start.line, loc.start.character, loc.start.line, loc.end.character);
+                vscode.window.activeTextEditor.selection = selection;
+                vscode.window.activeTextEditor.revealRange(selection, vscode.TextEditorRevealType.InCenter);
             });
         });
     });
