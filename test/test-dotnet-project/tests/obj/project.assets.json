@@ -5621,9 +5621,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/tests/tests.csproj",
-      "projectName": "tests",
-      "projectPath": "/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/tests/tests.csproj",
+      "projectUniqueName": "/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/tests/testconsoleapp.tests.csproj",
+      "projectName": "testconsoleapp.tests",
+      "projectPath": "/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/tests/testconsoleapp.tests.csproj",
       "packagesPath": "/Users/janaka.abeywardhana/.nuget/packages/",
       "outputPath": "/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/tests/obj/",
       "projectStyle": "PackageReference",

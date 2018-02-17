@@ -1,0 +1,10 @@
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/bin/Debug/netcoreapp2.0/testconsoleapp.deps.json
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/bin/Debug/netcoreapp2.0/testconsoleapp.runtimeconfig.json
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/bin/Debug/netcoreapp2.0/testconsoleapp.runtimeconfig.dev.json
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/bin/Debug/netcoreapp2.0/testconsoleapp.dll
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/bin/Debug/netcoreapp2.0/testconsoleapp.pdb
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/obj/Debug/netcoreapp2.0/testconsoleapp.csproj.CoreCompileInputs.cache
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/obj/Debug/netcoreapp2.0/testconsoleapp.AssemblyInfoInputs.cache
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/obj/Debug/netcoreapp2.0/testconsoleapp.AssemblyInfo.cs
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/obj/Debug/netcoreapp2.0/testconsoleapp.dll
+/Users/janaka.abeywardhana/code-projects/vscode-extensions/vscode-dotnet-test-explorer/test/test-dotnet-project/src/testconsoleapp/obj/Debug/netcoreapp2.0/testconsoleapp.pdb

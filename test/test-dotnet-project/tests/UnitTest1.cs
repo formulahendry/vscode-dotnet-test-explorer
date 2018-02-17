@@ -8,17 +8,12 @@ namespace tests
         [Fact]
         public void Test1()
         {
-            
+            Assert.Equal(5, add(2, 3));
         }
-        [Fact]
-        public void Test2()
-        {
 
-        }
-        [Fact]
-        public void Test3()
+        int add(int a, int b)
         {
-
+            return a + b;
         }
     }
 }
