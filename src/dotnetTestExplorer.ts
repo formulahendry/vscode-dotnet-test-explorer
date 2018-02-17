@@ -54,7 +54,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
+        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName=${test.fullName}`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
     }
 
@@ -215,11 +215,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     private loadTestStrings(): Thenable<string[]> {
         this.evaluateTestDirectory();
+        // TODO check testDirectoryPath is valid and contains a test.csproj file.
 
+        const testDirPath = this.testDirectoryPath;
         return new Promise((c, e) => {
             try {
                 const results = Executor
-                    .execSync(`dotnet test -t -v=q${this.getDotNetTestOptions()}`, this.testDirectoryPath)
+                    .execSync(`dotnet test -t -v=q${this.getDotNetTestOptions()}`, testDirPath)
                     .split(/[\r\n]+/g)
                     /*
                      * The dotnet-cli prefixes all discovered unit tests
@@ -234,7 +236,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 c(results);
 
             } catch (error) {
-                return e(["Please open or set the test project", "and ensure your project compiles."]);
+                return e(["Please open or set the test project", "and ensure your project compiles!"]);
             }
 
             return c([]);
