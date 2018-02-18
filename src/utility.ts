@@ -1,5 +1,5 @@
 "use strict";
-import { platform } from "os";
+import { platform, tmpdir } from "os";
 import * as vscode from "vscode";
 
 export class Utility {
@@ -17,6 +17,12 @@ export class Utility {
 
     public static get codeLensSkipped(): string {
         return Utility.skipped;
+    }
+
+    public static get pathForResultFile(): string {
+        const pathForResultFile = Utility.getConfiguration().get<string>("pathForResultFile");
+
+        return pathForResultFile ? pathForResultFile : tmpdir();
     }
 
     public static getConfiguration(): vscode.WorkspaceConfiguration {

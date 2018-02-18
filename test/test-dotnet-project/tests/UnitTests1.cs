@@ -1,9 +1,9 @@
 using System;
 using Xunit;
 
-namespace tests
+namespace xunitTests
 {
-    public class UnitTest1
+    public class UnitTests1
     {
         [Fact]
         public void TestAdd()

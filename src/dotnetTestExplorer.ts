@@ -3,13 +3,18 @@ import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
+import { GoToTest } from "./goToTest";
 import { TestNode } from "./testNode";
+import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+
+    private cacheOfFullNameFromListOfTests: string[];
+    private testResults: TestResult[];
 
     /**
      * The directory where the dotnet-cli will
@@ -20,7 +25,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     // The currently selected Unit Test
     private selectedUnitTest: TestNode;
 
-    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) { }
+    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) {
+        resultsFile.onNewResults(this.addTestResults, this);
+    }
 
     /**
      * @description
@@ -31,7 +38,10 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * This method can cause the project to rebuild or try
      * to do a restore, so it can be very slow.
      */
-    public refreshTestExplorer(): void {
+    public refreshTestExplorer(clearCachedResult: boolean): void {
+        if (clearCachedResult) {
+            this.cacheOfFullNameFromListOfTests = null;
+        }
         this._onDidChangeTreeData.fire();
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
@@ -66,12 +76,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     /**
      * @description
-     * Runs a specific test discovered from the project directory.
+     * Is called when a test node in the tree is selected
      * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
+     * This method/"event" is fire when a test node in the tree is selected.
+     * Param `test` will be the context of the selected test node.
      */
-    public setSelectedUnitTest(test: TestNode): void {
+    public onSelectedUnitTest(test: TestNode): void {
+        // Trigger actions based on the context of the selected test node here.
         this.selectedUnitTest = test;
     }
 
@@ -83,56 +94,77 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
             iconPath: {
-                dark: this.context.asAbsolutePath(path.join("resources", "dark", "run.png")),
-                light: this.context.asAbsolutePath(path.join("resources", "light", "run.png")),
+                dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
+                light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
             },
             contextValue: element.isFolder ? "UnitTestFolder" : "UnitTest",
-            command: element.isFolder ? void 0 : { title: "", command: "setSelectedUnitTest", arguments: [element] },
+            command: element.isFolder ? void 0 : { title: "", command: "onSelectedUnitTest", arguments: [element] },
         };
     }
 
     public getChildren(element?: TestNode): TestNode[] | Thenable<TestNode[]> {
+
         if (element) {
             return element.children;
         }
 
-        const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
+        if (this.cacheOfFullNameFromListOfTests) {
+            return this.getChildrenFromFullnames(this.cacheOfFullNameFromListOfTests);
+        }
 
         return this.loadTestStrings().then((fullNames: string[]) => {
-            if (!useTreeView) {
-                return fullNames.map((name) => {
-                    return new TestNode("", name);
-                });
-            }
-
-            const structuredTests = {};
-
-            fullNames.forEach((name: string) => {
-                // this regex matches test names that include data in them - for e.g.
-                //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
-                const match = /([^\(]+)(.*)/g.exec(name);
-                if (match && match.length > 1) {
-                    const parts = match[1].split(".");
-                    if (match.length > 2 && match[2].trim().length > 0) {
-                        // append the data bit of the test to the test method name
-                        // so we can distinguish one test from another in the explorer
-                        // pane
-                        const testMethodName = parts[parts.length - 1];
-                        parts[parts.length - 1] = testMethodName + match[2];
-                    }
-                    this.addToObject(structuredTests, parts);
-                }
-            });
-
-            const root = this.createTestNode("", structuredTests);
-            return root;
+            this.cacheOfFullNameFromListOfTests = fullNames;
+            return this.getChildrenFromFullnames(fullNames);
         }, (reason: any) => {
             return reason.map((e) => {
-                const item = new TestNode("", null);
+                const item = new TestNode("", null, null);
                 item.setAsError(e);
                 return item;
             });
         });
+    }
+
+    private getChildrenFromFullnames(fullNames: string[]): TestNode[] {
+        const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
+
+        if (!useTreeView) {
+            return fullNames.map((name) => {
+                return new TestNode("", name, this.testResults);
+            });
+        }
+
+        const structuredTests = {};
+
+        fullNames.forEach((name: string) => {
+            // this regex matches test names that include data in them - for e.g.
+            //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
+            const match = /([^\(]+)(.*)/g.exec(name);
+            if (match && match.length > 1) {
+                const parts = match[1].split(".");
+                if (match.length > 2 && match[2].trim().length > 0) {
+                    // append the data bit of the test to the test method name
+                    // so we can distinguish one test from another in the explorer
+                    // pane
+                    const testMethodName = parts[parts.length - 1];
+                    parts[parts.length - 1] = testMethodName + match[2];
+                }
+                this.addToObject(structuredTests, parts);
+            }
+        });
+
+        const root = this.createTestNode("", structuredTests);
+
+        return root;
+    }
+
+    private addTestResults(results: TestResult[]) {
+        this.testResults = results;
+        this.refreshTestExplorer(false);
+    }
+
+    private parseTestResultsForNode(results: TestResult[]) {
+        this.testResults = results;
+        this.refreshTestExplorer(false);
     }
 
     private addToObject(container: object, parts: string[]): void {
@@ -157,14 +189,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private createTestNode(parentPath: string, test: object | string): TestNode[] {
         if (Array.isArray(test)) {
             return test.map((t) => {
-                return new TestNode(parentPath, t);
+                return new TestNode(parentPath, t, this.testResults);
             });
         } else if (typeof test === "object") {
             return Object.keys(test).map((key) => {
-                return new TestNode(parentPath, key, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
+                return new TestNode(parentPath, key, this.testResults, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
             });
         } else {
-            return [new TestNode(parentPath, test)];
+            return [new TestNode(parentPath, test, this.testResults)];
         }
     }
 
