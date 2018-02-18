@@ -44,11 +44,12 @@
     "commands": [
       {
         "command": "dotnet-test-explorer.refreshTestExplorer",
-        "title": "Refresh",
+        "title": "Refresh Tests",
         "icon": {
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
-        }
+        },
+        "category": ".NET Test Explorer"
       },
       {
         "command": "dotnet-test-explorer.runAllTests",
@@ -56,11 +57,30 @@
         "icon": {
           "light": "resources/light/run.png",
           "dark": "resources/dark/run.png"
-        }
+        },
+        "category": ".NET Test Explorer"
       },
       {
         "command": "dotnet-test-explorer.runTest",
-        "title": "Run Test"
+        "title": "Run Test",
+        "category": ".NET Test Explorer"
+      },
+      {
+        "command": "dotnet-test-explorer.goToTest",
+        "title": "Go to Test",
+        "category": ".NET Test Explorer"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "dotnet-test-explorer.runTest",
+        "key": "shift+ctrl+r b",
+        "mac": "shift+cmd+r b"
+      },
+      {
+        "command": "dotnet-test-explorer.runAllTests",
+        "key": "shift+ctrl+r a",
+        "mac": "shift+cmd+r a"
       }
     ],
     "menus": {
@@ -79,8 +99,13 @@
       "view/item/context": [
         {
           "command": "dotnet-test-explorer.runTest",
-          "when": "view == dotnetTestExplorer",
+          "when": "viewItem == UnitTest",
           "group": "dotnetTestExplorer@0"
+        },
+        {
+          "command": "dotnet-test-explorer.goToTest",
+          "when": "viewItem == UnitTest",
+          "group": "dotnetTestExplorer@1"
         }
       ]
     },
@@ -132,6 +157,11 @@
           "type": "string",
           "default": "",
           "description": "The text to display in the code lens when a test has been skipped."
+        },
+        "dotnet-test-explorer.pathForResultFile": {
+          "type": "string",
+          "default": "",
+          "description": "The path to (temporarily) store test result files in"
         }
       }
     }

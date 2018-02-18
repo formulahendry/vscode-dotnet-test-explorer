@@ -6,6 +6,7 @@ import { setTimeout } from "timers";
 import { Disposable, Event, EventEmitter } from "vscode";
 import { DOMParser, Element, Node } from "xmldom";
 import { TestResult } from "./testResult";
+import { Utility } from "./utility";
 
 function findChildElement(node: Node, name: string): Node {
     let child = node.firstChild;
@@ -99,7 +100,7 @@ export class TestResultsFile implements Disposable {
 
     private ensureTemproaryPathExists(): void {
         if (!this.resultsFile) {
-            const tempFolder = fs.mkdtempSync(path.join(os.tmpdir(), "test-explorer-"));
+            const tempFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
             this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
             this.watchFolder(tempFolder);
         }
