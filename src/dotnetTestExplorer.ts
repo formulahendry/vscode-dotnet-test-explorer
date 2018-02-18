@@ -17,6 +17,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     private testDirectoryPath: string;
 
+    // The currently selected Unit Test
+    private selectedUnitTest: TestNode;
+
     constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) { }
 
     /**
@@ -54,15 +57,28 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public runTest(test: TestNode): void {
+        if (!test.fullName) {
+            test = this.selectedUnitTest;
+        }
         Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName=${test.fullName}`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
+    }
+
+    /**
+     * @description
+     * Runs a specific test discovered from the project directory.
+     * @summary
+     * This method can cause the project to rebuild or try
+     * to do a restore, so it can be very slow.
+     */
+    public setSelectedUnitTest(test: TestNode): void {
+        this.selectedUnitTest = test;
     }
 
     public getTreeItem(element: TestNode): TreeItem {
         if (element.isError) {
             return new TreeItem(element.name);
         }
-
         return {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
@@ -70,6 +86,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 dark: this.context.asAbsolutePath(path.join("resources", "dark", "run.png")),
                 light: this.context.asAbsolutePath(path.join("resources", "light", "run.png")),
             },
+            contextValue: element.isFolder ? "UnitTestFolder" : "UnitTest",
+            command: element.isFolder ? void 0 : { title: "", command: "setSelectedUnitTest", arguments: [element] },
         };
     }
 

@@ -17,7 +17,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(() => {
         Utility.updateCache();
     }));
-
     const dotnetTestExplorer = new DotnetTestExplorer(context, testResults);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
@@ -43,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
         Executor.onDidCloseTerminal(closedTerminal);
     }));
+    vscode.commands.registerCommand("setSelectedUnitTest", (test: TestNode) => dotnetTestExplorer.setSelectedUnitTest(test));
 }
 
 export function deactivate() {

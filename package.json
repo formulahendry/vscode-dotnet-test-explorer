@@ -69,9 +69,13 @@
     "keybindings": [
       {
         "command": "dotnet-test-explorer.runTest",
-        "key": "ctrl+r",
-        "mac": "cmd+r",
-        "when": "view == dotnetTestExplorer"
+        "key": "shift+ctrl+r b",
+        "mac": "shift+cmd+r b"
+      },
+      {
+        "command": "dotnet-test-explorer.runAllTests",
+        "key": "shift+ctrl+r a",
+        "mac": "shift+cmd+r a"
       }
     ],
     "menus": {
@@ -90,7 +94,7 @@
       "view/item/context": [
         {
           "command": "dotnet-test-explorer.runTest",
-          "when": "view == dotnetTestExplorer",
+          "when": "viewItem == UnitTest",
           "group": "dotnetTestExplorer@0"
         }
       ]
