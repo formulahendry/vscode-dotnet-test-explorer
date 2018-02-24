@@ -7,7 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{04BABC2C-CE7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testconsoleapp", "src\testconsoleapp\testconsoleapp.csproj", "{74CE9D6F-6F5F-4BA8-A8C8-9D69DB5AB19D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testconsoleapp.tests", "tests\testconsoleapp.tests.csproj", "{95798EC8-0343-436B-9005-2E7814900000}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testconsoleapp.tests", "unit-tests\xunit-tests\testconsoleapp-xunit.tests.csproj", "{95798EC8-0343-436B-9005-2E7814900000}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unit-tests", "unit-tests", "{438F6A73-A30F-426F-873B-383D160D281D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testconsoleapp-mstest.tests", "unit-tests\mstest-tests\testconsoleapp-mstest.tests.csproj", "{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,8 +50,21 @@ Global
 		{95798EC8-0343-436B-9005-2E7814900000}.Release|x64.Build.0 = Release|x64
 		{95798EC8-0343-436B-9005-2E7814900000}.Release|x86.ActiveCfg = Release|x86
 		{95798EC8-0343-436B-9005-2E7814900000}.Release|x86.Build.0 = Release|x86
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Debug|x64.ActiveCfg = Debug|x64
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Debug|x64.Build.0 = Debug|x64
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Debug|x86.ActiveCfg = Debug|x86
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Debug|x86.Build.0 = Debug|x86
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Release|x64.ActiveCfg = Release|x64
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Release|x64.Build.0 = Release|x64
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Release|x86.ActiveCfg = Release|x86
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{74CE9D6F-6F5F-4BA8-A8C8-9D69DB5AB19D} = {04BABC2C-CE79-49BC-9401-8DCA3B3C059D}
+		{6A2370FE-2DBF-4BE2-81EE-D4746B723F88} = {438F6A73-A30F-426F-873B-383D160D281D}
 	EndGlobalSection
 EndGlobal
