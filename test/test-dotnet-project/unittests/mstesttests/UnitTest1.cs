@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using testconsoleapp;
-namespace mstest_tests
+namespace mstesttests
 {
     [TestClass]
     public class UnitTest1
