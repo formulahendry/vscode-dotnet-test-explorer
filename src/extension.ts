@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
         Utility.updateCache();
     }));
     const dotnetTestExplorer = new DotnetTestExplorer(context, testResults);
-    vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
+    vscode.window.registerTreeDataProvider("dotnetTestExplorer2", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
     const codeLensProvider = new TestStatusCodeLensProvider(testResults);
