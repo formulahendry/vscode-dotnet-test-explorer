@@ -54,7 +54,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
+        Executor.runInTerminal(`dotnet test${this.checkBuildOption()}${this.checkRestoreOption()} --filter FullyQualifiedName~'${test.fullName}'`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
     }
 
