@@ -132,6 +132,11 @@
           "type": "string",
           "default": "",
           "description": "The text to display in the code lens when a test has been skipped."
+        },
+        "dotnet-test-explorer.pathForResultFile": {
+          "type": "string",
+          "default": "",
+          "description": "The path to (temporarily) store test result files in"
         }
       }
     }
