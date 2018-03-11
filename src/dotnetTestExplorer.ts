@@ -3,8 +3,8 @@ import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
+import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
-import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
@@ -16,8 +16,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * execute commands.
      */
     private testDirectoryPath: string;
+    private discoveredTests: string[];
 
-    constructor(private context: vscode.ExtensionContext, private resultsFile: TestResultsFile) { }
+    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands) {
+        testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
+    }
 
     /**
      * @description
@@ -29,33 +32,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public refreshTestExplorer(): void {
+        this.discoveredTests = null;
         this._onDidChangeTreeData.fire();
+
+        this.testCommands.discoverTests();
         AppInsightsClient.sendEvent("refreshTestExplorer");
-    }
-
-    /**
-     * @description
-     * Runs all tests discovered in the project directory.
-     * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
-     */
-    public runAllTests(): void {
-        this.evaluateTestDirectory();
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`, this.testDirectoryPath);
-        AppInsightsClient.sendEvent("runAllTests");
-    }
-
-    /**
-     * @description
-     * Runs a specific test discovered from the project directory.
-     * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
-     */
-    public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
-        AppInsightsClient.sendEvent("runTest");
     }
 
     public getTreeItem(element: TestNode): TreeItem {
@@ -67,54 +48,61 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
             iconPath: {
-                dark: this.context.asAbsolutePath(path.join("resources", "dark", "run.png")),
-                light: this.context.asAbsolutePath(path.join("resources", "light", "run.png")),
+                dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
+                light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
             },
         };
     }
 
     public getChildren(element?: TestNode): TestNode[] | Thenable<TestNode[]> {
+
         if (element) {
             return element.children;
         }
 
+        if (!this.discoveredTests) {
+            const loadingNode = new TestNode("", "Loading...");
+            loadingNode.setAsLoading();
+            return [loadingNode];
+        }
+
+        if (this.discoveredTests.length === 0) {
+            return ["Please open or set the test project", "and ensure your project compiles."].map((e) => {
+                const node = new TestNode("", e);
+                node.setAsError(e);
+                return node;
+            });
+        }
+
         const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
 
-        return this.loadTestStrings().then((fullNames: string[]) => {
-            if (!useTreeView) {
-                return fullNames.map((name) => {
-                    return new TestNode("", name);
-                });
-            }
+        if (!useTreeView) {
+            return this.discoveredTests.map((name) => {
+                return new TestNode("", name);
+            });
+        }
 
-            const structuredTests = {};
+        const structuredTests = {};
 
-            fullNames.forEach((name: string) => {
-                // this regex matches test names that include data in them - for e.g.
-                //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
-                const match = /([^\(]+)(.*)/g.exec(name);
-                if (match && match.length > 1) {
-                    const parts = match[1].split(".");
-                    if (match.length > 2 && match[2].trim().length > 0) {
-                        // append the data bit of the test to the test method name
-                        // so we can distinguish one test from another in the explorer
-                        // pane
-                        const testMethodName = parts[parts.length - 1];
-                        parts[parts.length - 1] = testMethodName + match[2];
-                    }
-                    this.addToObject(structuredTests, parts);
+        this.discoveredTests.forEach((name: string) => {
+            // this regex matches test names that include data in them - for e.g.
+            //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
+            const match = /([^\(]+)(.*)/g.exec(name);
+            if (match && match.length > 1) {
+                const parts = match[1].split(".");
+                if (match.length > 2 && match[2].trim().length > 0) {
+                    // append the data bit of the test to the test method name
+                    // so we can distinguish one test from another in the explorer
+                    // pane
+                    const testMethodName = parts[parts.length - 1];
+                    parts[parts.length - 1] = testMethodName + match[2];
                 }
-            });
-
-            const root = this.createTestNode("", structuredTests);
-            return root;
-        }, (reason: any) => {
-            return reason.map((e) => {
-                const item = new TestNode("", null);
-                item.setAsError(e);
-                return item;
-            });
+                this.addToObject(structuredTests, parts);
+            }
         });
+
+        const root = this.createTestNode("", structuredTests);
+        return root;
     }
 
     private addToObject(container: object, parts: string[]): void {
@@ -150,121 +138,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
     }
 
-    /**
-     * @description
-     * Checks to see if the options specify that the dotnet-cli
-     * should run `dotnet build` before loading tests.
-     * @summary
-     * If this is set to **false**, then `--no-build` is passed into the
-     * command line arguments. It is prefixed by a space only if **false**.
-     */
-    private checkBuildOption(): string {
-        const option = Utility.getConfiguration().get<boolean>("build");
-        return option ? "" : " --no-build";
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify that the dotnet-cli
-     * should run `dotnet restore` before loading tests.
-     * @summary
-     * If this is set to **false**, then `--no-restore` is passed into the
-     * command line arguments. It is prefixed by a space only if **false**.
-     */
-    private checkRestoreOption(): string {
-        const option = Utility.getConfiguration().get<boolean>("restore");
-        return option ? "" : " --no-restore";
-    }
-
-    /**
-     * @description
-     * Gets the options for build/restore before running tests.
-     */
-    private getDotNetTestOptions(): string {
-        return this.checkBuildOption() + this.checkRestoreOption();
-    }
-
-    /**
-     * @description
-     * Gets the dotnet test argument to speicfy the output for the test results.
-     */
-    private outputTestResults(): string {
-        if (Utility.codeLensEnabled) {
-            return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
-        } else {
-            return "";
-        }
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify a directory to run the
-     * dotnet-cli test commands in.
-     * @summary
-     * This will use the project root by default.
-     */
-    private checkTestDirectoryOption(): string {
-        const option = Utility.getConfiguration().get<string>("testProjectPath");
-        return option ? option : vscode.workspace.rootPath;
-    }
-
-    /**
-     * @description
-     * Executes the `dotnet test -t` command from the dotnet-cli to
-     * try and discover tests.
-     */
-    private loadTestStrings(): Thenable<string[]> {
-        this.evaluateTestDirectory();
-
-        return new Promise((c, e) => {
-            try {
-                const results = Executor
-                    .execSync(`dotnet test -t -v=q${this.getDotNetTestOptions()}`, this.testDirectoryPath)
-                    .split(/[\r\n]+/g)
-                    /*
-                     * The dotnet-cli prefixes all discovered unit tests
-                     * with whitespace. We can use this to drop any lines of
-                     * text that are not relevant, even in complicated project
-                     * structures.
-                     **/
-                    .filter((item) => item && item.startsWith("  "))
-                    .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0)
-                    .map((item) => item.trim());
-
-                c(results);
-
-            } catch (error) {
-                return e(["Please open or set the test project", "and ensure your project compiles."]);
-            }
-
-            return c([]);
-        });
-    }
-
-    /**
-     * @description
-     * Checks to see if the @see{vscode.workspace.rootPath} is
-     * the same as the directory given, and resolves the correct
-     * string to it if not.
-     * @param dir
-     * The directory specified in the options.
-     */
-    private resolvePath(dir: string): string {
-        return path.isAbsolute(dir)
-            ? dir
-            : path.resolve(vscode.workspace.rootPath, dir);
-    }
-
-    /**
-     * @description
-     * Discover the directory where the dotnet-cli
-     * will execute commands, taken from the options.
-     * @summary
-     * This will be the @see{vscode.workspace.rootPath}
-     * by default.
-     */
-    private evaluateTestDirectory(): void {
-        const testProjectFullPath = this.checkTestDirectoryOption();
-        this.testDirectoryPath = this.resolvePath(testProjectFullPath);
+    private updateWithDiscoveredTests(results: string[]) {
+        this.discoveredTests = results;
+        this._onDidChangeTreeData.fire();
     }
 }

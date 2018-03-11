@@ -14,8 +14,8 @@ export class Executor {
         this.terminals[terminal].sendText(command, addNewLine);
     }
 
-    public static exec(command: string) {
-        return exec(command);
+    public static exec(command: string, callback, cwd?: string) {
+        return exec(command, { encoding: "utf8", cwd }, callback);
     }
 
     public static execSync(command: string, cwd?: string) {
