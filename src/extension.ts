@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
+import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
@@ -11,6 +12,7 @@ import { Utility } from "./utility";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
+    const discoverTests = new TestCommands(testResults);
     context.subscriptions.push(testResults);
 
     Utility.updateCache();
@@ -18,9 +20,11 @@ export function activate(context: vscode.ExtensionContext) {
         Utility.updateCache();
     }));
 
-    const dotnetTestExplorer = new DotnetTestExplorer(context, testResults);
+    const dotnetTestExplorer = new DotnetTestExplorer(context, discoverTests);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
+
+    discoverTests.discoverTests();
 
     const codeLensProvider = new TestStatusCodeLensProvider(testResults);
     context.subscriptions.push(codeLensProvider);
@@ -33,11 +37,11 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runAllTests", () => {
-        dotnetTestExplorer.runAllTests();
+        discoverTests.runAllTests();
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
-        dotnetTestExplorer.runTest(test);
+        discoverTests.runTest(test);
     }));
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {

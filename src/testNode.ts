@@ -1,5 +1,6 @@
 export class TestNode {
     private _isError: boolean;
+    private _isLoading: boolean;
 
     constructor(private _parentPath: string, private _name: string, private _children?: TestNode[]) {
     }
@@ -24,8 +25,17 @@ export class TestNode {
         return !!this._isError;
     }
 
+    public get icon(): string {
+        return this._isLoading ? "spinner.svg" : "run.png";
+    }
+
     public setAsError(error: string) {
         this._isError = true;
         this._name = error;
+    }
+
+    public setAsLoading() {
+        this._isLoading = true;
+        this._name = "Discovering tests";
     }
 }
