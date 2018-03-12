@@ -5,9 +5,12 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
+import { TestResult } from "./testResult";
+import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
+
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
@@ -17,9 +20,12 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     private testDirectoryPath: string;
     private discoveredTests: string[];
+    private testResults: TestResult[];
+    private allNodes: TestNode[];
 
-    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands) {
+    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile) {
         testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
+        resultsFile.onNewResults(this.addTestResults, this);
     }
 
     /**
@@ -44,13 +50,18 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return new TreeItem(element.name);
         }
 
+        // if (!element.isFolder && this.testResults) {
+        //     const resultForTest = this.testResults.find((tr) => tr.fullName === element.fullName);
+
+        // }
+
         return {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
-            iconPath: {
+            iconPath: element.icon ? {
                 dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
                 light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
-            },
+            } : void 0,
         };
     }
 
@@ -61,14 +72,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         if (!this.discoveredTests) {
-            const loadingNode = new TestNode("", "Loading...");
+            const loadingNode = new TestNode("", "Loading...", this.testResults);
             loadingNode.setAsLoading();
             return [loadingNode];
         }
 
         if (this.discoveredTests.length === 0) {
             return ["Please open or set the test project", "and ensure your project compiles."].map((e) => {
-                const node = new TestNode("", e);
+                const node = new TestNode("", e, this.testResults);
                 node.setAsError(e);
                 return node;
             });
@@ -78,7 +89,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         if (!useTreeView) {
             return this.discoveredTests.map((name) => {
-                return new TestNode("", name);
+                return new TestNode("", name, this.testResults);
             });
         }
 
@@ -102,6 +113,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
 
         const root = this.createTestNode("", structuredTests);
+
+        this.allNodes = root;
+
         return root;
     }
 
@@ -127,19 +141,24 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private createTestNode(parentPath: string, test: object | string): TestNode[] {
         if (Array.isArray(test)) {
             return test.map((t) => {
-                return new TestNode(parentPath, t);
+                return new TestNode(parentPath, t, this.testResults);
             });
         } else if (typeof test === "object") {
             return Object.keys(test).map((key) => {
-                return new TestNode(parentPath, key, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
+                return new TestNode(parentPath, key, this.testResults, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
             });
         } else {
-            return [new TestNode(parentPath, test)];
+            return [new TestNode(parentPath, test, this.testResults)];
         }
     }
 
     private updateWithDiscoveredTests(results: string[]) {
         this.discoveredTests = results;
+        this._onDidChangeTreeData.fire();
+    }
+
+    private addTestResults(results: TestResult[]) {
+        this.testResults = results;
         this._onDidChangeTreeData.fire();
     }
 }

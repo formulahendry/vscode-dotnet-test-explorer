@@ -22,7 +22,7 @@ namespace XunitTests
         [Fact]
         public void Fail()
         {
-            (1+1).ShouldBe(2);
+            (1+1).ShouldBe(3);
         }        
     }
 }

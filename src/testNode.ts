@@ -1,8 +1,12 @@
+import { TestResult } from "./testResult";
+
 export class TestNode {
     private _isError: boolean;
     private _isLoading: boolean;
+    private _icon: string;
 
-    constructor(private _parentPath: string, private _name: string, private _children?: TestNode[]) {
+    constructor(private _parentPath: string, private _name: string, testResults: TestResult[], private _children?: TestNode[]) {
+        this.setIcon(testResults);
     }
 
     public get name(): string {
@@ -26,7 +30,7 @@ export class TestNode {
     }
 
     public get icon(): string {
-        return this._isLoading ? "spinner.svg" : "run.png";
+        return (this._isLoading) ? "spinner.svg" : this._icon;
     }
 
     public setAsError(error: string) {
@@ -37,5 +41,44 @@ export class TestNode {
     public setAsLoading() {
         this._isLoading = true;
         this._name = "Discovering tests";
+    }
+
+    public setAsRunning() {
+        if (this.isFolder) {
+            for (const c of this.children) {
+                c.setAsRunning();
+            }
+        } else {
+            this._icon = "spinner.png";
+        }
+    }
+
+    private setIcon(testResults: TestResult[]) {
+        if (!testResults) {
+            this._icon = this.isFolder ? "namespace.png" : "testNotRun.png";
+        } else {
+            if (this.isFolder) {
+
+                const testsForFolder = testResults.filter((tr) => tr.fullName.startsWith(this.fullName));
+
+                if (testsForFolder.some((tr) => tr.outcome === "Failed")) {
+                    this._icon = "namespaceFailed.png";
+                } else if (testsForFolder.some((tr) => tr.outcome === "NotExecuted")) {
+                    this._icon = "namespaceNotExecuted.png";
+                } else if (testsForFolder.some((tr) => tr.outcome === "Passed")) {
+                    this._icon = "namespacePassed.png";
+                } else {
+                    this._icon = "namespace.png";
+                }
+            } else {
+                const resultForTest = testResults.find((tr) => tr.fullName === this.fullName);
+
+                if (resultForTest) {
+                    this._icon = "test".concat(resultForTest.outcome, ".png");
+                } else {
+                    this._icon = "testNotRun.png";
+                }
+            }
+        }
     }
 }
