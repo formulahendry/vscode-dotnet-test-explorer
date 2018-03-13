@@ -43,16 +43,6 @@ export class TestNode {
         this._name = "Discovering tests";
     }
 
-    public setAsRunning() {
-        if (this.isFolder) {
-            for (const c of this.children) {
-                c.setAsRunning();
-            }
-        } else {
-            this._icon = "spinner.png";
-        }
-    }
-
     private setIcon(testResults: TestResult[]) {
         if (!testResults) {
             this._icon = this.isFolder ? "namespace.png" : "testNotRun.png";
