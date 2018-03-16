@@ -7,7 +7,7 @@
   "license": "MIT",
   "icon": "logo.png",
   "engines": {
-    "vscode": "^1.13.0"
+    "vscode": "^1.20.0"
   },
   "categories": [
     "Languages"
@@ -60,7 +60,11 @@
       },
       {
         "command": "dotnet-test-explorer.runTest",
-        "title": "Run Test"
+        "title": "Run Test",
+        "icon": {
+          "light": "resources/light/run.svg",
+          "dark": "resources/dark/run.svg"
+        }
       }
     ],
     "menus": {
@@ -81,6 +85,11 @@
           "command": "dotnet-test-explorer.runTest",
           "when": "view == dotnetTestExplorer",
           "group": "dotnetTestExplorer@0"
+        },
+        {
+          "command": "dotnet-test-explorer.runTest",
+          "when": "view == dotnetTestExplorer",
+          "group": "inline"
         }
       ]
     },
