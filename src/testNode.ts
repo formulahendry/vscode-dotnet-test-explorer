@@ -45,7 +45,7 @@ export class TestNode {
 
     private setIcon(testResults: TestResult[]) {
         if (!testResults) {
-            this._icon = this.isFolder ? "namespace.png" : "testNotRun.png";
+            this._icon = this.isFolder ? "namespace.png" : "run.png";
         } else {
             if (this.isFolder) {
 

@@ -66,7 +66,7 @@ suite("Icon tests", () => {
     test("Test with no test result", () => {
         const node = new TestNode("", "Test node", null);
 
-        assert.equal(node.icon, "testNotRun.png");
+        assert.equal(node.icon, "run.png");
     });
 
     test("Test with passed test result", () => {

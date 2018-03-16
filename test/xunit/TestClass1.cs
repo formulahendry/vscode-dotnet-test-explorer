@@ -4,7 +4,6 @@ using Xunit;
 
 namespace XunitTests
 {
-
     public class TestClass1
     {
         [Fact]
