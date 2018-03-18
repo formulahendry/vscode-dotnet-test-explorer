@@ -20,7 +20,7 @@
 
 * If you are using XUnit the test result of the last run tests are also shown in the tree
 
-!![test-results-tree](images/test-results-tree.png)
+![test-results-tree](images/test-results-tree.png)
 
 ## Settings
 
