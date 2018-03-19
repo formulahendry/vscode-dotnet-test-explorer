@@ -1,3 +1,8 @@
+## 0.2.1 ()
+* [#42](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/42): Show test results in tree for xunit
+* [#41](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/41): Show spinner while discovering tests
+* [#40](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/40): Setting for where to store test result file
+
 ## 0.2.0 (2017-11-26)
 * [#24](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/24): Display test results in CodeLens for C# test projects
 

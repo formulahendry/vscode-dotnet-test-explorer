@@ -18,6 +18,10 @@
 
 ![test-results](images/test-results.png)
 
+* If you are using XUnit the test result of the last run tests are also shown in the tree
+
+![test-results-tree](images/test-results-tree.png)
+
 ## Settings
 
 * `dotnet-test-explorer.testProjectPath`: Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path. (Default is **""**)

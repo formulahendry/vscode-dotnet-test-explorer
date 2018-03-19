@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using Shouldly;
 
-namespace XunitTests
+namespace NunitTests
 {
 
     public class TestClass1
