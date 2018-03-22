@@ -4,12 +4,12 @@ import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
+import { GotoTest } from "./gotoTest";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
-import { GotoTest } from "./gotoTest";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
