@@ -8,7 +8,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "${workspaceRoot}/test/xunit",
+                "${workspaceRoot}/test/xunittests",
                 "--extensionDevelopmentPath=${workspaceRoot}" 
             ],
             "stopOnEntry": false,
@@ -50,6 +50,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "${workspaceRoot}/test/xunit",
                 "--extensionDevelopmentPath=${workspaceRoot}", 
                 "--extensionTestsPath=${workspaceRoot}/out/test" 
             ],

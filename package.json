@@ -65,6 +65,14 @@
           "light": "resources/light/run.svg",
           "dark": "resources/dark/run.svg"
         }
+      },
+      {
+        "command": "dotnet-test-explorer.gotoTest",
+        "title": "Go to Test",
+        "icon": {
+          "light": "resources/light/run.svg",
+          "dark": "resources/dark/run.svg"
+        }
       }
     ],
     "menus": {
@@ -89,6 +97,11 @@
         {
           "command": "dotnet-test-explorer.runTest",
           "when": "view == dotnetTestExplorer",
+          "group": "inline"
+        },
+        {
+          "command": "dotnet-test-explorer.gotoTest",
+          "when": "viewItem == test",
           "group": "inline"
         }
       ]
