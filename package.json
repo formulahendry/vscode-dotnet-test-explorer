@@ -70,8 +70,8 @@
         "command": "dotnet-test-explorer.gotoTest",
         "title": "Go to Test",
         "icon": {
-          "light": "resources/light/run.svg",
-          "dark": "resources/dark/run.svg"
+          "light": "resources/light/gototest.svg",
+          "dark": "resources/dark/gototest.svg"
         }
       }
     ],
@@ -102,7 +102,7 @@
         {
           "command": "dotnet-test-explorer.gotoTest",
           "when": "viewItem == test",
-          "group": "inline"
+          "group": "dotnetTestExplorer@1"
         }
       ]
     },

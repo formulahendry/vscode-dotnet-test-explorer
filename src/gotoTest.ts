@@ -3,7 +3,7 @@ import { TestNode } from "./testNode";
 
 export class GotoTest {
 
-    public go(test: TestNode): void {        
+    public go(test: TestNode): void {
 
         const testname = this.getTestName(test.name);
 
@@ -16,7 +16,6 @@ export class GotoTest {
 
             try {
                 symbol = this.findTestLocation(symbols, test);
-                console.log(symbol);
 
                 vscode.workspace.openTextDocument(symbol.location.uri).then((doc) => {
                     vscode.window.showTextDocument(doc).then((editor) => {
@@ -28,32 +27,37 @@ export class GotoTest {
                 });
 
             } catch (r) {
-                vscode.window.showWarningMessage(r);
+                vscode.window.showWarningMessage(r.message);
             }
 
-        }, (r) => console.log(r));
+        });
     }
 
     public findTestLocation(symbols: vscode.SymbolInformation[], testNode: TestNode): vscode.SymbolInformation {
 
-        if(symbols.length === 0) {
-            throw "Could not find test (no symbols found)";
+        if (symbols.length === 0) {
+            throw new Error("Could not find test (no symbols found)");
         }
 
         const testName = this.getTestName(testNode.name);
 
         symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method && s.name.replace("()", "") === testName);
 
-        if(symbols.length === 0) {
-            throw "Could not find test (no symbols matching)";
+        if (symbols.length === 0) {
+            throw Error("Could not find test (no symbols matching)");
         }
 
         // If multiple results are found, try to match the uri of the match to the parent path of the test
         if (symbols.length > 1) {
-            symbols = symbols.filter((x) => x.location.uri.toString().replace(/\//g, ".").toLowerCase().indexOf(testNode.parentPath.toLowerCase() + ".") > -1);
+            const testNamespace = this.getTestNamespace(testNode);
+            symbols = symbols.filter((x) => x.location.uri.toString().replace(/\//g, ".").toLowerCase().indexOf(testNamespace.toLowerCase() + ".") > -1);
 
-            if(symbols.length === 0) {
-                throw "Could not find test (namespace not matching uri)";                
+            if (symbols.length === 0) {
+                throw Error("Could not find test (namespace not matching uri)");
+            }
+
+            if (symbols.length > 1) {
+                throw Error("Could not find test (found multiple matching symbols)");
             }
         }
 
@@ -63,10 +67,20 @@ export class GotoTest {
     public getTestName(testName: string): string {
         const lastDotIndex = testName.lastIndexOf(".");
 
-        if(lastDotIndex > -1) {
+        if (lastDotIndex > -1) {
             testName = testName.substring(lastDotIndex + 1);
         }
 
         return testName;
+    }
+
+    public getTestNamespace(testNode: TestNode): string {
+
+        if (testNode.parentPath.length === 0) {
+            const testName = this.getTestName(testNode.name);
+            return testNode.name.substring(0, testNode.name.indexOf(testName) - 1);
+        }
+
+        return testNode.parentPath;
     }
 }
