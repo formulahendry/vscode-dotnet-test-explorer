@@ -65,6 +65,10 @@
           "light": "resources/light/run.svg",
           "dark": "resources/dark/run.svg"
         }
+      },
+      {
+        "command": "dotnet-test-explorer.runTestInContext",
+        "title": "Run Test in context"
       }
     ],
     "menus": {
@@ -90,6 +94,12 @@
           "command": "dotnet-test-explorer.runTest",
           "when": "view == dotnetTestExplorer",
           "group": "inline"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "dotnet-test-explorer.runTestInContext",
+          "group": "dotnetTestExplorer@0"
         }
       ]
     },
@@ -148,7 +158,15 @@
           "description": "The path to (temporarily) store test result files in"
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "dotnet-test-explorer.runTestInContext",
+        "key": "alt+r alt+u alt+r",
+        "mac": "alt+r alt+u alt+r",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",
