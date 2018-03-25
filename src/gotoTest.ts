@@ -1,9 +1,12 @@
 import * as vscode from "vscode";
+import { AppInsightsClient } from "./appInsightsClient";
 import { TestNode } from "./testNode";
 
 export class GotoTest {
 
     public go(test: TestNode): void {
+
+        AppInsightsClient.sendEvent("gotoTest");
 
         const testname = this.getTestName(test.name);
 
