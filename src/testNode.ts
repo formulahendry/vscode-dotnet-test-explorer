@@ -17,6 +17,10 @@ export class TestNode {
         return (this._parentPath ? `${this._parentPath}.` : "") + this._name;
     }
 
+    public get parentPath(): string {
+        return this._parentPath;
+    }
+
     public get isFolder(): boolean {
         return this._children && this._children.length > 0;
     }
