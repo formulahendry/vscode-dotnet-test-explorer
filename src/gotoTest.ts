@@ -1,10 +1,19 @@
 import * as vscode from "vscode";
+<<<<<<< HEAD
+=======
+import { AppInsightsClient } from "./appInsightsClient";
+>>>>>>> upstream/master
 import { TestNode } from "./testNode";
 
 export class GotoTest {
 
     public go(test: TestNode): void {
 
+<<<<<<< HEAD
+=======
+        AppInsightsClient.sendEvent("gotoTest");
+
+>>>>>>> upstream/master
         const testname = this.getTestName(test.name);
 
         const symbolInformation = vscode.commands.executeCommand<vscode.SymbolInformation[]>(
