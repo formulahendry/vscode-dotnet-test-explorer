@@ -6,7 +6,7 @@ import { TestNode } from "./testNode";
 export class FindTestInContext {
 
     public async find(doc: vscode.TextDocument, lineNumber: number): Promise<string> {
-        
+
         AppInsightsClient.sendEvent("findTestInContext");
 
         return vscode.commands.executeCommand<vscode.SymbolInformation[]>(
@@ -20,20 +20,20 @@ export class FindTestInContext {
     }
 
     public getNamespace(sourceText: string) {
-        const regexp = /namespace (\S*)/igm
+        const regexp = /namespace (\S*)/igm;
         const result = regexp.exec(sourceText);
-     
+
         return result ? result[1] : "";
     }
 
     public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string) : string {
         let symbolToRunTestsFor: vscode.SymbolInformation;
 
-        if(symbols.length === 1) {
+        if (symbols.length === 1) {
             symbolToRunTestsFor = symbols[0];
         } else {
-            var allSymbolsAboveLine = symbols
-                .map((s) =>  { return { symbol: s, lineDiff: lineNumber - s.location.range.start.line };} )
+            const allSymbolsAboveLine = symbols
+                .map((s) => ({ symbol: s, lineDiff: lineNumber - s.location.range.start.line }) )
                 .filter((x) => x.lineDiff >= 0);
 
             symbolToRunTestsFor = allSymbolsAboveLine.length > 0
