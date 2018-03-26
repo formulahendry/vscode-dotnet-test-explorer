@@ -1,11 +1,14 @@
 import * as path from "path";
 import * as vscode from "vscode";
+import { AppInsightsClient } from "./appInsightsClient";
 import { TestNode } from "./testNode";
 
 export class FindTestInContext {
 
     public async find(doc: vscode.TextDocument, lineNumber: number): Promise<string> {
         
+        AppInsightsClient.sendEvent("findTestInContext");
+
         return vscode.commands.executeCommand<vscode.SymbolInformation[]>(
                 "vscode.executeDocumentSymbolProvider",
                 doc.uri,

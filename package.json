@@ -175,8 +175,8 @@
     "keybindings": [
       {
         "command": "dotnet-test-explorer.runTestInContext",
-        "key": "alt+r alt+u alt+r",
-        "mac": "alt+r alt+u alt+r",
+        "key": "alt+r alt+u",
+        "mac": "alt+r alt+u",
         "when": "editorTextFocus"
       }
     ]
