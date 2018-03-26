@@ -48,7 +48,7 @@ suite("Find test in context tests", () => {
 suite("Find namespace tests", () => {
 
     test("Find namespace", async () => {
-        const fixturePath = path.join(__dirname, "..", "..", "test", "xunit", "TestClass1.cs");
+        const fixturePath = path.join(__dirname, "..", "..", "test", "xunittests", "TestClass1.cs");
         const findTestInContext = new FindTestInContext();
 
         await vscode.workspace.openTextDocument(vscode.Uri.file(fixturePath)).then((textDocument) => {
