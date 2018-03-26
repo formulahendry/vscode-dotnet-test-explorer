@@ -5,6 +5,7 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 import { FindTestInContext } from "./findTestInContext";
+import { GotoTest } from "./gotoTest";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -14,6 +15,7 @@ import { Utility } from "./utility";
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
     const discoverTests = new TestCommands(testResults);
+    const gotoTest = new GotoTest();
     context.subscriptions.push(testResults);
 
     Utility.updateCache();
@@ -46,11 +48,14 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor : vscode.TextEditor) => {
-
-        const testName = new FindTestInContext().find(editor.document, editor.selection.start.line).then( (testName) => {
+        new FindTestInContext().find(editor.document, editor.selection.start.line).then( (testName) => {
             discoverTests.runTestByName(testName);
         });
     }));    
+
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.gotoTest", (test: TestNode) => {
+        gotoTest.go(test);
+    }));
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
         Executor.onDidCloseTerminal(closedTerminal);

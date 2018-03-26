@@ -69,6 +69,14 @@
       {
         "command": "dotnet-test-explorer.runTestInContext",
         "title": "Run Test in context"
+      },
+      {
+        "command": "dotnet-test-explorer.gotoTest",
+        "title": "Go to Test",
+        "icon": {
+          "light": "resources/light/gototest.svg",
+          "dark": "resources/dark/gototest.svg"
+        }
       }
     ],
     "menus": {
@@ -94,6 +102,11 @@
           "command": "dotnet-test-explorer.runTest",
           "when": "view == dotnetTestExplorer",
           "group": "inline"
+        },
+        {
+          "command": "dotnet-test-explorer.gotoTest",
+          "when": "viewItem == test",
+          "group": "dotnetTestExplorer@1"
         }
       ],
       "editor/context": [
