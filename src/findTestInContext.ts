@@ -26,7 +26,7 @@ export class FindTestInContext {
         return result ? result[1] : "";
     }
 
-    public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string) : string {
+    public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string): string {
         let symbolToRunTestsFor: vscode.SymbolInformation;
 
         if (symbols.length === 1) {
@@ -37,14 +37,14 @@ export class FindTestInContext {
                 .filter((x) => x.lineDiff >= 0);
 
             symbolToRunTestsFor = allSymbolsAboveLine.length > 0
-                ? allSymbolsAboveLine.reduce((prev, curr) => prev.lineDiff < curr.lineDiff ? prev : curr).symbol 
+                ? allSymbolsAboveLine.reduce((prev, curr) => prev.lineDiff < curr.lineDiff ? prev : curr).symbol
                 : symbols[0];
         }
 
         namespace = namespace.length > 0 ? namespace + "." : "";
 
-        return namespace + (symbolToRunTestsFor.containerName 
-            ? symbolToRunTestsFor.containerName + "." + symbolToRunTestsFor.name 
+        return namespace + (symbolToRunTestsFor.containerName
+            ? symbolToRunTestsFor.containerName + "." + symbolToRunTestsFor.name
             : symbolToRunTestsFor.name);
     }
 }
