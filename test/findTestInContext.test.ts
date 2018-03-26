@@ -1,9 +1,9 @@
 import * as assert from "assert";
 import * as path from "path";
-import * as vscode from "vscode";
+import { Location, Position, Range, SymbolInformation, SymbolKind, Uri, workspace } from "vscode";
+import { FindTestInContext } from "../src/findTestInContext";
 import { TestNode } from "../src/testNode";
 import { TestResult } from "../src/testResult";
-import { FindTestInContext } from "../src/findTestInContext";
 
 suite("Find test in context tests", () => {
 
@@ -12,7 +12,7 @@ suite("Find test in context tests", () => {
         const findTestInContext = new FindTestInContext();
 
         const symbols = [
-            new vscode.SymbolInformation("MyClass", vscode.SymbolKind.Class, "", new vscode.Location(vscode.Uri.file("c:/"), new vscode.Range(new vscode.Position(5, 1), new vscode.Position(200, 1))))
+            new SymbolInformation("MyClass", SymbolKind.Class, "", new Location(Uri.file("c:/"), new Range(new Position(5, 1), new Position(200, 1)))),
         ];
 
         const result = await findTestInContext.getTestString(symbols, 10, "");
@@ -25,9 +25,9 @@ suite("Find test in context tests", () => {
         const findTestInContext = new FindTestInContext();
 
         const symbols = [
-            new vscode.SymbolInformation("MyClass", vscode.SymbolKind.Class, "", new vscode.Location(vscode.Uri.file("c:/"), new vscode.Range(new vscode.Position(5, 1), new vscode.Position(5, 7)))),
-            new vscode.SymbolInformation("TestMethod", vscode.SymbolKind.Method, "MyClass", new vscode.Location(vscode.Uri.file("c:/"), new vscode.Range(new vscode.Position(8, 1), new vscode.Position(8, 11)))),
-            new vscode.SymbolInformation("TestMethod2", vscode.SymbolKind.Method, "MyClass", new vscode.Location(vscode.Uri.file("c:/"), new vscode.Range(new vscode.Position(15, 1), new vscode.Position(15, 11))))
+            new SymbolInformation("MyClass", SymbolKind.Class, "", new Location(Uri.file("c:/"), new Range(new Position(5, 1), new Position(5, 7)))),
+            new SymbolInformation("TestMethod", SymbolKind.Method, "MyClass", new Location(Uri.file("c:/"), new Range(new Position(8, 1), new Position(8, 11)))),
+            new SymbolInformation("TestMethod2", SymbolKind.Method, "MyClass", new Location(Uri.file("c:/"), new Range(new Position(15, 1), new Position(15, 11)))),
         ];
 
         assert.equal(findTestInContext.getTestString(symbols, 8, ""), "MyClass.TestMethod");
@@ -51,7 +51,7 @@ suite("Find namespace tests", () => {
         const fixturePath = path.join(__dirname, "..", "..", "test", "xunittests", "TestClass1.cs");
         const findTestInContext = new FindTestInContext();
 
-        await vscode.workspace.openTextDocument(vscode.Uri.file(fixturePath)).then((textDocument) => {
+        await workspace.openTextDocument(Uri.file(fixturePath)).then((textDocument) => {
             const fileContent = textDocument.getText();
             const result = findTestInContext.getNamespace(fileContent);
 
@@ -63,11 +63,11 @@ suite("Find namespace tests", () => {
         const fixturePath = path.join(__dirname, "..", "..", "test", "mstest", "TestClass1.cs");
         const findTestInContext = new FindTestInContext();
 
-        await vscode.workspace.openTextDocument(vscode.Uri.file(fixturePath)).then((textDocument) => {
+        await workspace.openTextDocument(Uri.file(fixturePath)).then((textDocument) => {
             const fileContent = textDocument.getText();
             const result = findTestInContext.getNamespace(fileContent);
 
             assert.equal(result, "MsTestTests");
         });
     });
-});        
+});

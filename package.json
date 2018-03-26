@@ -68,7 +68,7 @@
       },
       {
         "command": "dotnet-test-explorer.runTestInContext",
-        "title": "Run Test in context"
+        "title": "Run .NET Core Test in context"
       },
       {
         "command": "dotnet-test-explorer.gotoTest",
@@ -112,7 +112,18 @@
       "editor/context": [
         {
           "command": "dotnet-test-explorer.runTestInContext",
-          "group": "dotnetTestExplorer@0"
+          "group": "dotnetTestExplorer@0",
+          "when": "resourceLangId == csharp"
+        },
+        {
+          "command": "dotnet-test-explorer.runTestInContext",
+          "group": "dotnetTestExplorer@0",
+          "when": "resourceLangId == fsharp"
+        },
+        {
+          "command": "dotnet-test-explorer.runTestInContext",
+          "group": "dotnetTestExplorer@0",
+          "when": "resourceLangId == vb"
         }
       ]
     },
