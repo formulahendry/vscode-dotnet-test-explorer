@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
+import { GotoTest } from "./gotoTest";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -13,6 +14,7 @@ import { Utility } from "./utility";
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
     const discoverTests = new TestCommands(testResults);
+    const gotoTest = new GotoTest();
     context.subscriptions.push(testResults);
 
     Utility.updateCache();
@@ -42,6 +44,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
         discoverTests.runTest(test);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.gotoTest", (test: TestNode) => {
+        gotoTest.go(test);
     }));
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {

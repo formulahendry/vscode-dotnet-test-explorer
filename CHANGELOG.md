@@ -1,3 +1,6 @@
+## 0.2.2 ()
+* [#43](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/43): Go to test code from tree
+
 ## 0.2.1 (2018-03-20)
 * [#42](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/42): Show test results in tree for xunit
 * [#41](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/41): Show spinner while discovering tests
