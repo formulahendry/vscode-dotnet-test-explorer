@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import { Disposable, Event, EventEmitter } from "vscode";
@@ -41,7 +43,7 @@ export class TestCommands {
     public discoverTests() {
         this.evaluateTestDirectory();
 
-        Executor.exec(`dotnet test -t -v=q${this.getDotNetTestOptions()}`, (err, stdout, stderr) => {
+        Executor.exec(`dotnet test -t -v=q${this.getDotNetTestOptions()}`, (err, stdout: string, stderr) => {
             if (err) {
                 this.onNewTestDiscoveryEmitter.fire([]);
                 return;
@@ -59,8 +61,61 @@ export class TestCommands {
             .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0)
             .map((item) => item.trim());
 
-            this.onNewTestDiscoveryEmitter.fire(results);
+            if (!results.length || results.some(r => r.includes("."))) {
+                this.onNewTestDiscoveryEmitter.fire(results);
+                return;
+            }
+
+            const testAssembly = this.extractTestAssemblyPath(stdout)
+            if (testAssembly) {
+                this.discoverTestsWithVsTest(testAssembly);
+            }
+            // else
+            // emit []
+
         }, this.testDirectoryPath);
+    }
+
+    private discoverTestsWithVsTest(testAssembly: string) {
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "test-explorer-discover-"));
+        const tempOutputFilePath = path.join(tempDir, "output.txt");
+        
+        // TODO: remove output file
+
+        Executor.exec(
+            `dotnet vstest "${testAssembly}" --ListFullyQualifiedTests --ListTestsTargetPath:"${tempOutputFilePath}"`,
+            (err, stdout: string, stderr) => {
+                if (err) {
+                    this.onNewTestDiscoveryEmitter.fire([]);
+                    return;
+                }
+
+                fs.readFile(tempOutputFilePath, 'utf8', (err, data: string) => {
+                    if (err) {
+                        this.onNewTestDiscoveryEmitter.fire([]);
+                        return;
+                    }
+
+                    const results = data
+                        .split(/[\r\n]+/g)
+                        .filter(s => !!s)
+                        .sort()
+                    
+                    this.onNewTestDiscoveryEmitter.fire(results);
+                })
+            });
+    }
+
+    private extractTestAssemblyPath(testCommandStdout: string): string {
+        const testRunLine = testCommandStdout.split(/[\r\n]+/g)
+            .find((item) => item && item.startsWith("Test run for "));
+
+        const testRunLineRegex = /Test run for (.+\.dll)\(.+\)/;
+        const match = testRunLine.match(testRunLineRegex);
+
+        if (match) {
+            return match[1];
+        }
     }
 
     public get onNewTestDiscovery(): Event<string[]> {
