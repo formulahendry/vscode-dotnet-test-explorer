@@ -85,6 +85,7 @@ export class TestResultsFile implements Disposable {
 
                 fs.rmdir(path.dirname(this.resultsFile));
             }
+
         } catch (error) {
         }
     }
@@ -92,6 +93,10 @@ export class TestResultsFile implements Disposable {
     public get fileName(): string {
         this.ensureTemproaryPathExists();
         return this.resultsFile;
+    }
+
+    public resetResultFilePath() {
+        this.resultsFile = null;
     }
 
     public get onNewResults(): Event<TestResult[]> {
