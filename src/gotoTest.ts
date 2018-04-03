@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-
 import { TestNode } from "./testNode";
 
 export class GotoTest {
