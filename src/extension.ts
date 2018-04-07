@@ -18,7 +18,12 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(testResults);
 
     Utility.updateCache();
-    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(() => {
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
+
+        if (e.affectsConfiguration("dotnet-test-explorer.pathForResultFile") && testResults) {
+            testResults.resetResultFilePath();
+        }
+
         Utility.updateCache();
     }));
 

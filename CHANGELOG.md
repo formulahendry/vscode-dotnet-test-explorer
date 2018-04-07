@@ -1,4 +1,5 @@
 ## 0.2.2 ()
+* [#46](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/48): Changing pathForResultFile does not require code reload
 * [#43](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/43): Go to test code from tree
 
 ## 0.2.1 (2018-03-20)
