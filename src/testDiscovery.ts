@@ -7,16 +7,16 @@ export function discoverTests(testDirectoryPath: string, dotnetTestOptions: stri
     return executeDotnetTest(testDirectoryPath, dotnetTestOptions)
         .then((stdout) => {
             const testNames = extractTestNames(stdout);
-            if (!isMissingNamespaces(testNames)) {
+            if (!isMissingFqNames(testNames)) {
                 return testNames;
             }
 
-            const testAssemblyPath = extractTestAssemblyPath(stdout);
-            if (!testAssemblyPath) {
-                throw new Error(`Couldn't extract test assembly path from dotnet test output: ${stdout}`);
+            const assemblyPaths = extractAssemblyPaths(stdout);
+            if (assemblyPaths.length === 0) {
+                throw new Error(`Couldn't extract assembly paths from dotnet test output: ${stdout}`);
             }
 
-            return discoverTestsWithVstest(testAssemblyPath);
+            return discoverTestsWithVstest(assemblyPaths);
         });
 }
 
@@ -47,22 +47,29 @@ function extractTestNames(testCommandStdout: string): string[] {
         .map((item) => item.trim());
 }
 
-function extractTestAssemblyPath(testCommandStdout: string): string {
-    const testRunLineRegex = /^Test run for (.+\.dll)\(.+\)/m;
-    const match = testCommandStdout.match(testRunLineRegex);
+function extractAssemblyPaths(testCommandStdout: string): string[] {
+    const testRunLineRegex = /^Test run for (.+\.dll)\(.+\)/gm;
+    const results = [];
+    let match = null;
 
-    if (match) {
-        return match[1];
+    do {
+        match = testRunLineRegex.exec(testCommandStdout);
+        if (match) {
+            results.push(match[1]);
+        }
     }
+    while (match);
+
+    return results;
 }
 
-function isMissingNamespaces(testNames: string[]): boolean {
+function isMissingFqNames(testNames: string[]): boolean {
     return testNames.some((name) => !name.includes("."));
 }
 
-function discoverTestsWithVstest(testAssemblyPath: string): Promise<string[]> {
+function discoverTestsWithVstest(assemblyPaths: string[]): Promise<string[]> {
     const testOutputFilePath = prepareTestOutput();
-    return executeDotnetVstest(testAssemblyPath, testOutputFilePath)
+    return executeDotnetVstest(assemblyPaths, testOutputFilePath)
         .then(() => readVstestTestNames(testOutputFilePath))
         .then((result) => {
             cleanTestOutput(testOutputFilePath);
@@ -105,10 +112,12 @@ function cleanTestOutput(testOutputFilePath: string) {
     fs.rmdirSync(path.dirname(testOutputFilePath));
 }
 
-function executeDotnetVstest(testAssembly: string, listTestsTargetPath: string): Promise<string> {
+function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string): Promise<string> {
     return new Promise((resolve, reject) => {
+        const testAssembliesParam = assemblyPaths.map((f) => `"${f}"`).join(" ");
+
         Executor.exec(
-            `dotnet vstest "${testAssembly}" --ListFullyQualifiedTests --ListTestsTargetPath:"${listTestsTargetPath}"`,
+            `dotnet vstest ${testAssembliesParam} --ListFullyQualifiedTests --ListTestsTargetPath:"${listTestsTargetPath}"`,
             (err, stdout: string, stderr) => {
                 if (err) {
                     reject(err);

@@ -17,7 +17,7 @@ suite("Test discovery", () => {
     const vsTestOutputTempDir = path.join(tmpDir, "test-explorer-discover-123456");
     const vsTestOutputFilePath = path.join(vsTestOutputTempDir, "output.txt");
 
-    const dotnetVstestExecCmd = `dotnet vstest "${assemblyFilePath}" --ListFullyQualifiedTests --ListTestsTargetPath:"${vsTestOutputFilePath}"`;
+    const dotnetVstestExecCmd = buildDotnetVstestCommand([assemblyFilePath], vsTestOutputFilePath);
 
     const execStub = sinon.stub(Executor, "exec");
     const fsMkdtempSyncStub = sinon.stub(fs, "mkdtempSync");
@@ -48,7 +48,7 @@ suite("Test discovery", () => {
     });
 
     test("Fully qualified test names returned when dotnet test outputs FQ test names", () => {
-        const testNames = [ "Namespace.Test1", "Namespace.Test2" ];
+        const testNames = ["Ns1.Class1.Test1", "Ns1.Class1.Test2"];
 
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWith(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
@@ -76,9 +76,9 @@ suite("Test discovery", () => {
             .then((result) => assert.deepEqual(result, []));
     });
 
-    test("Fully qualified test names returned using dotnet vstest when dotnet test output is missing namespaces", () => {
-        const testNames = [ "Test1", "Test2" ];
-        const fqTestNames = [ "Namespace.Test1", "Namespace.Test2" ];
+    test("Fully qualified test names returned using dotnet vstest when dotnet test output is missing fq names", () => {
+        const testNames = ["Test1", "Test2"];
+        const fqTestNames = ["Ns1.Class1.Test1", "Ns1.Class1.Test2"];
 
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, null, fqTestNames.join("\r\n"));
@@ -95,7 +95,7 @@ suite("Test discovery", () => {
 
     test("Promise rejected when dotnet vstest output file read operation fails", () => {
         const error = "read error";
-        const testNames = [ "Test1", "Test2" ];
+        const testNames = ["Test1", "Test2"];
 
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, error);
@@ -113,7 +113,7 @@ suite("Test discovery", () => {
 
     test("Promise rejected when dotnet vstest returns error", () => {
         const error = "vstest error";
-        const testNames = [ "Test1", "Test2" ];
+        const testNames = ["Test1", "Test2"];
 
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
@@ -128,7 +128,7 @@ suite("Test discovery", () => {
 
     test("Promise rejected when failed to extract test assembly file name from dotnet test output", () => {
         const dotnetTestOutput = getDotnetTestOutputWithoutTestAssemblyPath();
-        const errorMessage = `Couldn't extract test assembly path from dotnet test output: ${dotnetTestOutput}`;
+        const errorMessage = `Couldn't extract assembly paths from dotnet test output: ${dotnetTestOutput}`;
 
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, dotnetTestOutput, "");
@@ -141,7 +141,7 @@ suite("Test discovery", () => {
     });
 
     test("Remove vstest output file and directory after vstest execution", () => {
-        const testNames = [ "Test1", "Test2" ];
+        const testNames = ["Test1", "Test2"];
 
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, null, "");
@@ -160,6 +160,35 @@ suite("Test discovery", () => {
                 assert(fsUnlinkSyncStub.calledWith(vsTestOutputFilePath), "vstest output file must be deleted");
                 assert(fsRmdirSyncStub.calledWith(vsTestOutputTempDir), "temporary directory for vstest output must be deleted");
             });
+    });
+
+    test("Solution with multiple test projects fully qualified test names returned using dotnet vstest when dotnet test output is missing fq names", () => {
+        const testAssemblyFilePaths = [
+            "/bin/TestAssembly1.dll",
+            "/bin/TestAssmebly2.dll",
+        ];
+
+        const testNames = ["Test1", "Test2", "Test3", "Test4"];
+        const fqTestNames = [
+            "Ns1.Class1.Test1",
+            "Ns1.Class1.Test2",
+            "Ns2.Class2.Test3",
+            "Ns2.Class2.Test4",
+        ];
+
+        const dotnetVstestMultiProjectExecCmd = buildDotnetVstestCommand(testAssemblyFilePaths, vsTestOutputFilePath);
+
+        fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
+            .callsArgWithAsync(2, null, fqTestNames.join("\r\n"));
+
+        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+            .callsArgWithAsync(1, null, buildDotnetTestSolutionOutput(testNames, testAssemblyFilePaths), "");
+
+        execStub.withArgs(dotnetVstestMultiProjectExecCmd, sinon.match.func)
+            .callsArgWithAsync(1, null, "");
+
+        return discoverTests(testDirectoryPath, dotnetTestOptions)
+            .then((result) => assert.deepEqual(result, fqTestNames));
     });
 });
 
@@ -188,4 +217,32 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 The following Tests are available:
     SomeTest
 `;
+}
+
+function buildDotnetTestSolutionOutput(testNames: string[], testAssemblyFilePaths: string[]) {
+    let output = new Array<string>(testAssemblyFilePaths.length)
+        .fill("Build started, please wait...")
+        .join("\r\n");
+
+    testAssemblyFilePaths.forEach((testAssemblyFilePath) => {
+        output += String.raw`
+Build completed.
+
+Test run for ${testAssemblyFilePath}(.NETCoreApp,Version=v2.0)
+Microsoft (R) Test Execution Command Line Tool Version 15.6.0-preview-20180109-01
+Copyright (c) Microsoft Corporation.  All rights reserved.
+
+The following Tests are available:
+`;
+    });
+
+    const testsLists = testNames.map((n) => `    ${n}`).join("\r\n");
+    output += testsLists;
+
+    return output;
+}
+
+function buildDotnetVstestCommand(testAssemblyFilePaths: string[], vstestOutputFilePath: string) {
+    const testAssembliesParam = testAssemblyFilePaths.map((f) => `"${f}"`).join(" ");
+    return `dotnet vstest ${testAssembliesParam} --ListFullyQualifiedTests --ListTestsTargetPath:"${vstestOutputFilePath}"`;
 }
