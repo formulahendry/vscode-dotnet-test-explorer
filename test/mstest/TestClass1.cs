@@ -2,12 +2,11 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
-namespace MsTestTests
-{
+namespace MsTestTests { // Curly bracket on same line as namespace for testing namespace parsing
 
     [TestClass]
-    public class TestClass1
-    {
+    public class TestClass1 
+    {       
         [TestMethod]
         public void Pass()
         {

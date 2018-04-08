@@ -34,7 +34,11 @@ export class TestCommands {
      * to do a restore, so it can be very slow.
      */
     public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
+        this.runTestByName(test.fullName);
+    }
+
+    public runTestByName(testName: string): void {
+        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName}`, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
     }
 
