@@ -81,7 +81,7 @@ export class TestCommands {
      */
     private evaluateTestDirectory(): void {
         const testProjectFullPath = this.checkTestDirectoryOption();
-        this.testDirectoryPath = this.resolvePath(testProjectFullPath);
+        this.testDirectoryPath = Utility.resolvePath(testProjectFullPath);
     }
 
     /**
@@ -142,17 +142,4 @@ export class TestCommands {
         return option ? option : vscode.workspace.rootPath;
     }
 
-    /**
-     * @description
-     * Checks to see if the @see{vscode.workspace.rootPath} is
-     * the same as the directory given, and resolves the correct
-     * string to it if not.
-     * @param dir
-     * The directory specified in the options.
-     */
-    private resolvePath(dir: string): string {
-        return path.isAbsolute(dir)
-            ? dir
-            : path.resolve(vscode.workspace.rootPath, dir);
-    }
 }

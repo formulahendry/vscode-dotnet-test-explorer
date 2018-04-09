@@ -1,5 +1,6 @@
 "use strict";
 import { platform, tmpdir } from "os";
+import * as path from "path";
 import * as vscode from "vscode";
 
 export class Utility {
@@ -21,7 +22,7 @@ export class Utility {
 
     public static get pathForResultFile(): string {
         const pathForResultFile = Utility.getConfiguration().get<string>("pathForResultFile");
-        return pathForResultFile ? pathForResultFile : tmpdir();
+        return pathForResultFile ? this.resolvePath(pathForResultFile) : tmpdir();
     }
 
     public static getConfiguration(): vscode.WorkspaceConfiguration {
@@ -36,6 +37,20 @@ export class Utility {
         Utility.failed = Utility.getLensText(configuration, "codeLensFailed", "\u274c"); // Cross Mark
         Utility.passed = Utility.getLensText(configuration, "codeLensPassed", osx ? "\u2705" : "\u2714"); // White Heavy Check Mark / Heavy Check Mark
         Utility.skipped = Utility.getLensText(configuration, "codeLensSkipped", "\u26a0"); // Warning
+    }
+
+    /**
+     * @description
+     * Checks to see if the @see{vscode.workspace.rootPath} is
+     * the same as the directory given, and resolves the correct
+     * string to it if not.
+     * @param dir
+     * The directory specified in the options.
+     */
+    public static resolvePath(dir: string): string {
+        return path.isAbsolute(dir)
+            ? dir
+            : path.resolve(vscode.workspace.rootPath, dir);
     }
 
     private static showCodeLens: boolean;
