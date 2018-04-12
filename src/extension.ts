@@ -6,6 +6,7 @@ import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
+import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
     const discoverTests = new TestCommands(testResults);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
+
+    Logger.Log("Starting extension");
 
     context.subscriptions.push(testResults);
 
