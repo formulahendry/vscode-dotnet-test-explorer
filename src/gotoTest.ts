@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
+import { Logger } from "./logger";
 import { TestNode } from "./testNode";
 
 export class GotoTest {
@@ -30,6 +31,7 @@ export class GotoTest {
                 });
 
             } catch (r) {
+                Logger.Log(r.message);
                 vscode.window.showWarningMessage(r.message);
             }
 

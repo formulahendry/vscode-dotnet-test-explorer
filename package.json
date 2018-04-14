@@ -67,6 +67,10 @@
         }
       },
       {
+        "command": "dotnet-test-explorer.runTestInContext",
+        "title": "Run .NET Core Test in context"
+      },
+      {
         "command": "dotnet-test-explorer.gotoTest",
         "title": "Go to Test",
         "icon": {
@@ -103,6 +107,23 @@
           "command": "dotnet-test-explorer.gotoTest",
           "when": "viewItem == test",
           "group": "dotnetTestExplorer@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "dotnet-test-explorer.runTestInContext",
+          "group": "dotnetTestExplorer@0",
+          "when": "resourceLangId == csharp"
+        },
+        {
+          "command": "dotnet-test-explorer.runTestInContext",
+          "group": "dotnetTestExplorer@0",
+          "when": "resourceLangId == fsharp"
+        },
+        {
+          "command": "dotnet-test-explorer.runTestInContext",
+          "group": "dotnetTestExplorer@0",
+          "when": "resourceLangId == vb"
         }
       ]
     },
@@ -161,7 +182,15 @@
           "description": "The path to (temporarily) store test result files in"
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "dotnet-test-explorer.runTestInContext",
+        "key": "alt+r alt+u",
+        "mac": "alt+r alt+u",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",

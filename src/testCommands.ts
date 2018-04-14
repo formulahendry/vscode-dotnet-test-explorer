@@ -1,9 +1,11 @@
+import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { discoverTests } from "./testDiscovery";
+import { Logger } from "./logger";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
@@ -22,8 +24,9 @@ export class TestCommands {
      * to do a restore, so it can be very slow.
      */
     public runAllTests(): void {
-        this.evaluateTestDirectory();
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`, this.testDirectoryPath);
+        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runAllTests");
     }
 
@@ -35,7 +38,13 @@ export class TestCommands {
      * to do a restore, so it can be very slow.
      */
     public runTest(test: TestNode): void {
-        Executor.runInTerminal(`dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${test.fullName}`, this.testDirectoryPath);
+        this.runTestByName(test.fullName);
+    }
+
+    public runTestByName(testName: string): void {
+        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName}`;
+        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
     }
 
@@ -60,8 +69,14 @@ export class TestCommands {
      * by default.
      */
     private evaluateTestDirectory(): void {
-        const testProjectFullPath = this.checkTestDirectoryOption();
-        this.testDirectoryPath = this.resolvePath(testProjectFullPath);
+        let testProjectFullPath = this.checkTestDirectoryOption();
+        testProjectFullPath = Utility.resolvePath(testProjectFullPath);
+
+        if (!fs.existsSync(testProjectFullPath)) {
+            Logger.Log(`Path ${testProjectFullPath} is not valid`);
+        }
+
+        this.testDirectoryPath = testProjectFullPath;
     }
 
     /**
@@ -122,17 +137,4 @@ export class TestCommands {
         return option ? option : vscode.workspace.rootPath;
     }
 
-    /**
-     * @description
-     * Checks to see if the @see{vscode.workspace.rootPath} is
-     * the same as the directory given, and resolves the correct
-     * string to it if not.
-     * @param dir
-     * The directory specified in the options.
-     */
-    private resolvePath(dir: string): string {
-        return path.isAbsolute(dir)
-            ? dir
-            : path.resolve(vscode.workspace.rootPath, dir);
-    }
 }

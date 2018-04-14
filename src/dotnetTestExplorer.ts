@@ -50,11 +50,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return new TreeItem(element.name);
         }
 
-        // if (!element.isFolder && this.testResults) {
-        //     const resultForTest = this.testResults.find((tr) => tr.fullName === element.fullName);
-
-        // }
-
         return {
             label: element.name,
             collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,

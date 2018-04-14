@@ -4,7 +4,9 @@ import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
+import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
+import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -15,6 +17,10 @@ export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
     const discoverTests = new TestCommands(testResults);
     const gotoTest = new GotoTest();
+    const findTestInContext = new FindTestInContext();
+
+    Logger.Log("Starting extension");
+
     context.subscriptions.push(testResults);
 
     Utility.updateCache();
@@ -49,6 +55,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
         discoverTests.runTest(test);
+    }));
+
+    context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
+        findTestInContext.find(editor.document, editor.selection.start.line).then( (testName) => {
+            discoverTests.runTestByName(testName);
+        });
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.gotoTest", (test: TestNode) => {
