@@ -46,10 +46,10 @@ There is also an option to execute test in context of the current cursor. This i
 
 ## Known issues
 
-##### Test result is not shown in codelense / tree
+##### Test result is not shown in codelens / tree
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too.
 
-##### No tree view or color coded status for nunit / mstest
+##### No tree view or color coded explorer for nunit / mstest
 This is because of the way test discovery is implemented for nunit / mstest. Work is in progress to better support these test frameworks.
 
 ##### DisplayName attribute not working for xunit
