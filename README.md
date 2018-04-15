@@ -10,19 +10,27 @@
 
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 
-## Usage
+# Usage
 
-* Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
+Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
 
 ![test-explorer](images/test-explorer.png)
 
-* After you run tests from Test Explorer, you could see test results in CodeLens for C# test projects (This feature depends on [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp))
+After you run tests from Test Explorer, you could see test results in CodeLens for C# test projects (This feature depends on [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp))
 
 ![test-results](images/test-results.png)
 
-* If you are using XUnit the test result of the last run tests are also shown in the tree
+If you are using XUnit the test result of the last run tests are also shown in the tree
 
 ![test-results-tree](images/test-results-tree.png)
+
+Right click on a test node to navigate to the test code
+
+![go-to-test](images/gototest.gif)
+
+There is also an option to execute test in context of the current cursor. This is available from the right click menu or (probably more usefull) as a keyboard short cut (default alt-r alt-u). 
+
+![run-test-in-context](images/runtestincontext.gif)
 
 ## Settings
 
@@ -35,6 +43,17 @@
 * `dotnet-test-explorer.codeLensPassed`: The text to display in the code lens when a test has passed. (Default is **""**)
 * `dotnet-test-explorer.codeLensSkipped`: The text to display in the code lens when a test has been skipped. (Default is **""**)
 * `dotnet-test-explorer.pathForResultFile`: The path to (temporarily) store test result files in. (Default is os temp dir)
+
+## Known issues
+
+##### Test result is not shown in codelense / tree
+Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too.
+
+##### No tree view or color coded status for nunit / mstest
+This is because of the way test discovery is implemented for nunit / mstest. Work is in progress to better support these test frameworks.
+
+##### DisplayName attribute not working for xunit
+Same problem as above.
 
 ## Telemetry data
 
