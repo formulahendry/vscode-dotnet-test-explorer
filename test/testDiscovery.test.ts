@@ -203,9 +203,12 @@ suite("Test discovery", () => {
         return discoverTests(testDirectoryPath, dotnetTestOptions)
             .then((result) => {
                 assert.deepEqual(result.testNames, testNames);
-                assert.equal(
+                assert.deepEqual(
                     result.warningMessage,
-                    "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.");
+                    {
+                        text: "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
+                        type: "DOTNET_SDK_FQN_NOT_SUPPORTED",
+                    });
             });
     });
 });

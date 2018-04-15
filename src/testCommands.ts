@@ -5,6 +5,7 @@ import { Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
+import { showWarningMessage } from "./messages";
 import { discoverTests } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -54,7 +55,7 @@ export class TestCommands {
         discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
             .then((result) => {
                 if (result.warningMessage) {
-                    vscode.window.showWarningMessage(result.warningMessage);
+                    showWarningMessage(result.warningMessage);
                 }
 
                 this.onNewTestDiscoveryEmitter.fire(result.testNames);

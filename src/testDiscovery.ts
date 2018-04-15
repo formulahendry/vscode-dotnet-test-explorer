@@ -3,10 +3,11 @@ import * as os from "os";
 import * as path from "path";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
+import { IMessage } from "./messages";
 
 export interface IDiscoverTestsResult {
     testNames: string[];
-    warningMessage?: string;
+    warningMessage?: IMessage;
 }
 
 export function discoverTests(testDirectoryPath: string, dotnetTestOptions: string): Promise<IDiscoverTestsResult> {
@@ -30,8 +31,10 @@ export function discoverTests(testDirectoryPath: string, dotnetTestOptions: stri
                     if (error instanceof ListFqnNotSupportedError) {
                         return {
                             testNames,
-                            warningMessage:
-                                "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
+                            warningMessage: {
+                                text: "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
+                                type: "DOTNET_SDK_FQN_NOT_SUPPORTED",
+                            },
                         };
                     }
 

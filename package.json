@@ -180,6 +180,11 @@
           "type": "string",
           "default": "",
           "description": "The path to (temporarily) store test result files in"
+        },
+        "dotnet-test-explorer.suppressedMessages": {
+          "type": "array",
+          "default": [],
+          "description": "The collection of suppressed warning/info message types by the user."
         }
       }
     },
