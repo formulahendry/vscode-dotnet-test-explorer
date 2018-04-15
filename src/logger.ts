@@ -10,5 +10,17 @@ export class Logger {
         this.outputTerminals[output].appendLine(message);
     }
 
+    public static LogError(message: string, error: any): void {
+        Logger.Log(`[ERROR] ${message} - ${Logger.formatError(error)}`);
+    }
+
     private static outputTerminals: { [id: string]: vscode.OutputChannel } = {};
+
+    private static formatError(error: any): string {
+        if (error && error.stack) {
+            return error.stack;
+        }
+
+        return error || "";
+    }
 }

@@ -2,13 +2,19 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import { Executor } from "./executor";
+import { Logger } from "./logger";
 
-export function discoverTests(testDirectoryPath: string, dotnetTestOptions: string): Promise<string[]> {
+export interface IDiscoverTestsResult {
+    testNames: string[];
+    warningMessage?: string;
+}
+
+export function discoverTests(testDirectoryPath: string, dotnetTestOptions: string): Promise<IDiscoverTestsResult> {
     return executeDotnetTest(testDirectoryPath, dotnetTestOptions)
         .then((stdout) => {
             const testNames = extractTestNames(stdout);
             if (!isMissingFqNames(testNames)) {
-                return testNames;
+                return { testNames };
             }
 
             const assemblyPaths = extractAssemblyPaths(stdout);
@@ -16,14 +22,34 @@ export function discoverTests(testDirectoryPath: string, dotnetTestOptions: stri
                 throw new Error(`Couldn't extract assembly paths from dotnet test output: ${stdout}`);
             }
 
-            return discoverTestsWithVstest(assemblyPaths);
+            return discoverTestsWithVstest(assemblyPaths, testDirectoryPath)
+                .then((results) => {
+                    return { testNames: results };
+                })
+                .catch((error: Error) => {
+                    if (error instanceof ListFqnNotSupportedError) {
+                        return {
+                            testNames,
+                            warningMessage:
+                                "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
+                        };
+                    }
+
+                    throw error;
+                });
         });
 }
 
 function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        Executor.exec(`dotnet test -t -v=q${dotnetTestOptions}`, (err, stdout: string, stderr) => {
+        const command = `dotnet test -t -v=q${dotnetTestOptions}`;
+
+        Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+
+        Executor.exec(command, (err: Error, stdout: string, stderr: string) => {
             if (err) {
+                Logger.LogError(`Error while executing ${command}`, err);
+
                 reject(err);
                 return;
             }
@@ -67,9 +93,9 @@ function isMissingFqNames(testNames: string[]): boolean {
     return testNames.some((name) => !name.includes("."));
 }
 
-function discoverTestsWithVstest(assemblyPaths: string[]): Promise<string[]> {
+function discoverTestsWithVstest(assemblyPaths: string[], testDirectoryPath: string): Promise<string[]> {
     const testOutputFilePath = prepareTestOutput();
-    return executeDotnetVstest(assemblyPaths, testOutputFilePath)
+    return executeDotnetVstest(assemblyPaths, testOutputFilePath, testDirectoryPath)
         .then(() => readVstestTestNames(testOutputFilePath))
         .then((result) => {
             cleanTestOutput(testOutputFilePath);
@@ -112,18 +138,36 @@ function cleanTestOutput(testOutputFilePath: string) {
     fs.rmdirSync(path.dirname(testOutputFilePath));
 }
 
-function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string): Promise<string> {
+function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string, testDirectoryPath: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const testAssembliesParam = assemblyPaths.map((f) => `"${f}"`).join(" ");
+        const command = `dotnet vstest ${testAssembliesParam} /ListFullyQualifiedTests /ListTestsTargetPath:"${listTestsTargetPath}"`;
+
+        Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
         Executor.exec(
-            `dotnet vstest ${testAssembliesParam} --ListFullyQualifiedTests --ListTestsTargetPath:"${listTestsTargetPath}"`,
-            (err, stdout: string, stderr) => {
+            command,
+            (err: Error, stdout: string, stderr: string) => {
                 if (err) {
+                    Logger.LogError(`Error while executing ${command}.`, err);
+
+                    const flagNotRecognizedRegex = /\/ListFullyQualifiedTests/m;
+                    if (flagNotRecognizedRegex.test(stderr)) {
+                        reject(new ListFqnNotSupportedError());
+                    }
+
                     reject(err);
                 }
 
                 resolve(stdout);
-            });
+            }, testDirectoryPath);
     });
+}
+
+class ListFqnNotSupportedError extends Error {
+    constructor() {
+        super("Dotnet vstest doesn't support /ListFullyQualifiedTests switch.");
+
+        Error.captureStackTrace(this, ListFqnNotSupportedError);
+    }
 }

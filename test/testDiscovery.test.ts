@@ -54,7 +54,7 @@ suite("Test discovery", () => {
             .callsArgWith(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result, testNames));
+            .then((result) => assert.deepEqual(result.testNames, testNames));
     });
 
     test("Promise rejected when dotnet test failing", () => {
@@ -73,7 +73,7 @@ suite("Test discovery", () => {
             .callsArgWithAsync(1, null, buildDotnetTestOutput([], assemblyFilePath), "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result, []));
+            .then((result) => assert.deepEqual(result.testNames, []));
     });
 
     test("Fully qualified test names returned using dotnet vstest when dotnet test output is missing fq names", () => {
@@ -86,11 +86,11 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func)
+        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result, fqTestNames));
+            .then((result) => assert.deepEqual(result.testNames, fqTestNames));
     });
 
     test("Promise rejected when dotnet vstest output file read operation fails", () => {
@@ -103,7 +103,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func)
+        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -118,7 +118,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func)
+        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, error, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -149,7 +149,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func)
+        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         fsExistsSyncStub.withArgs(vsTestOutputFilePath).returns(true);
@@ -184,11 +184,29 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestSolutionOutput(testNames, testAssemblyFilePaths), "");
 
-        execStub.withArgs(dotnetVstestMultiProjectExecCmd, sinon.match.func)
+        execStub.withArgs(dotnetVstestMultiProjectExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result, fqTestNames));
+            .then((result) => assert.deepEqual(result.testNames, fqTestNames));
+    });
+
+    test("Dotnet test results returned with a warning message when dotnet vstest /ListFullyQualifiedTests switch is not supported", () => {
+        const testNames = ["Test1", "Test2"];
+
+        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+            .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
+
+        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
+            .callsArgWithAsync(1, new Error(), "", getDotnetVstestListFqnFlagMissingErrorOutput());
+
+        return discoverTests(testDirectoryPath, dotnetTestOptions)
+            .then((result) => {
+                assert.deepEqual(result.testNames, testNames);
+                assert.equal(
+                    result.warningMessage,
+                    "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.");
+            });
     });
 });
 
@@ -244,5 +262,11 @@ The following Tests are available:
 
 function buildDotnetVstestCommand(testAssemblyFilePaths: string[], vstestOutputFilePath: string) {
     const testAssembliesParam = testAssemblyFilePaths.map((f) => `"${f}"`).join(" ");
-    return `dotnet vstest ${testAssembliesParam} --ListFullyQualifiedTests --ListTestsTargetPath:"${vstestOutputFilePath}"`;
+    return `dotnet vstest ${testAssembliesParam} /ListFullyQualifiedTests /ListTestsTargetPath:"${vstestOutputFilePath}"`;
+}
+
+function getDotnetVstestListFqnFlagMissingErrorOutput() {
+    return String.raw`
+The test source file "/ListFullyQualifiedTests" provided was not found.
+    `;
 }

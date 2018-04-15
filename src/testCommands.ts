@@ -4,8 +4,8 @@ import * as vscode from "vscode";
 import { Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
-import { discoverTests } from "./testDiscovery";
 import { Logger } from "./logger";
+import { discoverTests } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
@@ -52,8 +52,18 @@ export class TestCommands {
         this.evaluateTestDirectory();
 
         discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
-            .then((result) => this.onNewTestDiscoveryEmitter.fire(result))
-            .catch(() => this.onNewTestDiscoveryEmitter.fire([]));
+            .then((result) => {
+                if (result.warningMessage) {
+                    vscode.window.showWarningMessage(result.warningMessage);
+                }
+
+                this.onNewTestDiscoveryEmitter.fire(result.testNames);
+            })
+            .catch((err) => {
+                Logger.LogError("Error while discovering tests", err);
+
+                this.onNewTestDiscoveryEmitter.fire([]);
+            });
     }
 
     public get onNewTestDiscovery(): Event<string[]> {
