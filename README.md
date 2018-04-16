@@ -10,7 +10,7 @@
 
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 
-# Usage
+## Usage
 
 Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
 
