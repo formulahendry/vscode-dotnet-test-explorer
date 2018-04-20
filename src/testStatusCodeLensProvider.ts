@@ -45,7 +45,25 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
                             const state = TestStatusCodeLens.parseOutcome(result.outcome);
                             if (state) {
                                 mapped.push(new TestStatusCodeLens(symbol.location.range, state));
+                                break;
                             }
+                        } else if (result.matchesTheory(symbol.containerName, symbol.name)) {
+                            const state = TestStatusCodeLens.parseOutcome(result.outcome);
+                            if (state === Utility.codeLensFailed) {
+                                mapped.push(new TestStatusCodeLens(symbol.location.range, Utility.codeLensFailed));
+                                break;
+                            } else {
+                                // Checks if any input values for this theory fails
+                                for (const theoryResult of results.values()){
+                                    if (theoryResult.matchesTheory(symbol.containerName, symbol.name)) {
+                                        if (theoryResult.outcome === Utility.codeLensFailed) {
+                                            mapped.push(new TestStatusCodeLens(symbol.location.range, Utility.codeLensFailed));
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            mapped.push(new TestStatusCodeLens(symbol.location.range, state));
                         }
                     }
                 }
