@@ -54,7 +54,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
                                 break;
                             } else {
                                 // Checks if any input values for this theory fails
-                                for (const theoryResult of results.values()){
+                                for (const theoryResult of results.values()) {
                                     if (theoryResult.matchesTheory(symbol.containerName, symbol.name)) {
                                         if (theoryResult.outcome === Utility.codeLensFailed) {
                                             mapped.push(new TestStatusCodeLens(symbol.location.range, Utility.codeLensFailed));
