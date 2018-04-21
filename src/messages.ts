@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
 import { Logger } from "./logger";
-import { Utility } from "./utility";
 
-const suppressedMessagesConfigurationKey = "suppressedMessages";
+const suppressedMessagesStateKey = "suppressedMessages";
 const suppressMessageItem = "Don't show again";
 
 export interface IMessage {
@@ -10,36 +9,46 @@ export interface IMessage {
     type: string;
 }
 
-export function showWarningMessage(message: IMessage) {
-    const configuration = Utility.getConfiguration();
+export interface IMessagesController {
+    showWarningMessage(message: IMessage);
+}
 
-    if (isSuppressed(message.type, configuration)) {
-        return;
+export class MessagesController implements IMessagesController {
+    constructor(private globalState: vscode.Memento) { }
+
+    /**
+     * @description
+     * Displays the warning message that can be suppressed by the user.
+     */
+    public showWarningMessage(message: IMessage) {
+        if (this.isSuppressed(message.type)) {
+            return;
+        }
+
+        return vscode.window.showWarningMessage(message.text, suppressMessageItem)
+            .then((item) => {
+                if (item === suppressMessageItem) {
+                    this.setSuppressed(message.type);
+                }
+            });
     }
 
-    return vscode.window.showWarningMessage(message.text, suppressMessageItem)
-        .then((item) => {
-            if (item === suppressMessageItem) {
-                setSuppressed(message.type, configuration);
-            }
-        });
-}
+    private isSuppressed(messageType: string) {
+        const suppressedMessages = this.globalState.get<string[]>(suppressedMessagesStateKey);
+        return suppressedMessages && suppressedMessages.indexOf(messageType) > -1;
+    }
 
-function isSuppressed(messageType: string, configuration: vscode.WorkspaceConfiguration) {
-    const suppressedMessages = configuration.get<string[]>(suppressedMessagesConfigurationKey);
-    return suppressedMessages && suppressedMessages.indexOf(messageType) > -1;
-}
+    private setSuppressed(messageType: string) {
+        const suppressedMessages =
+            this.globalState.get<string[]>(suppressedMessagesStateKey) || [];
 
-function setSuppressed(messageType: string, configuration: vscode.WorkspaceConfiguration) {
-    const suppressedMessages =
-        configuration.get<string[]>(suppressedMessagesConfigurationKey) || [];
+        if (suppressedMessages.indexOf(messageType) === -1) {
+            suppressedMessages.push(messageType);
 
-    if (suppressedMessages.indexOf(messageType) === -1) {
-        suppressedMessages.push(messageType);
-
-        configuration.update(suppressedMessagesConfigurationKey, suppressedMessages, true)
-            .then(() => {}, (reason) => {
-                Logger.LogError("Error while updating configuration settings", reason);
-            });
+            this.globalState.update(suppressedMessagesStateKey, suppressedMessages)
+                .then(() => { }, (reason) => {
+                    Logger.LogError("Error while updating global state value", reason);
+                });
+        }
     }
 }

@@ -5,7 +5,7 @@ import { Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
-import { showWarningMessage } from "./messages";
+import { IMessagesController } from "./messages";
 import { discoverTests } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -15,7 +15,9 @@ export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
     private testDirectoryPath: string;
 
-    constructor(private resultsFile: TestResultsFile) { }
+    constructor(
+        private resultsFile: TestResultsFile,
+        private messagesController: IMessagesController) { }
 
     /**
      * @description
@@ -55,7 +57,7 @@ export class TestCommands {
         discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
             .then((result) => {
                 if (result.warningMessage) {
-                    showWarningMessage(result.warningMessage);
+                    this.messagesController.showWarningMessage(result.warningMessage);
                 }
 
                 this.onNewTestDiscoveryEmitter.fire(result.testNames);

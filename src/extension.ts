@@ -7,6 +7,7 @@ import { Executor } from "./executor";
 import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
 import { Logger } from "./logger";
+import { MessagesController } from "./messages";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -15,7 +16,8 @@ import { Utility } from "./utility";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
-    const discoverTests = new TestCommands(testResults);
+    const messagesController = new MessagesController(context.globalState);
+    const testCommands = new TestCommands(testResults, messagesController);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
 
@@ -33,11 +35,11 @@ export function activate(context: vscode.ExtensionContext) {
         Utility.updateCache();
     }));
 
-    const dotnetTestExplorer = new DotnetTestExplorer(context, discoverTests, testResults);
+    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, testResults);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
-    discoverTests.discoverTests();
+    testCommands.discoverTests();
 
     const codeLensProvider = new TestStatusCodeLensProvider(testResults);
     context.subscriptions.push(codeLensProvider);
@@ -50,16 +52,16 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runAllTests", () => {
-        discoverTests.runAllTests();
+        testCommands.runAllTests();
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
-        discoverTests.runTest(test);
+        testCommands.runTest(test);
     }));
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
         findTestInContext.find(editor.document, editor.selection.start.line).then( (testName) => {
-            discoverTests.runTestByName(testName);
+            testCommands.runTestByName(testName);
         });
     }));
 
