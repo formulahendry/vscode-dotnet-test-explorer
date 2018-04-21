@@ -157,9 +157,11 @@ function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: strin
                     const flagNotRecognizedRegex = /\/ListFullyQualifiedTests/m;
                     if (flagNotRecognizedRegex.test(stderr)) {
                         reject(new ListFqnNotSupportedError());
+                    } else {
+                        reject(err);
                     }
 
-                    reject(err);
+                    return;
                 }
 
                 resolve(stdout);

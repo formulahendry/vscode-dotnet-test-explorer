@@ -14,6 +14,10 @@ export class Logger {
         Logger.Log(`[ERROR] ${message} - ${Logger.formatError(error)}`);
     }
 
+    public static LogWarning(message: string): void {
+        Logger.Log(`[WARNING] ${message}`);
+    }
+
     private static outputTerminals: { [id: string]: vscode.OutputChannel } = {};
 
     private static formatError(error: any): string {

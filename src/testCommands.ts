@@ -57,6 +57,8 @@ export class TestCommands {
         discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
             .then((result) => {
                 if (result.warningMessage) {
+                    Logger.LogWarning(result.warningMessage.text);
+
                     this.messagesController.showWarningMessage(result.warningMessage);
                 }
 
