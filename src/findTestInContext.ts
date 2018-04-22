@@ -29,6 +29,8 @@ export class FindTestInContext {
     public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string): string {
         let symbolToRunTestsFor: vscode.SymbolInformation;
 
+        symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method || s.kind === vscode.SymbolKind.Class);
+
         if (symbols.length === 1) {
             symbolToRunTestsFor = symbols[0];
         } else {
