@@ -20,6 +20,21 @@ suite("Find test in context tests", () => {
         assert.equal(result, "MyClass");
     });
 
+    test("Only symbols of type class and methods are found", async () => {
+
+        const findTestInContext = new FindTestInContext();
+
+        const symbols = [
+            new SymbolInformation("MyClass", SymbolKind.Class, "", new Location(Uri.file("c:/"), new Range(new Position(5, 1), new Position(5, 5)))),
+            new SymbolInformation("MyClass", SymbolKind.Constructor, "MyClass", new Location(Uri.file("c:/"), new Range(new Position(8, 1), new Position(8, 8)))),
+            new SymbolInformation("Myproperty", SymbolKind.Property, "MyClass", new Location(Uri.file("c:/"), new Range(new Position(16, 1), new Position(16, 16)))),
+        ];
+
+        const result = await findTestInContext.getTestString(symbols, 16, "");
+
+        assert.equal(result, "MyClass");
+    });
+
     test("Multiple symbols, match closest in context", async () => {
 
         const findTestInContext = new FindTestInContext();

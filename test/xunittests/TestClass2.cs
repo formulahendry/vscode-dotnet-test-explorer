@@ -6,6 +6,13 @@ namespace XunitTests
 {
     public class TestClass2
     {
+        private string zzz;
+
+        public TestClass2()
+        {
+               
+        }
+
         [Fact]
         public void Pass()
         {
