@@ -5,6 +5,8 @@ import { Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
+import { IMessagesController } from "./messages";
+import { discoverTests } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
@@ -13,7 +15,9 @@ export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
     private testDirectoryPath: string;
 
-    constructor(private resultsFile: TestResultsFile) { }
+    constructor(
+        private resultsFile: TestResultsFile,
+        private messagesController: IMessagesController) { }
 
     /**
      * @description
@@ -50,30 +54,21 @@ export class TestCommands {
     public discoverTests() {
         this.evaluateTestDirectory();
 
-        const command = `dotnet test -t -v=q${this.getDotNetTestOptions()}`;
+        discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
+            .then((result) => {
+                if (result.warningMessage) {
+                    Logger.LogWarning(result.warningMessage.text);
 
-        Logger.Log(`Executing ${command}`);
+                    this.messagesController.showWarningMessage(result.warningMessage);
+                }
 
-        Executor.exec(command, (err, stdout, stderr) => {
-            if (err) {
+                this.onNewTestDiscoveryEmitter.fire(result.testNames);
+            })
+            .catch((err) => {
+                Logger.LogError("Error while discovering tests", err);
+
                 this.onNewTestDiscoveryEmitter.fire([]);
-                return;
-            }
-
-            const results = stdout
-            .split(/[\r\n]+/g)
-            /*
-             * The dotnet-cli prefixes all discovered unit tests
-             * with whitespace. We can use this to drop any lines of
-             * text that are not relevant, even in complicated project
-             * structures.
-             **/
-            .filter((item) => item && item.startsWith("  "))
-            .sort((a, b) => a > b ? 1 : b > a ? - 1 : 0)
-            .map((item) => item.trim());
-
-            this.onNewTestDiscoveryEmitter.fire(results);
-        }, this.testDirectoryPath);
+            });
     }
 
     public get onNewTestDiscovery(): Event<string[]> {
