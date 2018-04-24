@@ -1,3 +1,6 @@
+## 0.2.3 ()
+* [#51](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/51): TreeView support for NUnit and MSTest
+
 ## 0.2.2 (2018-04-16)
 * [#50](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/52): Can use relative path for test result file path
 * [#45](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/45): Run test(s) in context
