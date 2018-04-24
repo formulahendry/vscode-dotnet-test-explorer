@@ -6,6 +6,10 @@ namespace XunitTests
 {
     public class TestClass3
     {
+        public static TheoryData<int> DataSet = new TheoryData<int> {
+            { 2 }
+        };
+
         [Theory]
         [InlineData(2)]
         public void Pass(int value)
@@ -14,7 +18,7 @@ namespace XunitTests
         }
 
         [Theory]
-        [InlineData(2)]
+        [MemberData(nameof(DataSet))]
         public void Pass2(int value)
         {
             (1+1).ShouldBe(value);
