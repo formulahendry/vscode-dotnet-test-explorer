@@ -54,12 +54,12 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
-        test.isFolder ? discoverTests.runTest(test) : discoverTests.runTestByName(test.fullName, "=");
+        discoverTests.runTest(test);
     }));
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
         findTestInContext.find(editor.document, editor.selection.start.line).then( (testName) => {
-            discoverTests.runTestByName(testName, "=");
+            discoverTests.runTestByName(testName);
         });
     }));
 

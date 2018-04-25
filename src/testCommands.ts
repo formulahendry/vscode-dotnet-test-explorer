@@ -40,8 +40,8 @@ export class TestCommands {
         this.runTestByName(test.fullName);
     }
 
-    public runTestByName(testName: string, distinguisher: string = "~"): void {
-        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName${distinguisher}${testName.replace(/\(.*\)/g, "")}`;
+    public runTestByName(testName: string): void {
+        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
