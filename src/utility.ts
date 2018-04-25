@@ -20,7 +20,7 @@ export class Utility {
         return Utility.skipped;
     }
 
-    public static get defaultCollapsableState(): vscode.TreeItemCollapsibleState {
+    public static get defaultCollapsibleState(): vscode.TreeItemCollapsibleState {
         return Utility.autoExpandTree ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
     }
 
