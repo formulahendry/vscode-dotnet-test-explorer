@@ -9,11 +9,11 @@ export class GotoTest {
 
         AppInsightsClient.sendEvent("gotoTest");
 
-        const testname = this.getTestName(test.name);
+        const testName = this.getTestName(test.name);
 
         const symbolInformation = vscode.commands.executeCommand<vscode.SymbolInformation[]>(
             "vscode.executeWorkspaceSymbolProvider",
-            testname,
+            testName,
         ).then((symbols) => {
 
             let symbol: vscode.SymbolInformation;
@@ -46,7 +46,7 @@ export class GotoTest {
 
         const testName = this.getTestName(testNode.name);
 
-        symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method && s.name.replace("()", "") === testName);
+        symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method && this.getTestName(s.name) === testName);
 
         if (symbols.length === 0) {
             throw Error("Could not find test (no symbols matching)");
@@ -76,7 +76,8 @@ export class GotoTest {
             testName = testName.substring(lastDotIndex + 1);
         }
 
-        return testName;
+        // XUnit theories are in the format MethodName(paramName: paramValue) and when need to search just for the MethodName
+        return testName.replace(/(.*)(\(.*)/, "$1");
     }
 
     public getTestNamespace(testNode: TestNode): string {
