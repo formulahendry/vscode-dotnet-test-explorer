@@ -20,6 +20,10 @@ export class Utility {
         return Utility.skipped;
     }
 
+    public static get defaultCollapsibleState(): vscode.TreeItemCollapsibleState {
+        return Utility.autoExpandTree ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
+    }
+
     public static get pathForResultFile(): string {
         const pathForResultFile = Utility.getConfiguration().get<string>("pathForResultFile");
         return pathForResultFile ? this.resolvePath(pathForResultFile) : tmpdir();
@@ -37,6 +41,7 @@ export class Utility {
         Utility.failed = Utility.getLensText(configuration, "codeLensFailed", "\u274c"); // Cross Mark
         Utility.passed = Utility.getLensText(configuration, "codeLensPassed", osx ? "\u2705" : "\u2714"); // White Heavy Check Mark / Heavy Check Mark
         Utility.skipped = Utility.getLensText(configuration, "codeLensSkipped", "\u26a0"); // Warning
+        Utility.autoExpandTree = configuration.get<boolean>("autoExpandTree", false);
     }
 
     /**
@@ -53,6 +58,7 @@ export class Utility {
             : path.resolve(vscode.workspace.rootPath, dir);
     }
 
+    private static autoExpandTree: boolean;
     private static showCodeLens: boolean;
     private static failed: string;
     private static passed: string;

@@ -52,7 +52,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         return {
             label: element.name,
-            collapsibleState: element.isFolder ? TreeItemCollapsibleState.Collapsed : void 0,
+            collapsibleState: element.isFolder ? Utility.defaultCollapsibleState : void 0,
             iconPath: element.icon ? {
                 dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
                 light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),

@@ -180,6 +180,11 @@
           "type": "string",
           "default": "",
           "description": "The path to (temporarily) store test result files in"
+        },
+        "dotnet-test-explorer.autoExpandTree": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the tree will be in an expanded state by default"
         }
       }
     },
