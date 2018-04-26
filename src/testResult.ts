@@ -23,6 +23,12 @@ export class TestResult {
         return (this.method === method) && this.className.endsWith(className);
     }
 
+    public matchesTheory(className: string, method: string): boolean {
+        // Theory methodes include also the parameters,
+        // so the "(" character identifies the method as a theory method.
+        return (this.method.indexOf(`${method}(`) > -1) && this.className.endsWith(className);
+    }
+
     public updateName(className: string, method: string): void {
         this.className = className;
 

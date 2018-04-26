@@ -45,7 +45,7 @@ export class TestCommands {
     }
 
     public runTestByName(testName: string): void {
-        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName}`;
+        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
