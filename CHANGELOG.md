@@ -1,4 +1,5 @@
 ## 0.2.3 ()
+* [#67](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/67): Option to auto expand tree
 * [#62](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/62): Better support for xunit theories
 * [#51](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/51): TreeView support for NUnit and MSTest
 
