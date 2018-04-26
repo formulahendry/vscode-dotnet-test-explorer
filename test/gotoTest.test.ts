@@ -95,6 +95,21 @@ suite("Find test location", () => {
         assert.equal(result.location.uri.fsPath, vscode.Uri.parse("c:\\temp\\test.txt").fsPath);
     });
 
+    test("Match with multiple symbols matching start of name for xunit theory", () => {
+        const symbols = [
+            GetSymbol("Test3", vscode.SymbolKind.Method, "c:\\temp\\test3.txt"),
+            GetSymbol("Test2", vscode.SymbolKind.Method, "c:\\temp\\test2.txt"),
+            GetSymbol("Test(param: value)",  vscode.SymbolKind.Method, "c:\\temp\\test.txt"),
+        ];
+
+        const testNode = new TestNode("", "Test", null);
+
+        const gotoTest = new GotoTest();
+        const result = gotoTest.findTestLocation(symbols, testNode);
+
+        assert.equal(result.location.uri.fsPath, vscode.Uri.parse("c:\\temp\\test.txt").fsPath);
+    });
+
     test("Match with multiple symbols matching namespace with uri", () => {
         const symbols = [
             GetSymbol("Test3", vscode.SymbolKind.Method, "file:\\c:/temp/test3.txt"),
@@ -137,10 +152,26 @@ suite("Get test names", () => {
         assert.equal(result, "Test");
     });
 
+    test("XUnit theory name without namespace", () => {
+
+        const gotoTest = new GotoTest();
+        const result = gotoTest.getTestName("Test(param: value)");
+
+        assert.equal(result, "Test");
+    });
+
     test("Test name with namespace", () => {
 
         const gotoTest = new GotoTest();
         const result = gotoTest.getTestName("Name.Space.Test");
+
+        assert.equal(result, "Test");
+    });
+
+    test("XUnit theory name with namespace", () => {
+
+        const gotoTest = new GotoTest();
+        const result = gotoTest.getTestName("Name.Space.Test(param: value)");
 
         assert.equal(result, "Test");
     });
