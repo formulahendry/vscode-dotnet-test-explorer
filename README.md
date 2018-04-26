@@ -43,6 +43,7 @@ There is also an option to execute test in context of the current cursor. This i
 * `dotnet-test-explorer.codeLensPassed`: The text to display in the code lens when a test has passed. (Default is **""**)
 * `dotnet-test-explorer.codeLensSkipped`: The text to display in the code lens when a test has been skipped. (Default is **""**)
 * `dotnet-test-explorer.pathForResultFile`: The path to (temporarily) store test result files in. (Default is os temp dir)
+* `dotnet-test-explorer.autoExpandTree`: If true, the tree will be in an expanded state by default. (Default is **false**)
 
 ## Known issues
 
@@ -50,10 +51,10 @@ There is also an option to execute test in context of the current cursor. This i
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too.
 
 ##### No tree view or color coded explorer for nunit / mstest
-This is because of the way test discovery is implemented for nunit / mstest. Work is in progress to better support these test frameworks.
+This requieres you to run dotnet sdk version 2.1.104 or higher.
 
 ##### DisplayName attribute not working for xunit
-Same problem as above.
+See [#56](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/56)
 
 ## Telemetry data
 
