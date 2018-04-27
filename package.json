@@ -2,7 +2,7 @@
   "name": "dotnet-test-explorer",
   "displayName": ".NET Core Test Explorer",
   "description": "Test Explorer for .NET Core (MSTest, xUnit, NUnit)",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "publisher": "formulahendry",
   "license": "MIT",
   "icon": "logo.png",
