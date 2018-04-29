@@ -84,7 +84,7 @@
         {
           "command": "dotnet-test-explorer.refreshTestExplorer",
           "when": "view == dotnetTestExplorer",
-          "group": "navigation@2"
+          "group": "navigation@1"
         },
         {
           "command": "dotnet-test-explorer.runAllTests",
