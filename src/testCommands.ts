@@ -13,6 +13,7 @@ import { Utility } from "./utility";
 
 export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
+    private onTestRunEmitter = new EventEmitter<string>();
     private testDirectoryPath: string;
     private lastRunCommand: string;
 
@@ -31,6 +32,7 @@ export class TestCommands {
         const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
         this.lastRunCommand = command;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        this.onTestRunEmitter.fire("");
         Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runAllTests");
     }
@@ -50,6 +52,7 @@ export class TestCommands {
         const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
         this.lastRunCommand = command;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        this.onTestRunEmitter.fire(testName);
         Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
     }
@@ -84,6 +87,10 @@ export class TestCommands {
 
     public get onNewTestDiscovery(): Event<string[]> {
         return this.onNewTestDiscoveryEmitter.event;
+    }
+
+    public get onTestRun(): Event<string> {
+        return this.onTestRunEmitter.event;
     }
 
     /**

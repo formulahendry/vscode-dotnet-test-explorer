@@ -42,12 +42,14 @@ export class TestNode {
         this._name = error;
     }
 
-    public setAsLoading() {
+    public setAsLoading(name?: string) {
         this._isLoading = true;
-        this._name = "Discovering tests";
+        if (name) {
+            this._name = "Discovering tests";
+        }
     }
 
-    private setIcon(testResults: TestResult[]) {
+    public setIcon(testResults: TestResult[]) {
         if (!testResults) {
             this._icon = this.isFolder ? "namespace.png" : "run.png";
         } else {
