@@ -14,6 +14,7 @@ import { Utility } from "./utility";
 export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
     private testDirectoryPath: string;
+    private lastRunCommand: string;
 
     constructor(
         private resultsFile: TestResultsFile,
@@ -28,6 +29,7 @@ export class TestCommands {
      */
     public runAllTests(): void {
         const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+        this.lastRunCommand = command;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runAllTests");
@@ -46,9 +48,18 @@ export class TestCommands {
 
     public runTestByName(testName: string): void {
         const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+        this.lastRunCommand = command;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         Executor.runInTerminal(command, this.testDirectoryPath);
         AppInsightsClient.sendEvent("runTest");
+    }
+
+    public rerunLastCommand(): void {
+        if (this.lastRunCommand) {
+            Logger.Log(`Executing ${this.lastRunCommand} in ${this.testDirectoryPath}`);
+            Executor.runInTerminal(this.lastRunCommand, this.testDirectoryPath);
+            AppInsightsClient.sendEvent("rerunLastCommand");
+        }
     }
 
     public discoverTests() {

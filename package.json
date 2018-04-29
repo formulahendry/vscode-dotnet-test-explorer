@@ -49,7 +49,7 @@
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
         }
-      },
+      },   
       {
         "command": "dotnet-test-explorer.runAllTests",
         "title": "Run All Tests",
@@ -191,9 +191,19 @@
     "keybindings": [
       {
         "command": "dotnet-test-explorer.runTestInContext",
-        "key": "alt+r alt+u",
-        "mac": "alt+r alt+u",
+        "key": "alt+r alt+c",
+        "mac": "alt+r alt+c",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "dotnet-test-explorer.rerunLastCommand",
+        "key": "alt+r alt+r",
+        "mac": "alt+r alt+r"
+      },
+      {
+        "command": "dotnet-test-explorer.runAllTests",
+        "key": "alt+r alt+a",
+        "mac": "alt+r alt+a"
       }
     ]
   },
