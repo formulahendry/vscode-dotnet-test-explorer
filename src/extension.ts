@@ -69,6 +69,10 @@ export function activate(context: vscode.ExtensionContext) {
         gotoTest.go(test);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.rerunLastCommand", (test: TestNode) => {
+        testCommands.rerunLastCommand();
+    }));
+
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
         Executor.onDidCloseTerminal(closedTerminal);
     }));
