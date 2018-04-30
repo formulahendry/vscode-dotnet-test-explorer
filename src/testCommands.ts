@@ -30,12 +30,7 @@ export class TestCommands {
      * to do a restore, so it can be very slow.
      */
     public runAllTests(): void {
-        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
-        this.lastRunCommand = command;
-        this.lastRunTestName = "";
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        this.onTestRunEmitter.fire("");
-        Executor.runInTerminal(command, this.testDirectoryPath);
+        this.runTestCommand("");
         AppInsightsClient.sendEvent("runAllTests");
     }
 
@@ -51,12 +46,7 @@ export class TestCommands {
     }
 
     public runTestByName(testName: string): void {
-        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
-        this.lastRunCommand = command;
-        this.lastRunTestName = testName;
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        this.onTestRunEmitter.fire(testName);
-        Executor.runInTerminal(command, this.testDirectoryPath);
+        this.runTestCommand(testName);
         AppInsightsClient.sendEvent("runTest");
     }
 
@@ -95,6 +85,20 @@ export class TestCommands {
 
     public get onTestRun(): Event<string> {
         return this.onTestRunEmitter.event;
+    }
+
+    private runTestCommand(testName: string): void {
+        let command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+
+        if (testName && testName.length) {
+            command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+        }
+
+        this.lastRunCommand = command;
+        this.lastRunTestName = testName;
+        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        this.onTestRunEmitter.fire(testName);
+        Executor.runInTerminal(command, this.testDirectoryPath);
     }
 
     /**
