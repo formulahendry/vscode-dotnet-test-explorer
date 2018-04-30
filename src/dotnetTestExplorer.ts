@@ -25,7 +25,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile) {
         testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
-        testCommands.onTestRun(this.updateTreeWithRunningTests, this;)
+        testCommands.onTestRun(this.updateTreeWithRunningTests, this);
         resultsFile.onNewResults(this.addTestResults, this);
     }
 
@@ -165,7 +165,21 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private addTestResults(results: TestResult[]) {
-        this.testResults = results;
+
+        if (this.testResults) {
+            results.forEach( (newTestResult: TestResult) => {
+                const indexOldTestResult = this.testResults.findIndex( (tr) => tr.fullName === newTestResult.fullName);
+
+                if (indexOldTestResult < 0) {
+                    this.testResults.push(newTestResult);
+                } else {
+                    this.testResults[indexOldTestResult] = newTestResult;
+                }
+            });
+        } else {
+            this.testResults = results;
+        }
+
         this._onDidChangeTreeData.fire();
     }
 }

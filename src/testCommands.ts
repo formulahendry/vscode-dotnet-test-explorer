@@ -16,6 +16,7 @@ export class TestCommands {
     private onTestRunEmitter = new EventEmitter<string>();
     private testDirectoryPath: string;
     private lastRunCommand: string;
+    private lastRunTestName: string;
 
     constructor(
         private resultsFile: TestResultsFile,
@@ -31,6 +32,7 @@ export class TestCommands {
     public runAllTests(): void {
         const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
         this.lastRunCommand = command;
+        this.lastRunTestName = "";
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         this.onTestRunEmitter.fire("");
         Executor.runInTerminal(command, this.testDirectoryPath);
@@ -51,6 +53,7 @@ export class TestCommands {
     public runTestByName(testName: string): void {
         const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
         this.lastRunCommand = command;
+        this.lastRunTestName = testName;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         this.onTestRunEmitter.fire(testName);
         Executor.runInTerminal(command, this.testDirectoryPath);
@@ -60,6 +63,7 @@ export class TestCommands {
     public rerunLastCommand(): void {
         if (this.lastRunCommand) {
             Logger.Log(`Executing ${this.lastRunCommand} in ${this.testDirectoryPath}`);
+            this.onTestRunEmitter.fire(this.lastRunTestName);
             Executor.runInTerminal(this.lastRunCommand, this.testDirectoryPath);
             AppInsightsClient.sendEvent("rerunLastCommand");
         }
