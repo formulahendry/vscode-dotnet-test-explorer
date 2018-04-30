@@ -15,8 +15,7 @@ export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
     private onTestRunEmitter = new EventEmitter<string>();
     private testDirectoryPath: string;
-    private lastRunCommand: string;
-    private lastRunTestName: string;
+    private lastRunTestName: string = null;
 
     constructor(
         private resultsFile: TestResultsFile,
@@ -51,10 +50,8 @@ export class TestCommands {
     }
 
     public rerunLastCommand(): void {
-        if (this.lastRunCommand) {
-            Logger.Log(`Executing ${this.lastRunCommand} in ${this.testDirectoryPath}`);
-            this.onTestRunEmitter.fire(this.lastRunTestName);
-            Executor.runInTerminal(this.lastRunCommand, this.testDirectoryPath);
+        if (this.lastRunTestName != null) {
+            this.runTestCommand(this.lastRunTestName);
             AppInsightsClient.sendEvent("rerunLastCommand");
         }
     }
@@ -94,7 +91,6 @@ export class TestCommands {
             command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
         }
 
-        this.lastRunCommand = command;
         this.lastRunTestName = testName;
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
         this.onTestRunEmitter.fire(testName);
