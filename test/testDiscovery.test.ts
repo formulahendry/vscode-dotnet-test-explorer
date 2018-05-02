@@ -53,8 +53,8 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWith(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result.testNames, testNames));
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
+            .then((result) => assert.deepEqual(result[0].testNames, testNames));
     });
 
     test("Promise rejected when dotnet test failing", () => {
@@ -63,7 +63,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, error);
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
             .then((r) => { throw new Error("Promise was unexpectedly fulfilled. Result: " + r); })
             .catch((e) => assert.equal(e, error));
     });
@@ -72,8 +72,8 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput([], assemblyFilePath), "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result.testNames, []));
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
+            .then((result) => assert.deepEqual(result[0].testNames, []));
     });
 
     test("Fully qualified test names returned using dotnet vstest when dotnet test output is missing fq names", () => {
@@ -89,8 +89,8 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result.testNames, fqTestNames));
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
+            .then((result) => assert.deepEqual(result[0].testNames, fqTestNames));
     });
 
     test("Promise rejected when dotnet vstest output file read operation fails", () => {
@@ -106,7 +106,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
             .then((r) => { throw new Error("Promise was unexpectedly fulfilled. Result: " + r); })
             .catch((e) => assert.equal(e, error));
     });
@@ -121,7 +121,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, error, "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
             .then((r) => { throw new Error("Promise was unexpectedly fulfilled. Result: " + r); })
             .catch((e) => assert.equal(e, error));
     });
@@ -133,7 +133,7 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, dotnetTestOutput, "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
             .then((r) => { throw new Error("Promise was unexpectedly fulfilled. Result: " + r); })
             .catch((e) => {
                 assert.equal(e.message, errorMessage);
@@ -154,7 +154,7 @@ suite("Test discovery", () => {
 
         fsExistsSyncStub.withArgs(vsTestOutputFilePath).returns(true);
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
             .then((r) => {
                 assert(fsUnlinkSyncStub.calledAfter(fsReadFileStub), "unlinkSync must be called after readFile");
                 assert(fsUnlinkSyncStub.calledWith(vsTestOutputFilePath), "vstest output file must be deleted");
@@ -187,8 +187,8 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetVstestMultiProjectExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
-            .then((result) => assert.deepEqual(result.testNames, fqTestNames));
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
+            .then((result) => assert.deepEqual(result[0].testNames, fqTestNames));
     });
 
     test("Dotnet test results returned with a warning message when dotnet vstest /ListFullyQualifiedTests switch is not supported", () => {
@@ -200,11 +200,11 @@ suite("Test discovery", () => {
         execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, new Error(), "", getDotnetVstestListFqnFlagMissingErrorOutput());
 
-        return discoverTests(testDirectoryPath, dotnetTestOptions)
+        return discoverTests([testDirectoryPath], dotnetTestOptions)
             .then((result) => {
-                assert.deepEqual(result.testNames, testNames);
+                assert.deepEqual(result[0].testNames, testNames);
                 assert.deepEqual(
-                    result.warningMessage,
+                    result[0].warningMessage,
                     {
                         text: "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
                         type: "DOTNET_SDK_FQN_NOT_SUPPORTED",

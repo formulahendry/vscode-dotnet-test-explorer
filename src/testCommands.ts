@@ -13,7 +13,7 @@ import { Utility } from "./utility";
 
 export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
-    private testDirectoryPath: string;
+    private testDirectoryPath: string[];
     private lastRunCommand: string;
 
     constructor(
@@ -64,18 +64,21 @@ export class TestCommands {
 
     public discoverTests() {
         this.evaluateTestDirectory();
-
+        let finalResult = [];
         discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
-            .then((result) => {
-                if (result.warningMessage) {
-                    Logger.LogWarning(result.warningMessage.text);
+            .then((results) => {
+                results.forEach((result) => {
+                    if (result.warningMessage) {
+                        Logger.LogWarning(result.warningMessage.text);
 
-                    this.messagesController.showWarningMessage(result.warningMessage);
-                }
+                        this.messagesController.showWarningMessage(result.warningMessage);
+                    }
+                    finalResult = finalResult.concat(result.testNames);
+                });
 
-                this.onNewTestDiscoveryEmitter.fire(result.testNames);
-            })
-            .catch((err) => {
+                this.onNewTestDiscoveryEmitter.fire(finalResult);
+
+            }).catch((err) => {
                 Logger.LogError("Error while discovering tests", err);
 
                 this.onNewTestDiscoveryEmitter.fire([]);
@@ -95,14 +98,19 @@ export class TestCommands {
      * by default.
      */
     private evaluateTestDirectory(): void {
-        let testProjectFullPath = this.checkTestDirectoryOption();
-        testProjectFullPath = Utility.resolvePath(testProjectFullPath);
+        const testProjectFullPaths = this.checkTestDirectoryOption();
+        const finalsPath = [];
+        testProjectFullPaths.forEach((testProjectFullPath) => {
+            testProjectFullPath = Utility.resolvePath(testProjectFullPath);
 
-        if (!fs.existsSync(testProjectFullPath)) {
-            Logger.Log(`Path ${testProjectFullPath} is not valid`);
-        }
+            if (!fs.existsSync(testProjectFullPath)) {
+                Logger.Log(`Path ${testProjectFullPath} is not valid`);
+            }
 
-        this.testDirectoryPath = testProjectFullPath;
+            finalsPath.push(testProjectFullPath);
+        });
+
+        this.testDirectoryPath = finalsPath;
     }
 
     /**
@@ -158,9 +166,9 @@ export class TestCommands {
      * @summary
      * This will use the project root by default.
      */
-    private checkTestDirectoryOption(): string {
-        const option = Utility.getConfiguration().get<string>("testProjectPath");
-        return option ? option : vscode.workspace.rootPath;
+    private checkTestDirectoryOption(): string[] {
+        const option = Utility.getConfiguration().get<string[]>("testProjectPath");
+        return option ? option : [vscode.workspace.rootPath];
     }
 
 }
