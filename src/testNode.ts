@@ -44,10 +44,11 @@ export class TestNode {
 
     public setAsLoading() {
         this._isLoading = true;
-        this._name = "Discovering tests";
     }
 
-    private setIcon(testResults: TestResult[]) {
+    public setIcon(testResults: TestResult[]) {
+        this._isLoading = false;
+
         if (!testResults) {
             this._icon = this.isFolder ? "namespace.png" : "run.png";
         } else {
