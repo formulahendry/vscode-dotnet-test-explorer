@@ -154,7 +154,10 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private addTestResults(results: TestResult[]) {
-        this.testResults = results;
+        if (this.testResults === undefined) {
+            this.testResults = [];
+        }
+        this.testResults = this.testResults.concat(results);
         this._onDidChangeTreeData.fire();
     }
 }
