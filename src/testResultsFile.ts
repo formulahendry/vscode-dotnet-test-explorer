@@ -26,15 +26,27 @@ function getAttributeValue(node: Node, name: string): string {
     return (attribute === null) ? null : attribute.nodeValue;
 }
 
+function getTextContentForTag(parentNode: Node, tagName: string): string {
+    const node = parentNode.getElementsByTagName(tagName);
+    return node.length > 0 ? node[0].textContent : "";
+}
+
 function parseUnitTestResults(xml: Element): TestResult[] {
     const results: TestResult[] = [];
     const nodes = xml.getElementsByTagName("UnitTestResult");
 
     // TSLint wants to use for-of here, but nodes doesn't support it
     for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
+
+        const messageNodeForTest = nodes[i].getElementsByTagName("Message");
+
+        const messageTextForTest = messageNodeForTest.length > 0 ? messageNodeForTest[0].textContent : "";
+
         results.push(new TestResult(
             getAttributeValue(nodes[i], "testId"),
             getAttributeValue(nodes[i], "outcome"),
+            getTextContentForTag(nodes[i], "Message"),
+            getTextContentForTag(nodes[i], "StackTrace"),
         ));
     }
 

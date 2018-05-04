@@ -49,7 +49,7 @@
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
         }
-      },   
+      },
       {
         "command": "dotnet-test-explorer.runAllTests",
         "title": "Run All Tests",
