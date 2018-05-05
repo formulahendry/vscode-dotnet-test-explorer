@@ -38,10 +38,6 @@ function parseUnitTestResults(xml: Element): TestResult[] {
     // TSLint wants to use for-of here, but nodes doesn't support it
     for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
 
-        const messageNodeForTest = nodes[i].getElementsByTagName("Message");
-
-        const messageTextForTest = messageNodeForTest.length > 0 ? messageNodeForTest[0].textContent : "";
-
         results.push(new TestResult(
             getAttributeValue(nodes[i], "testId"),
             getAttributeValue(nodes[i], "outcome"),
