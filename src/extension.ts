@@ -26,6 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     Logger.Log("Starting extension");
 
     context.subscriptions.push(testResults);
+    context.subscriptions.push(problems);
 
     Utility.updateCache();
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {

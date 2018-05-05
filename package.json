@@ -185,6 +185,11 @@
           "type": "boolean",
           "default": false,
           "description": "If true, the tree will be in an expanded state by default"
+        },
+        "dotnet-test-explorer.addProblems": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, failed test will add to the problems view"
         }
       }
     },

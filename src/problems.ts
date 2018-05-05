@@ -1,53 +1,79 @@
-// at cas.normalizer.rccl.FileToObject.FileToObject.GetItineraryFileData(IEnumerable`1 rawDataRows) in D:\dev\cas-normalizer-rccl\cas-normalizer-rccl\FileToObject\FileToObject.cs:line 19
-// at cas.normalizer.rccl.tests.NormalizerTests.Brands() in D:\dev\cas-normalizer-rccl\cas-normalizer-rccl-tests\NormalizerTests.cs:line 173
-
 import * as path from "path";
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { TestNode } from "./testNode";
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
+import { Utility } from "./utility";
 
 export class Problems {
 
-    constructor(private resultsFile: TestResultsFile) {
-        resultsFile.onNewResults(this.addTestResults, this);
-    }
-
-    public createProblemsFromResults(results: TestResult[]) {
+    public static createProblemsFromResults(results: TestResult[]) {
         const resultsWithStackTrace = results
-            .filter( (tr) => tr.stackTrace)
-            .map( (tr) => tr.stackTrace);
+            .filter( (tr) => tr.stackTrace);
 
-        //const m = resultsWithStackTrace[0].match(/in (.*):line (.*)/m);
-
-        const regex = /in (.*):line (.*)/gm;
-
-        let m = regex.exec(resultsWithStackTrace[0]);
-        
-        const result = [];
-
-        while (m !== null) {
-            // This is necessary to avoid infinite loops with zero-width matches
-            if (m.index === regex.lastIndex) {
-                regex.lastIndex++;
-            }
-
-            result.push({file: m[1], lineNumber: m[2]} );
-
-            // The result can be accessed through the `m`-variable.
-            // m.forEach((match, groupIndex) => {
-                
-            //     //console.log(`Found match, group ${groupIndex}: ${match}`);
-            // });
-
-            m = regex.exec(resultsWithStackTrace[0]);
+        if (!resultsWithStackTrace.length) {
+            return [];
         }
 
-        console.log(result);
+        const problems = [];
+
+        resultsWithStackTrace.forEach( (testResult) => {
+
+            let m = Problems.regex.exec(testResult.stackTrace);
+
+            const resultsWithLinks = [];
+
+            while (m !== null) {
+                if (m.index === Problems.regex.lastIndex) {
+                    Problems.regex.lastIndex++;
+                }
+
+                resultsWithLinks.push({uri: m[1], lineNumber: parseInt(m[2], 10), message: testResult.message});
+                m = Problems.regex.exec(testResult.stackTrace);
+            }
+
+            problems.push(resultsWithLinks[resultsWithLinks.length - 1]);
+        });
+
+        return problems.reduce( (groups, item) => {
+            const val = item.uri;
+            groups[val] = groups[val] || [];
+            groups[val].push(new vscode.Diagnostic(new vscode.Range(item.lineNumber - 1, 0, item.lineNumber - 1, 100), item.message));
+            return groups;
+          }, {});
+    }
+
+    private static regex = /in (.*):line (.*)/gm;
+    private _diagnosticCollection: vscode.DiagnosticCollection;
+
+    constructor(private resultsFile: TestResultsFile) {
+        if (Utility.getConfiguration().get<boolean>("addProblems")) {
+            resultsFile.onNewResults(this.addTestResults, this);
+            this._diagnosticCollection = vscode.languages.createDiagnosticCollection("dotnet-test-explorer");
+        }
+    }
+
+    public dispose() {
+        if (this._diagnosticCollection) {
+            this._diagnosticCollection.dispose();
+        }
     }
 
     private addTestResults(results: TestResult[]) {
-        this.createProblemsFromResults(results);
+
+        this._diagnosticCollection.clear();
+
+        const problems = Problems.createProblemsFromResults(results);
+
+        const newDiagnostics: Array<[vscode.Uri, vscode.Diagnostic[]]> = [];
+
+        for (const problem in problems) {
+            if (problems.hasOwnProperty(problem)) {
+                newDiagnostics.push([vscode.Uri.file(problem), problems[problem]]);
+            }
+        }
+
+        this._diagnosticCollection.set(newDiagnostics);
     }
 }

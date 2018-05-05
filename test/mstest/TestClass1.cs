@@ -22,7 +22,7 @@ namespace MsTestTests { // Curly bracket on same line as namespace for testing n
         [TestMethod]
         public void Fail()
         {
-            (1+1).ShouldBe(2);
+            (1+1).ShouldBe(22);
         }        
     }
 }
