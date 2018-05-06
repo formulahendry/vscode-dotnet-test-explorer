@@ -21,7 +21,27 @@ namespace XunitTests
         [Fact]
         public void Fail()
         {
+            (1+new InnerC().Get()).ShouldBe(3);
+        }      
+
+                [Fact]
+        public void Fail2()
+        {
+            (1+new InnerC().Get()).ShouldBe(3);
+        }  
+
+                [Fact]
+        public void Fail3()
+        {
             (1+1).ShouldBe(3);
-        }        
+        }    
+    }
+
+    public class InnerC
+    {
+        public int Get() {
+            throw new Exception("");
+            return 3;
+        }
     }
 }
