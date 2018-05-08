@@ -1,4 +1,5 @@
 ## 0.2.4 ()
+* [#72](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/72): Add failed tests to problems view
 * [#70](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/70): Show spinner for currently running test(s)
 
 ## 0.2.3 (2018-04-27)
