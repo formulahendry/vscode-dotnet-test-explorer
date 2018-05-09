@@ -34,7 +34,7 @@
   "main": "./out/src/extension",
   "contributes": {
     "views": {
-      "explorer": [
+      "test": [
         {
           "id": "dotnetTestExplorer",
           "name": ".NET Test Explorer"
