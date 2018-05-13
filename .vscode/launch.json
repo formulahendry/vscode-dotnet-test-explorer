@@ -71,6 +71,20 @@
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
             "preLaunchTask": "npm"
+        },   
+        {
+            "name": "Launch Extension (multi nunittest)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/multinunittest",
+                "--extensionDevelopmentPath=${workspaceRoot}" 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "preLaunchTask": "npm"
         },           
         {
             "name": "Launch Tests",

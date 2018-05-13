@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 
-namespace MsTestTests { // Curly bracket on same line as namespace for testing namespace parsing
+namespace MsTestTests2 { // Curly bracket on same line as namespace for testing namespace parsing
 
     [TestClass]
     public class TestClass3 

@@ -1,32 +1,31 @@
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 using Shouldly;
 
-namespace MsTestTests2
+namespace NunitTests2
 {
-    [TestClass]
     public class TestClass4
     {
-        [TestMethod]
+        [Test]
         public void Pass()
         {
             (1+1).ShouldBe(2);
         }
 
-        [TestMethod]
+        [Test]
         public void Pass2()
         {
             (1+1).ShouldBe(2);
         }
 
-        [TestMethod]
+        [Test]
         public void Fail()
         {
             (1+1).ShouldBe(3);
         }   
 
-        [TestMethod]
-        [Ignore]
+        [Test]
+        [Ignore("Skipped")]
         public void SkippedTest()
         {
             (1+1).ShouldBe(3);
