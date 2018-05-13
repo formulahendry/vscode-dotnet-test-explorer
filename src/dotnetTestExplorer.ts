@@ -21,10 +21,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private testDirectoryPath: string;
     private discoveredTests: string[];
     private testResults: TestResult[];
-    private allNodes: TestNode[];
+    private allNodes: TestNode[] = [];
 
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile) {
         testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
+        testCommands.onTestRun(this.updateTreeWithRunningTests, this);
         resultsFile.onNewResults(this.addTestResults, this);
     }
 
@@ -50,6 +51,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             return new TreeItem(element.name);
         }
 
+        this.allNodes.push(element);
+
         return {
             label: element.name,
             collapsibleState: element.isFolder ? Utility.defaultCollapsibleState : void 0,
@@ -68,7 +71,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         if (!this.discoveredTests) {
-            const loadingNode = new TestNode("", "Loading...", this.testResults);
+            const loadingNode = new TestNode("", "Discovering tests", this.testResults);
             loadingNode.setAsLoading();
             return [loadingNode];
         }
@@ -110,8 +113,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         const root = this.createTestNode("", structuredTests);
 
-        this.allNodes = root;
-
         return root;
     }
 
@@ -149,15 +150,39 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private updateWithDiscoveredTests(results: string[]) {
+        this.allNodes = [];
         this.discoveredTests = results;
         this._onDidChangeTreeData.fire();
+    }
+
+    private updateTreeWithRunningTests(testName: string) {
+        const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && testNode.fullName.startsWith(testName) );
+
+        testRun.forEach( (testNode: TestNode) => {
+            testNode.setAsLoading();
+            this._onDidChangeTreeData.fire(testNode);
+        });
     }
 
     private addTestResults(results: TestResult[]) {
         if (this.testResults === undefined) {
             this.testResults = [];
         }
-        this.testResults = this.testResults.concat(results);
+
+        if (this.testResults) {
+            results.forEach( (newTestResult: TestResult) => {
+                const indexOldTestResult = this.testResults.findIndex( (tr) => tr.fullName === newTestResult.fullName);
+
+                if (indexOldTestResult < 0) {
+                    this.testResults.push(newTestResult);
+                } else {
+                    this.testResults[indexOldTestResult] = newTestResult;
+                }
+            });
+        } else {
+            this.testResults = results;
+        }
+
         this._onDidChangeTreeData.fire();
     }
 }

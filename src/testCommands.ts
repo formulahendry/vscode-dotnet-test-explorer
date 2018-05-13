@@ -15,6 +15,8 @@ export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
     private testDirectoryPath: string[];
     private lastRunCommand: string;
+    private onTestRunEmitter = new EventEmitter<string>();
+    private lastRunTestName: string = null;
 
     constructor(
         private resultsFile: TestResultsFile,
@@ -28,10 +30,7 @@ export class TestCommands {
      * to do a restore, so it can be very slow.
      */
     public runAllTests(): void {
-        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
-        this.lastRunCommand = command;
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        Executor.runInTerminal(command, this.testDirectoryPath);
+        this.runTestCommand("");
         AppInsightsClient.sendEvent("runAllTests");
     }
 
@@ -47,17 +46,13 @@ export class TestCommands {
     }
 
     public runTestByName(testName: string): void {
-        const command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()} --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
-        this.lastRunCommand = command;
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        Executor.runInTerminal(command, this.testDirectoryPath);
+        this.runTestCommand(testName);
         AppInsightsClient.sendEvent("runTest");
     }
 
     public rerunLastCommand(): void {
-        if (this.lastRunCommand) {
-            Logger.Log(`Executing ${this.lastRunCommand} in ${this.testDirectoryPath}`);
-            Executor.runInTerminal(this.lastRunCommand, this.testDirectoryPath);
+        if (this.lastRunTestName != null) {
+            this.runTestCommand(this.lastRunTestName);
             AppInsightsClient.sendEvent("rerunLastCommand");
         }
     }
@@ -87,6 +82,23 @@ export class TestCommands {
 
     public get onNewTestDiscovery(): Event<string[]> {
         return this.onNewTestDiscoveryEmitter.event;
+    }
+
+    public get onTestRun(): Event<string> {
+        return this.onTestRunEmitter.event;
+    }
+
+    private runTestCommand(testName: string): void {
+        let command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+
+        if (testName && testName.length) {
+            command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+        }
+
+        this.lastRunTestName = testName;
+        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        this.onTestRunEmitter.fire(testName);
+        Executor.runInTerminal(command, this.testDirectoryPath);
     }
 
     /**

@@ -8,6 +8,7 @@ import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
 import { Logger } from "./logger";
 import { MessagesController } from "./messages";
+import { Problems } from "./problems";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -20,10 +21,12 @@ export function activate(context: vscode.ExtensionContext) {
     const testCommands = new TestCommands(testResults, messagesController);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
+    const problems = new Problems(testResults);
 
     Logger.Log("Starting extension");
 
     context.subscriptions.push(testResults);
+    context.subscriptions.push(problems);
 
     Utility.updateCache();
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
