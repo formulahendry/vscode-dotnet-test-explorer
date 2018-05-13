@@ -13,13 +13,17 @@
 ## New in 0.2.4
 
 Test explorer has moved to the test view panel
+
 ![test-view](images/024-testview.png)
 
 Test being run are indicated by a spinner
+
 ![test-view](images/024-running.gif)
 
 Failed test adds to the problem terminal view. This can be turned off with a [setting](#settings)
+
 ![test-view](images/024-problems01.png)
+
 ![test-view](images/024-problems02.png)
 
 New [keyboard shortcuts](#keyboard-shortcuts) for re-running last test command and running all tests.
