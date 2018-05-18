@@ -9,6 +9,7 @@
 ## Prerequisites
 
 * [.NET Core](https://www.microsoft.com/net/core) is installed
+* NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2
 
 ## New in 0.3.0
 
@@ -62,7 +63,7 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
 
 ##### No tree view or color coded explorer for nunit / mstest
-This requieres you to run dotnet sdk version 2.1.104 or higher.
+This requieres you to run dotnet sdk version 2.1.2 or higher.
 
 ##### DisplayName attribute not working for xunit
 See [#56](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/56)
