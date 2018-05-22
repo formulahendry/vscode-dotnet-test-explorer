@@ -14,6 +14,7 @@ import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
+import { TestManager } from "./vsTestPlatform/vsCode/vsTest/vsTestManager";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
@@ -43,6 +44,13 @@ export function activate(context: vscode.ExtensionContext) {
     AppInsightsClient.sendEvent("loadExtension");
 
     testCommands.discoverTests();
+
+    TestManager.initialize(this.context, vscode.workspace.rootPath).then(() => {
+        // this.isTestExplorerInitialized = true;
+        // this._onDidChangeTreeData.fire();
+        const testService = TestManager.getInstance().getTestService();
+        testCommands.vsDiscoverTests(testService);
+    });
 
     const codeLensProvider = new TestStatusCodeLensProvider(testResults);
     context.subscriptions.push(codeLensProvider);

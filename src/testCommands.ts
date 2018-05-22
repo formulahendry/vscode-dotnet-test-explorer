@@ -10,6 +10,7 @@ import { discoverTests } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
+import { VSTestServiceIDE } from "./vsTestPlatform/vsCode/vsTest/vsTestServiceIDE";
 
 export class TestCommands {
     private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
@@ -74,6 +75,17 @@ export class TestCommands {
 
                 this.onNewTestDiscoveryEmitter.fire([]);
             });
+    }
+
+    public vsDiscoverTests(testService: VSTestServiceIDE) {
+        testService.discoveryTests(vscode.workspace.rootPath).then((result) => {
+            if (result) {
+                // this._onDidChangeTreeData.fire();
+            } else {
+                // tslint:disable-next-line:no-console
+                console.info("vsTestPlatform: No tests discovered.");
+            }
+        });
     }
 
     public get onNewTestDiscovery(): Event<string[]> {

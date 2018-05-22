@@ -230,6 +230,12 @@
   },
   "dependencies": {
     "applicationinsights": "^0.21.0",
-    "xmldom": "^0.1.27"
+    "xmldom": "^0.1.27",
+    "@types/fs-extra": "^3.0.1",
+    "@types/glob": "^5.0.30",
+    "amd-loader": "0.0.8",
+    "freeport": "^1.0.5",
+    "glob": "^7.1.2",
+    "typescript-collections": "^1.2.3"
   }
 }
