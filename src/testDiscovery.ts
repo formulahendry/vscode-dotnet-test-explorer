@@ -10,37 +10,42 @@ export interface IDiscoverTestsResult {
     warningMessage?: IMessage;
 }
 
-export function discoverTests(testDirectoryPath: string, dotnetTestOptions: string): Promise<IDiscoverTestsResult> {
-    return executeDotnetTest(testDirectoryPath, dotnetTestOptions)
-        .then((stdout) => {
-            const testNames = extractTestNames(stdout);
-            if (!isMissingFqNames(testNames)) {
-                return { testNames };
-            }
+export function discoverTests(testDirectoryPaths: string[], dotnetTestOptions: string): Promise<IDiscoverTestsResult[]> {
+    const promises = [];
+    testDirectoryPaths.forEach((testDirectoryPath) => {
+        promises.push(executeDotnetTest(testDirectoryPath, dotnetTestOptions)
+            .then((stdout) => {
+                const testNames = extractTestNames(stdout);
+                if (!isMissingFqNames(testNames)) {
+                    return { testNames };
+                }
 
-            const assemblyPaths = extractAssemblyPaths(stdout);
-            if (assemblyPaths.length === 0) {
-                throw new Error(`Couldn't extract assembly paths from dotnet test output: ${stdout}`);
-            }
+                const assemblyPaths = extractAssemblyPaths(stdout);
+                if (assemblyPaths.length === 0) {
+                    throw new Error(`Couldn't extract assembly paths from dotnet test output: ${stdout}`);
+                }
 
-            return discoverTestsWithVstest(assemblyPaths, testDirectoryPath)
-                .then((results) => {
-                    return { testNames: results };
-                })
-                .catch((error: Error) => {
-                    if (error instanceof ListFqnNotSupportedError) {
-                        return {
-                            testNames,
-                            warningMessage: {
-                                text: "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
-                                type: "DOTNET_SDK_FQN_NOT_SUPPORTED",
-                            },
-                        };
-                    }
+                return discoverTestsWithVstest(assemblyPaths, testDirectoryPath)
+                    .then((results) => {
+                        return { testNames: results };
+                    })
+                    .catch((error: Error) => {
+                        if (error instanceof ListFqnNotSupportedError) {
+                            return {
+                                testNames,
+                                warningMessage: {
+                                    text: "dotnet sdk >=2.1.2 required to retrieve fully qualified test names. Returning non FQ test names.",
+                                    type: "DOTNET_SDK_FQN_NOT_SUPPORTED",
+                                },
+                            };
+                        }
 
-                    throw error;
-                });
-        });
+                        throw error;
+                    });
+            }));
+    });
+
+    return Promise.all(promises) as Promise<IDiscoverTestsResult[]>;
 }
 
 function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string): Promise<string> {

@@ -137,7 +137,7 @@
           "description": "Whether to enable anonymous usage collection."
         },
         "dotnet-test-explorer.testProjectPath": {
-          "type": "string",
+          "type": "[]",
           "default": "",
           "description": "Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path."
         },

@@ -43,7 +43,49 @@
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
             "preLaunchTask": "npm"
-        },              
+        },      
+        {
+            "name": "Launch Extension (multi mstest)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/multimstest",
+                "--extensionDevelopmentPath=${workspaceRoot}" 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "preLaunchTask": "npm"
+        },   
+        {
+            "name": "Launch Extension (multi xunittest)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/multixunittest",
+                "--extensionDevelopmentPath=${workspaceRoot}" 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "preLaunchTask": "npm"
+        },   
+        {
+            "name": "Launch Extension (multi nunittest)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/multinunittest",
+                "--extensionDevelopmentPath=${workspaceRoot}" 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "preLaunchTask": "npm"
+        },           
         {
             "name": "Launch Tests",
             "type": "extensionHost",

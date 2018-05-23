@@ -3,15 +3,19 @@ import { exec, execSync } from "child_process";
 import * as vscode from "vscode";
 
 export class Executor {
-    public static runInTerminal(command: string, cwd?: string, addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
-        if (this.terminals[terminal] === undefined ) {
-            this.terminals[terminal] = vscode.window.createTerminal(terminal);
-        }
-        this.terminals[terminal].show();
-        if (cwd) {
-            this.terminals[terminal].sendText(`cd "${cwd}"`);
-        }
-        this.terminals[terminal].sendText(command, addNewLine);
+    public static runInTerminal(command: string, cwds?: string[], addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
+
+        cwds.forEach((cwd) => {
+            if (this.terminals[terminal] === undefined) {
+                this.terminals[terminal] = vscode.window.createTerminal(terminal);
+            }
+            this.terminals[terminal].show();
+            if (cwd) {
+                this.terminals[terminal].sendText(`cd "${cwd}"`);
+            }
+            this.terminals[terminal].sendText(command, addNewLine);
+        });
+
     }
 
     public static exec(command: string, callback, cwd?: string) {
