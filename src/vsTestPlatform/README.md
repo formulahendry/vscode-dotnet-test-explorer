@@ -8,7 +8,7 @@
 - [x] Test discovery works and can see result data in debug mode
   - [x] Mstest project
   - [x] Nunit project
-        - [x] Xunit projet
+  - [x] Xunit projet
 - [ ] Test execution works and can see result data in debug mode
   - [ ] Mstest project
   - [ ] Nunit project
