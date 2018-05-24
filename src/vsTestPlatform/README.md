@@ -16,11 +16,12 @@
 - [] Does it perform better than than running `dotnet vstest` and parsing TRX?
 - [] Are test discivery results and test execution results data schema the smae for key data?
 - [] What new data do we have available?
+- [] Can it handle multiple test projects in a single workspace?
 
 
-# Before shipping TODO
+# Track before shipping TODO
 
-- [] Works cross platform
-- [] Unit tests for VS Test Platform
-- [] Auto discover config for execution host i.e. what is currently hardcoded in config.ts
-- [] TSLint currently ignores **/src/vsTestPlatform/**/**.*. Undo and make TSLint happy (there'll be a lot). Leave winbase* excluded.
+- Works cross platform
+- Unit tests for VS Test Platform
+- Auto discover config for execution host i.e. what is currently hardcoded in config.ts
+- TSLint currently ignores **/src/vsTestPlatform/**/**.*. Undo and make TSLint happy (there'll be a lot). Leave winbase* excluded.
