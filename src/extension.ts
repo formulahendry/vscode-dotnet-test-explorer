@@ -48,7 +48,9 @@ export function activate(context: vscode.ExtensionContext) {
     TestManager.initialize(this.context, vscode.workspace.rootPath).then(() => {
         // this.isTestExplorerInitialized = true;
         // this._onDidChangeTreeData.fire();
-        const testService = TestManager.getInstance().getTestService();
+        const testManagerInstance = TestManager.getInstance();
+        const testService = testManagerInstance.getTestService();
+        testManagerInstance.testOutputChannel.appendData("Initialized TestManaer");
         testCommands.vsDiscoverTests(testService);
     });
 
