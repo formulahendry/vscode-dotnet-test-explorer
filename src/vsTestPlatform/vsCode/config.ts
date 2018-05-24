@@ -12,8 +12,9 @@ export function getConfigurationForAdatper(): IVSTestConfig {
     return {
         "output": "bin/debug", // isn't this the convention
         "framework": "netcoreapp2.0", // used to construct path. can come from *.test.csproj
-        "outputFileName": "NunitTests.dll"
-        // "outputFileName": "MsTestTests.dll"
+        // "outputFileName": "NunitTests.dll"
+        // "outputFileName": "XunitTests.dll"
+        "outputFileName": "MsTestTests.dll"
     }
 }
 

@@ -179,7 +179,7 @@ export class VSTestService {
                             this.getModel().addTest(testCase);
                         });
                     }
-
+                    console.log(this.testModel.getTests()[0]);
                     resolve(testDiscoveryResults);
                 })
             }

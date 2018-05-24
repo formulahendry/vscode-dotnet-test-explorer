@@ -87,6 +87,8 @@ export class VSTestSession extends RawProtocolSession {
      * @param message The message rcv
      */
     protected onProtocolMessage(message: VSTestProtocol.ProtocolMessage): void {
+        console.log("-");
+        console.log(message);
         switch (message.MessageType) {
             case "TestSession.Connected":
                 this._onDidTestSessionConnected.fire();
