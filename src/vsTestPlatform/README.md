@@ -1,24 +1,24 @@
 # Evaluation TODO
 
 - [x] Get vstest platform code minimally working
-        - [x] convert spawn to macOS
-        - [x] vstest server spawns
-        - [x] can make version request and get response successfully
+  - [x] convert spawn to macOS
+  - [x] vstest server spawns
+  - [x] can make version request and get response successfully
 - [x] Add license from source to all files
 - [x] Test discovery works and can see result data in debug mode
-        - [x] Mstest project
-        - [x] Nunit project
+  - [x] Mstest project
+  - [x] Nunit project
         - [x] Xunit projet
-- [] Test execution works and can see result data in debug mode
-        - [] Mstest project
-        - [] Nunit project
-        - [] Xunit project
-- [] Does it perform better than than running `dotnet vstest` and parsing TRX?
+- [ ] Test execution works and can see result data in debug mode
+  - [ ] Mstest project
+  - [ ] Nunit project
+  - [ ] Xunit project
+- [ ] Does it perform better than than running `dotnet vstest` and parsing TRX?
 - [x] Check if test **discovery** results data schema are the smae across test frameworks for key data?
-        - displayName value is FQN for Xunit but not for Nunit and Mstest. See examples below. Believe this is the same as TRX.
-- [] Check if test **execution** results data schema are the smae across test frameworks for key data?
-- [] Check what new data do we have available?
-- [] Can it handle multiple test projects in a single workspace?
+  - displayName value is FQN for Xunit but not for Nunit and Mstest. See examples below. Believe this is the same as TRX.
+- [ ] Check if test **execution** results data schema are the smae across test frameworks for key data?
+- [ ] Check what new data do we have available?
+- [ ] Can it handle multiple test projects in a single workspace?
 
 ## Track before shipping TODO
 
