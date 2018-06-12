@@ -88,7 +88,7 @@ export class TestCommands {
         let command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
 
         if (testName && testName.length) {
-            command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+            command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
         }
 
         this.lastRunTestName = testName;
