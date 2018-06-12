@@ -1,3 +1,6 @@
+## 0.3.1 ()
+* [#90](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/90): Adding double quotes to filter command line option
+
 ## 0.3.0 (2018-05-15)
 * [#74](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/74): Move the view to Test view container
 * [#72](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/72): Add failed tests to problems view
