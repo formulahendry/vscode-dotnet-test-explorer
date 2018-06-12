@@ -43,7 +43,21 @@
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
             "preLaunchTask": "npm"
-        },              
+        },      
+        {
+            "name": "Launch Extension (fsharp xunit)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/fsxunittests",
+                "--extensionDevelopmentPath=${workspaceRoot}" 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "preLaunchTask": "npm"
+        },
         {
             "name": "Launch Tests",
             "type": "extensionHost",
