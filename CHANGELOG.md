@@ -1,4 +1,5 @@
 ## 0.3.1 ()
+* [#92](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/92): Added setting to enable auto watching
 * [#90](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/90): Adding double quotes to filter command line option
 
 ## 0.3.0 (2018-05-15)
