@@ -89,6 +89,7 @@ export class TestCommands {
     }
 
     private runWatchCommand(): void {
+        AppInsightsClient.sendEvent("runWatchCommand");
         const command = `dotnet watch test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
 
         Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
