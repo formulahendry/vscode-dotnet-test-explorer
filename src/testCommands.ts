@@ -68,6 +68,10 @@ export class TestCommands {
                 }
 
                 this.onNewTestDiscoveryEmitter.fire(result.testNames);
+
+                if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+                    this.runWatchCommand();
+                }
             })
             .catch((err) => {
                 Logger.LogError("Error while discovering tests", err);
@@ -82,6 +86,13 @@ export class TestCommands {
 
     public get onTestRun(): Event<string> {
         return this.onTestRunEmitter.event;
+    }
+
+    private runWatchCommand(): void {
+        const command = `dotnet watch test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+
+        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+        Executor.runInTerminal(command, this.testDirectoryPath);
     }
 
     private runTestCommand(testName: string): void {

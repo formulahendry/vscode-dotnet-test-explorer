@@ -190,6 +190,11 @@
           "type": "boolean",
           "default": true,
           "description": "If true, failed test will add to the problems view"
+        },
+        "dotnet-test-explorer.autoWatch": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, starts dotnet watch test after test discovery is completed"
         }
       }
     },
