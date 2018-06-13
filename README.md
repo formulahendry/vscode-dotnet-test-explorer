@@ -11,23 +11,11 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2
 
-## New in 0.3.0
+## New in 0.3.1
 
-Test explorer has moved to the test view panel
+Setting for auto watching your test project. By setting dotnet-test-explorer.autoWatch to true dotnet watch test will be automatically set up to run your tests upon file changes.
 
-![test-view](images/024-testview.png)
-
-Test being run are indicated by a spinner
-
-![test-view](images/024-running.gif)
-
-Failed test adds to the problem terminal view. This can be turned off with a [setting](#settings)
-
-![test-view](images/024-problems01.png)
-
-![test-view](images/024-problems02.png)
-
-New [keyboard shortcuts](#keyboard-shortcuts) for re-running last test command and running all tests.
+This requires that the dotnet watch command is available (more info [here](https://github.com/aspnet/DotNetTools)) 
 
 ## Usage
 
@@ -56,6 +44,7 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 * `dotnet-test-explorer.pathForResultFile`: The path to (temporarily) store test result files in. (Default is os temp dir)
 * `dotnet-test-explorer.autoExpandTree`: If true, the tree will be in an expanded state by default. (Default is **false**)
 * `dotnet-test-explorer.addProblems`: If true, failed tests will add to problems view. (Default is **true**)
+* `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
 
 ## Known issues
 
