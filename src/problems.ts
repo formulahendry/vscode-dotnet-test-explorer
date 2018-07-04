@@ -39,7 +39,7 @@ export class Problems {
         return problems.reduce( (groups, item) => {
             const val = item.uri;
             groups[val] = groups[val] || [];
-            groups[val].push(new vscode.Diagnostic(new vscode.Range(item.lineNumber - 1, 0, item.lineNumber - 1, 100), item.message));
+            groups[val].push(new vscode.Diagnostic(new vscode.Range(item.lineNumber - 1, 0, item.lineNumber - 1, 10000), item.message));
             return groups;
           }, {});
     }

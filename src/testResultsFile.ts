@@ -1,4 +1,5 @@
 "use strict";
+import * as chokidar from "chokidar";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -115,7 +116,7 @@ export class TestResultsFile implements Disposable {
         if (!this.resultsFile) {
             const tempFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
             this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
-            this.watchFolder(tempFolder);
+            this.watchFolder(this.resultsFile);
         }
     }
 
@@ -131,18 +132,11 @@ export class TestResultsFile implements Disposable {
         });
     }
 
-    private watchFolder(folder: string): void {
-        // The change event gets called multiple times, so use a one-second
-        // delay before we read anything to avoid doing too much work
+    private watchFolder(resultsFile: string): void {
         const me = this;
-        let changeDelay: NodeJS.Timer;
-        this.watcher = fs.watch(folder, (eventType, fileName) => {
-            if (fileName === TestResultsFile.ResultsFileName) {
-                clearTimeout(changeDelay);
-                changeDelay = setTimeout(() => {
-                    me.parseResults();
-                }, 1000);
-            }
+
+        chokidar.watch(resultsFile).on("all", (event, file) => {
+            me.parseResults();
         });
     }
 }
