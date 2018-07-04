@@ -59,7 +59,7 @@ export class TestCommands {
     public discoverTests() {
         this.evaluateTestDirectory();
 
-        discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
+        discoverTests(this.testDirectoryPath, "")
             .then((result) => {
                 if (result.warningMessage) {
                     Logger.LogWarning(result.warningMessage.text);
@@ -128,30 +128,9 @@ export class TestCommands {
         this.testDirectoryPath = testProjectFullPath;
     }
 
-    /**
-     * @description
-     * Checks to see if the options specify that the dotnet-cli
-     * should run `dotnet build` before loading tests.
-     * @summary
-     * If this is set to **false**, then `--no-build` is passed into the
-     * command line arguments. It is prefixed by a space only if **false**.
-     */
-    private checkBuildOption(): string {
-        const option = Utility.getConfiguration().get<boolean>("build");
-        return option ? "" : " --no-build";
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify that the dotnet-cli
-     * should run `dotnet restore` before loading tests.
-     * @summary
-     * If this is set to **false**, then `--no-restore` is passed into the
-     * command line arguments. It is prefixed by a space only if **false**.
-     */
-    private checkRestoreOption(): string {
-        const option = Utility.getConfiguration().get<boolean>("restore");
-        return option ? "" : " --no-restore";
+    private checkAdditionalArgumentsOption(): string {
+        const testArguments = Utility.getConfiguration().get<string>("testArguments");
+        return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
     }
 
     /**
@@ -159,7 +138,7 @@ export class TestCommands {
      * Gets the options for build/restore before running tests.
      */
     private getDotNetTestOptions(): string {
-        return this.checkBuildOption() + this.checkRestoreOption();
+        return this.checkAdditionalArgumentsOption();
     }
 
     /**
