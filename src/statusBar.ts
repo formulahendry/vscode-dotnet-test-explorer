@@ -1,11 +1,5 @@
-import * as path from "path";
 import * as vscode from "vscode";
-import { AppInsightsClient } from "./appInsightsClient";
-import { TestCommands } from "./testCommands";
-import { TestNode } from "./testNode";
 import { TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
-import { Utility } from "./utility";
 
 export class StatusBar {
     private status: vscode.StatusBarItem;
