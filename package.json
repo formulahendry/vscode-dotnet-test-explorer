@@ -29,7 +29,8 @@
     "url": "https://github.com/formulahendry/vscode-dotnet-test-explorer.git"
   },
   "activationEvents": [
-    "onView:dotnetTestExplorer"
+    "onLanguage:csharp",
+    "onLanguage:fsharp"
   ],
   "main": "./out/src/extension",
   "contributes": {
