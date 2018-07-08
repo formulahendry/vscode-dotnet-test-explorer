@@ -1,8 +1,9 @@
 import * as path from "path";
-import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
+import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
+import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResult } from "./testResult";
@@ -23,7 +24,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private testResults: TestResult[];
     private allNodes: TestNode[] = [];
 
-    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile) {
+    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile, private statusBar: StatusBar) {
         testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
         resultsFile.onNewResults(this.addTestResults, this);
@@ -43,6 +44,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this._onDidChangeTreeData.fire();
 
         this.testCommands.discoverTests();
+
+        this.statusBar.discovering();
+
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
 
@@ -50,8 +54,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         if (element.isError) {
             return new TreeItem(element.name);
         }
-
-        this.allNodes.push(element);
 
         return {
             label: element.name,
@@ -93,6 +95,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         const structuredTests = {};
+
+        this.allNodes = [];
 
         this.discoveredTests.forEach((name: string) => {
             // this regex matches test names that include data in them - for e.g.
@@ -136,27 +140,35 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private createTestNode(parentPath: string, test: object | string): TestNode[] {
+        let testNodes: TestNode[];
+
         if (Array.isArray(test)) {
-            return test.map((t) => {
+            testNodes = test.map((t) => {
                 return new TestNode(parentPath, t, this.testResults);
             });
         } else if (typeof test === "object") {
-            return Object.keys(test).map((key) => {
+            testNodes = Object.keys(test).map((key) => {
                 return new TestNode(parentPath, key, this.testResults, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
             });
         } else {
-            return [new TestNode(parentPath, test, this.testResults)];
+            testNodes = [new TestNode(parentPath, test, this.testResults)];
         }
+
+        this.allNodes = this.allNodes.concat(testNodes);
+
+        return testNodes;
     }
 
     private updateWithDiscoveredTests(results: string[]) {
-        this.allNodes = [];
         this.discoveredTests = results;
         this._onDidChangeTreeData.fire();
+        this.statusBar.discovered(results.length);
     }
 
     private updateTreeWithRunningTests(testName: string) {
         const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && testNode.fullName.startsWith(testName) );
+
+        this.statusBar.testRunning(testRun.length);
 
         testRun.forEach( (testNode: TestNode) => {
             testNode.setAsLoading();
@@ -179,6 +191,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         } else {
             this.testResults = results;
         }
+
+        this.statusBar.testRun(results);
 
         this._onDidChangeTreeData.fire();
     }

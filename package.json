@@ -30,7 +30,8 @@
   },
   "activationEvents": [
     "onLanguage:csharp",
-    "onLanguage:fsharp"
+    "onLanguage:fsharp",
+    "onView:dotnetTestExplorer"
   ],
   "main": "./out/src/extension",
   "contributes": {
