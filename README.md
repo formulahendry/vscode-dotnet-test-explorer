@@ -45,7 +45,6 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 * `dotnet-test-explorer.autoExpandTree`: If true, the tree will be in an expanded state by default. (Default is **false**)
 * `dotnet-test-explorer.addProblems`: If true, failed tests will add to problems view. (Default is **true**)
 * `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
-* `dotnet-test-explorer.testArguments`: Additional arguments that are added to the dotnet test command
 
 ## Known issues
 
