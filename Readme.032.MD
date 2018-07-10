@@ -15,6 +15,10 @@
 
 Status bar shows number of tests discovered, how many tests that are running and test status.
 
+![statusbar](images/statusbar.gif)
+
+New setting for providing the dotnet test command with additional arguments, see dotnet-test-explorer.testArguments.
+
 ## Usage
 
 Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
