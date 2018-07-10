@@ -11,11 +11,9 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2
 
-## New in 0.3.1
+## New in 0.3.2
 
-Setting for auto watching your test project. By setting dotnet-test-explorer.autoWatch to true dotnet watch test will be automatically set up to run your tests upon file changes.
-
-This requires that the dotnet watch command is available (more info [here](https://github.com/aspnet/DotNetTools)) 
+Status bar shows number of tests discovered, how many tests that are running and test status.
 
 ## Usage
 
