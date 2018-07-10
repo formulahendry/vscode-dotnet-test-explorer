@@ -29,6 +29,8 @@
     "url": "https://github.com/formulahendry/vscode-dotnet-test-explorer.git"
   },
   "activationEvents": [
+    "onLanguage:csharp",
+    "onLanguage:fsharp",
     "onView:dotnetTestExplorer"
   ],
   "main": "./out/src/extension",
@@ -230,6 +232,7 @@
   },
   "dependencies": {
     "applicationinsights": "^0.21.0",
+    "chokidar": "^2.0.4",
     "xmldom": "^0.1.27"
   }
 }

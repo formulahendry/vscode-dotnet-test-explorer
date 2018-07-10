@@ -9,6 +9,7 @@ import { GotoTest } from "./gotoTest";
 import { Logger } from "./logger";
 import { MessagesController } from "./messages";
 import { Problems } from "./problems";
+import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
@@ -22,11 +23,13 @@ export function activate(context: vscode.ExtensionContext) {
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testResults);
+    const statusBar = new StatusBar();
 
     Logger.Log("Starting extension");
 
     context.subscriptions.push(testResults);
     context.subscriptions.push(problems);
+    context.subscriptions.push(statusBar);
 
     Utility.updateCache();
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
@@ -38,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
         Utility.updateCache();
     }));
 
-    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, testResults);
+    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, testResults, statusBar);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
