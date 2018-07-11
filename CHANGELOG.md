@@ -1,4 +1,4 @@
-## 0.3.2 ()
+## 0.4.0 (2018-07-11)
 * [#100](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/100): Status bar displays test status
 * [#97](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/97): Added setting for additional test arguments
 

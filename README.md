@@ -11,11 +11,15 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2
 
-## New in 0.3.1
+## New in 0.4.0
 
-Setting for auto watching your test project. By setting dotnet-test-explorer.autoWatch to true dotnet watch test will be automatically set up to run your tests upon file changes.
+Status bar shows number of tests discovered, how many tests that are running and test status.
 
-This requires that the dotnet watch command is available (more info [here](https://github.com/aspnet/DotNetTools)) 
+![statusbar](images/statusbar.gif)
+
+New setting for providing the dotnet test command with additional arguments, see `dotnet-test-explorer.testArguments`.
+
+(Note: `dotnet-test-explorer.build` and `dotnet-test-explorer.restore` settings are removed.)
 
 ## Usage
 
@@ -35,8 +39,6 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 
 * `dotnet-test-explorer.testProjectPath`: Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path. (Default is **""**)
 * `dotnet-test-explorer.useTreeView`: If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Default is **true**)
-* `dotnet-test-explorer.build`: If true, projects will be built when refreshing the test explorer. (Default is **true**)
-* `dotnet-test-explorer.restore`: If true, dotnet restore will run when refreshing the test explorer. (Default is **true**)
 * `dotnet-test-explorer.showCodeLens`: Determines whether to show the CodeLens test status or not. (Default is **true**)
 * `dotnet-test-explorer.codeLensFailed`: The text to display in the code lens when a test has failed. (Default is **""**)
 * `dotnet-test-explorer.codeLensPassed`: The text to display in the code lens when a test has passed. (Default is **""**)
@@ -45,6 +47,7 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 * `dotnet-test-explorer.autoExpandTree`: If true, the tree will be in an expanded state by default. (Default is **false**)
 * `dotnet-test-explorer.addProblems`: If true, failed tests will add to problems view. (Default is **true**)
 * `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
+* `dotnet-test-explorer.testArguments`: Additional arguments that are added to the dotnet test command
 
 ## Known issues
 
