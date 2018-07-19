@@ -64,6 +64,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
             } : void 0,
             contextValue: element.isFolder ? "folder" : "test",
+            command: element.isFolder ? null : {
+                command: "dotnet-test-explorer.leftClickTest",
+                title: "",
+                arguments: [element],
+            },
         };
     }
 
