@@ -15,11 +15,11 @@ export class Executor {
     }
 
     public static exec(command: string, callback, cwd?: string) {
-        return exec(command, { encoding: "utf8", cwd }, callback);
+        return exec(command, { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
     }
 
     public static execSync(command: string, cwd?: string) {
-        return execSync(command, { encoding: "utf8", cwd });
+        return execSync(command, { encoding: "utf8", maxBuffer: 5120000, cwd });
     }
 
     public static onDidCloseTerminal(closedTerminal: vscode.Terminal): void {
