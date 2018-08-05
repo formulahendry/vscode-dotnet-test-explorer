@@ -6,20 +6,24 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { IMessagesController } from "./messages";
-import { discoverTests } from "./testDiscovery";
+import { TestDirectories } from "./testDirectories";
+import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
+import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class TestCommands {
-    private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
+    private onNewTestDiscoveryEmitter = new EventEmitter<IDiscoverTestsResult[]>();
     private onTestRunEmitter = new EventEmitter<string>();
+    private onNewTestResultsEmitter = new EventEmitter<TestResult[]>();
     private testDirectoryPath: string;
     private lastRunTestName: string = null;
 
     constructor(
         private resultsFile: TestResultsFile,
-        private messagesController: IMessagesController) { }
+        private messagesController: IMessagesController,
+        private testDirectories: TestDirectories) { }
 
     /**
      * @description
@@ -57,30 +61,31 @@ export class TestCommands {
     }
 
     public discoverTests() {
-        this.evaluateTestDirectory();
+        this.testDirectories.clearTestsForDirectory();
 
-        discoverTests(this.testDirectoryPath, "")
-            .then((result) => {
-                if (result.warningMessage) {
-                    Logger.LogWarning(result.warningMessage.text);
+        Promise.all(this
+            .testDirectories
+            .getTestDirectories()
+            .map( (dir) => {
+                return discoverTests(dir, this.getDotNetTestOptions())
+                    .then( (discoveredTests: IDiscoverTestsResult) => {
+                        this.testDirectories.addTestsForDirectory(discoveredTests.testNames.map( (tn) => ({dir, name: tn})));
+                        return discoveredTests;
+                    });
+            }))
+            .then( (results) => {
+                this.onNewTestDiscoveryEmitter.fire(results);
 
-                    this.messagesController.showWarningMessage(result.warningMessage);
-                }
-
-                this.onNewTestDiscoveryEmitter.fire(result.testNames);
-
-                if (Utility.getConfiguration().get<boolean>("autoWatch")) {
-                    this.runWatchCommand();
-                }
+                // if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+                //     this.runWatchCommand();
+                // }
             })
-            .catch((err) => {
-                Logger.LogError("Error while discovering tests", err);
-
+            .catch( (reason) => {
                 this.onNewTestDiscoveryEmitter.fire([]);
             });
     }
 
-    public get onNewTestDiscovery(): Event<string[]> {
+    public get onNewTestDiscovery(): Event<IDiscoverTestsResult[]> {
         return this.onNewTestDiscoveryEmitter.event;
     }
 
@@ -88,25 +93,65 @@ export class TestCommands {
         return this.onTestRunEmitter.event;
     }
 
-    private runWatchCommand(): void {
-        AppInsightsClient.sendEvent("runWatchCommand");
-        const command = `dotnet watch test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
-
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        Executor.runInTerminal(command, this.testDirectoryPath);
+    public get onNewTestResults(): Event<TestResult[]> {
+        return this.onNewTestResultsEmitter.event;
     }
 
+    // private runWatchCommand(): void {
+    //     AppInsightsClient.sendEvent("runWatchCommand");
+    //     const command = `dotnet watch test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+
+    //     Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
+    //     Executor.runInTerminal(command, this.testDirectoryPath);
+    // }
+
     private runTestCommand(testName: string): void {
-        let command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
 
-        if (testName && testName.length) {
-            command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
-        }
+        const testDirectories = this
+            .testDirectories
+            .getTestDirectories(testName);
 
-        this.lastRunTestName = testName;
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        this.onTestRunEmitter.fire(testName);
-        Executor.runInTerminal(command, this.testDirectoryPath);
+        const testResults = [];
+
+        // We want to make sure test runs across multiple directories are run in sync to avoid excessive cpu usage
+        const runSeq = async () => {
+
+            for (let i = 0; i < testDirectories.length; i++) {
+                testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, i));
+            }
+
+            const merged = [].concat(...testResults);
+            this.onNewTestResultsEmitter.fire(merged);
+        };
+
+        runSeq();
+    }
+
+    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, index: number): Promise<TestResult[]> {
+
+        const trxTestName = index + ".trx";
+
+        return new Promise((resolve, reject) => {
+            const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
+            let command = `dotnet test${this.getDotNetTestOptions()} --logger \"trx;LogFileName=${testResultFile}\"`;
+
+            if (testName && testName.length) {
+                command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+            }
+
+            this.lastRunTestName = testName;
+            Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+            this.onTestRunEmitter.fire(testName);
+
+            Executor.exec(command, (err: Error, stdout: string, stderr: string) => {
+
+                Logger.Log(stdout);
+
+                this.resultsFile.parseResults(testResultFile).then( (result) => {
+                    resolve(result);
+                });
+            }, testDirectoryPath);
+        });
     }
 
     /**
@@ -139,18 +184,6 @@ export class TestCommands {
      */
     private getDotNetTestOptions(): string {
         return this.checkAdditionalArgumentsOption();
-    }
-
-    /**
-     * @description
-     * Gets the dotnet test argument to speicfy the output for the test results.
-     */
-    private outputTestResults(): string {
-        if (Utility.codeLensEnabled) {
-            return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
-        } else {
-            return "";
-        }
     }
 
     /**

@@ -11,6 +11,7 @@ import { MessagesController } from "./messages";
 import { Problems } from "./problems";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
+import { TestDirectories } from "./testDirectories";
 import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
@@ -18,14 +19,17 @@ import { Utility } from "./utility";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
+    const testDirectories = new TestDirectories();
     const messagesController = new MessagesController(context.globalState);
-    const testCommands = new TestCommands(testResults, messagesController);
+    const testCommands = new TestCommands(testResults, messagesController, testDirectories);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
-    const problems = new Problems(testResults);
+    const problems = new Problems(testCommands);
     const statusBar = new StatusBar();
 
     Logger.Log("Starting extension");
+
+    testDirectories.parseTestDirectories();
 
     context.subscriptions.push(testResults);
     context.subscriptions.push(problems);
@@ -34,8 +38,8 @@ export function activate(context: vscode.ExtensionContext) {
     Utility.updateCache();
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
 
-        if (e.affectsConfiguration("dotnet-test-explorer.pathForResultFile") && testResults) {
-            testResults.resetResultFilePath();
+        if (e.affectsConfiguration("dotnet-test-explorer.pathForResultFile")) {
+            testDirectories.parseTestDirectories();
         }
 
         Utility.updateCache();
@@ -47,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     testCommands.discoverTests();
 
-    const codeLensProvider = new TestStatusCodeLensProvider(testResults);
+    const codeLensProvider = new TestStatusCodeLensProvider(testCommands);
     context.subscriptions.push(codeLensProvider);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(
         { language: "csharp", scheme: "file" },

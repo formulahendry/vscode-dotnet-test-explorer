@@ -1,10 +1,11 @@
 import * as path from "path";
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import * as vscode from "vscode";
+import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
+import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
@@ -27,7 +28,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile, private statusBar: StatusBar) {
         testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
-        resultsFile.onNewResults(this.addTestResults, this);
+        testCommands.onNewTestResults(this.addTestResults, this);
     }
 
     /**
@@ -159,10 +160,10 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         return testNodes;
     }
 
-    private updateWithDiscoveredTests(results: string[]) {
-        this.discoveredTests = results;
+    private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
+        this.allNodes = [];
+        this.discoveredTests = [].concat(...results.map( (r) => r.testNames));
         this._onDidChangeTreeData.fire();
-        this.statusBar.discovered(results.length);
     }
 
     private updateTreeWithRunningTests(testName: string) {

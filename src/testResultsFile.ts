@@ -1,13 +1,8 @@
 "use strict";
-import * as chokidar from "chokidar";
 import * as fs from "fs";
-import * as os from "os";
-import * as path from "path";
-import { setTimeout } from "timers";
-import { Disposable, Event, EventEmitter } from "vscode";
+import { Disposable } from "vscode";
 import { DOMParser, Element, Node } from "xmldom";
 import { TestResult } from "./testResult";
-import { Utility } from "./utility";
 
 function findChildElement(node: Node, name: string): Node {
     let child = node.firstChild;
@@ -75,68 +70,109 @@ function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
 
 export class TestResultsFile implements Disposable {
     private static readonly ResultsFileName = "Results.trx";
-    private onNewResultsEmitter = new EventEmitter<TestResult[]>();
     private resultsFile: string;
     private watcher: fs.FSWatcher;
 
     public dispose(): void {
         try {
-            if (this.watcher) {
-                this.watcher.close();
-            }
-
-            if (this.resultsFile) {
-                // When we ask for a random directory it creates one for us,
-                // however, we can't delete it if there's a file inside of it
-                if (fs.existsSync(this.resultsFile)) {
-                    fs.unlinkSync(this.resultsFile);
-                }
-
-                fs.rmdir(path.dirname(this.resultsFile));
-            }
-
+            // Clear all files
+            // if (this.resultsFile) {
+            //     // When we ask for a random directory it creates one for us,
+            //     // however, we can't delete it if there's a file inside of it
+            //     if (fs.existsSync(this.resultsFile)) {
+            //         fs.unlinkSync(this.resultsFile);
+            //     }
+            //     fs.rmdir(path.dirname(this.resultsFile));
+            // }
         } catch (error) {
         }
-    }
-
-    public get fileName(): string {
-        this.ensureTemproaryPathExists();
-        return this.resultsFile;
     }
 
     public resetResultFilePath() {
         this.resultsFile = null;
     }
 
-    public get onNewResults(): Event<TestResult[]> {
-        return this.onNewResultsEmitter.event;
-    }
+    public parseResults(filePath: string): Promise<TestResult[]> {
+        return new Promise( (resolve, reject) => {
+            let results: TestResult[];
+            fs.readFile(filePath, (err, data) => {
+                if (!err) {
+                    const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
+                    results = parseUnitTestResults(xdoc.documentElement);
 
-    private ensureTemproaryPathExists(): void {
-        if (!this.resultsFile) {
-            const tempFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
-            this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
-            this.watchFolder(this.resultsFile);
-        }
-    }
+                    updateUnitTestDefinitions(xdoc.documentElement, results);
+                    resolve(results);
+                }
+            });
 
-    private parseResults(): void {
-        const emitter = this.onNewResultsEmitter;
-        fs.readFile(this.resultsFile, (err, data) => {
-            if (!err) {
-                const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
-                const results = parseUnitTestResults(xdoc.documentElement);
-                updateUnitTestDefinitions(xdoc.documentElement, results);
-                emitter.fire(results);
-            }
-        });
-    }
-
-    private watchFolder(resultsFile: string): void {
-        const me = this;
-
-        chokidar.watch(resultsFile).on("all", (event, file) => {
-            me.parseResults();
         });
     }
 }
+
+// export class TestResultsFile implements Disposable {
+//     private static readonly ResultsFileName = "Results.trx";
+//     private onNewResultsEmitter = new EventEmitter<TestResult[]>();
+//     private resultsFile: string;
+//     private watcher: fs.FSWatcher;
+
+//     public dispose(): void {
+//         try {
+//             if (this.watcher) {
+//                 this.watcher.close();
+//             }
+
+//             if (this.resultsFile) {
+//                 // When we ask for a random directory it creates one for us,
+//                 // however, we can't delete it if there's a file inside of it
+//                 if (fs.existsSync(this.resultsFile)) {
+//                     fs.unlinkSync(this.resultsFile);
+//                 }
+
+//                 fs.rmdir(path.dirname(this.resultsFile));
+//             }
+
+//         } catch (error) {
+//         }
+//     }
+
+//     public get fileName(): string {
+//         this.ensureTemproaryPathExists();
+//         return this.resultsFile;
+//     }
+
+//     public resetResultFilePath() {
+//         this.resultsFile = null;
+//     }
+
+//     public get onNewResults(): Event<TestResult[]> {
+//         return this.onNewResultsEmitter.event;
+//     }
+
+//     private ensureTemproaryPathExists(): void {
+//         if (!this.resultsFile) {
+//             const tempFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
+//             this.resultsFile = path.join(tempFolder, TestResultsFile.ResultsFileName);
+//             this.watchFolder(this.resultsFile);
+//         }
+//     }
+
+//     private parseResults(): void {
+//         const emitter = this.onNewResultsEmitter;
+//         fs.readFile(this.resultsFile, (err, data) => {
+//             if (!err) {
+//                 const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
+//                 const results = parseUnitTestResults(xdoc.documentElement);
+//                 updateUnitTestDefinitions(xdoc.documentElement, results);
+//                 emitter.fire(results);
+//             }
+//         });
+//     }
+
+//     private watchFolder(resultsFile: string): void {
+//         const me = this;
+
+//         chokidar.watch(resultsFile).on("all", (event, file) => {
+//             me.parseResults();
+//         });
+//     }
+// }

@@ -1,5 +1,6 @@
 "use strict";
 import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument } from "vscode";
+import { TestCommands } from "./testCommands";
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
@@ -15,9 +16,9 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     // a memory impact)
     private testResults = new Map<string, TestResult>();
 
-    public constructor(testResultFile: TestResultsFile) {
+    public constructor(testCommands: TestCommands) {
         this.disposables.push(
-            testResultFile.onNewResults(this.addTestResults, this));
+            testCommands.onNewTestResults(this.addTestResults, this));
     }
 
     public dispose() {

@@ -51,7 +51,7 @@ function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string)
 
         Executor.exec(command, (err: Error, stdout: string, stderr: string) => {
             if (err) {
-                Logger.LogError(`Error while executing ${command}`, err);
+                Logger.LogError(`Error while executing ${command}`, stdout);
 
                 reject(err);
                 return;
