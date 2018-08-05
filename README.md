@@ -54,6 +54,9 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 ##### Test result is not shown in codelens / tree
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
 
+##### Multiple workspaces and multiple test projects
+Currently the extension only support one workspace / test project.
+
 ##### No tree view or color coded explorer for nunit / mstest
 This requieres you to run dotnet sdk version 2.1.2 or higher and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
