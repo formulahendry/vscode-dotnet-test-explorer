@@ -63,22 +63,25 @@ export class TestCommands {
     public discoverTests() {
         this.testDirectories.clearTestsForDirectory();
 
-        Promise.all(this
-            .testDirectories
-            .getTestDirectories()
-            .map( (dir) => {
-                return discoverTests(dir, Utility.additionalArgumentsOption)
-                    .then( (discoveredTests: IDiscoverTestsResult) => {
-                        this.testDirectories.addTestsForDirectory(discoveredTests.testNames.map( (tn) => ({dir, name: tn})));
-                        return discoveredTests;
-                    });
-            }))
-            .then( (results) => {
-                this.onNewTestDiscoveryEmitter.fire(results);
-            })
-            .catch( (reason) => {
+        // We want to make sure test discovery across multiple directories are run in sequence to avoid excessive cpu usage
+        const runSeq = async () => {
+
+            const discoveredTests = [];
+
+            try {
+                for (const dir of this.testDirectories.getTestDirectories()) {
+                    const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
+                    this.testDirectories.addTestsForDirectory(testsForDir.testNames.map( (tn) => ({dir, name: tn})));
+                    discoveredTests.push(testsForDir);
+                }
+
+                this.onNewTestDiscoveryEmitter.fire(discoveredTests);
+            } catch (error) {
                 this.onNewTestDiscoveryEmitter.fire([]);
-            });
+            }
+        };
+
+        runSeq();
     }
 
     public get onNewTestDiscovery(): Event<IDiscoverTestsResult[]> {
@@ -105,7 +108,7 @@ export class TestCommands {
 
         const testResults = [];
 
-        // We want to make sure test runs across multiple directories are run in sync to avoid excessive cpu usage
+        // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
         const runSeq = async () => {
 
             for (let i = 0; i < testDirectories.length; i++) {
