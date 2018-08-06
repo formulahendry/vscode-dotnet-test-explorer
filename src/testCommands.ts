@@ -75,10 +75,6 @@ export class TestCommands {
             }))
             .then( (results) => {
                 this.onNewTestDiscoveryEmitter.fire(results);
-
-                // if (Utility.getConfiguration().get<boolean>("autoWatch")) {
-                //     this.runWatchCommand();
-                // }
             })
             .catch( (reason) => {
                 this.onNewTestDiscoveryEmitter.fire([]);
@@ -100,14 +96,6 @@ export class TestCommands {
     public sendNewTestResults(testResults: TestResult[]) {
         this.onNewTestResultsEmitter.fire(testResults);
     }
-
-    // private runWatchCommand(): void {
-    //     AppInsightsClient.sendEvent("runWatchCommand");
-    //     const command = `dotnet watch test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
-
-    //     Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-    //     Executor.runInTerminal(command, this.testDirectoryPath);
-    // }
 
     private runTestCommand(testName: string): void {
 
@@ -157,18 +145,4 @@ export class TestCommands {
             }, testDirectoryPath);
         });
     }
-
-    // private checkAdditionalArgumentsOption(): string {
-    //     const testArguments = Utility.getConfiguration().get<string>("testArguments");
-    //     return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
-    // }
-
-    // /**
-    //  * @description
-    //  * Gets the options for build/restore before running tests.
-    //  */
-    // private getDotNetTestOptions(): string {
-    //     return this.checkAdditionalArgumentsOption();
-    // }
-
 }
