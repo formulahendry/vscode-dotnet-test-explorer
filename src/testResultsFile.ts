@@ -68,29 +68,7 @@ function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
     }
 }
 
-export class TestResultsFile implements Disposable {
-    private static readonly ResultsFileName = "Results.trx";
-    private resultsFile: string;
-    private watcher: fs.FSWatcher;
-
-    public dispose(): void {
-        try {
-            // Clear all files
-            // if (this.resultsFile) {
-            //     // When we ask for a random directory it creates one for us,
-            //     // however, we can't delete it if there's a file inside of it
-            //     if (fs.existsSync(this.resultsFile)) {
-            //         fs.unlinkSync(this.resultsFile);
-            //     }
-            //     fs.rmdir(path.dirname(this.resultsFile));
-            // }
-        } catch (error) {
-        }
-    }
-
-    public resetResultFilePath() {
-        this.resultsFile = null;
-    }
+export class TestResultsFile {
 
     public parseResults(filePath: string): Promise<TestResult[]> {
         return new Promise( (resolve, reject) => {

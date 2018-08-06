@@ -35,6 +35,7 @@ namespace XunitTests
         public void SkippedTest()
         {
             (1+1).ShouldBe(3);
-        }             
+        }     
     }
+    
 }

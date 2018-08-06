@@ -29,6 +29,11 @@ export class Utility {
         return pathForResultFile ? this.resolvePath(pathForResultFile) : tmpdir();
     }
 
+    public static get additionalArgumentsOption(): string {
+        const testArguments = Utility.getConfiguration().get<string>("testArguments");
+        return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
+    }
+
     public static getConfiguration(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }

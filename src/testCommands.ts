@@ -67,7 +67,7 @@ export class TestCommands {
             .testDirectories
             .getTestDirectories()
             .map( (dir) => {
-                return discoverTests(dir, this.getDotNetTestOptions())
+                return discoverTests(dir, Utility.additionalArgumentsOption)
                     .then( (discoveredTests: IDiscoverTestsResult) => {
                         this.testDirectories.addTestsForDirectory(discoveredTests.testNames.map( (tn) => ({dir, name: tn})));
                         return discoveredTests;
@@ -97,6 +97,10 @@ export class TestCommands {
         return this.onNewTestResultsEmitter.event;
     }
 
+    public sendNewTestResults(testResults: TestResult[]) {
+        this.onNewTestResultsEmitter.fire(testResults);
+    }
+
     // private runWatchCommand(): void {
     //     AppInsightsClient.sendEvent("runWatchCommand");
     //     const command = `dotnet watch test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
@@ -121,7 +125,7 @@ export class TestCommands {
             }
 
             const merged = [].concat(...testResults);
-            this.onNewTestResultsEmitter.fire(merged);
+            this.sendNewTestResults(merged);
         };
 
         runSeq();
@@ -133,7 +137,7 @@ export class TestCommands {
 
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
-            let command = `dotnet test${this.getDotNetTestOptions()} --logger \"trx;LogFileName=${testResultFile}\"`;
+            let command = `dotnet test${Utility.additionalArgumentsOption} --logger \"trx;LogFileName=${testResultFile}\"`;
 
             if (testName && testName.length) {
                 command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
@@ -154,48 +158,17 @@ export class TestCommands {
         });
     }
 
-    /**
-     * @description
-     * Discover the directory where the dotnet-cli
-     * will execute commands, taken from the options.
-     * @summary
-     * This will be the @see{vscode.workspace.rootPath}
-     * by default.
-     */
-    private evaluateTestDirectory(): void {
-        let testProjectFullPath = this.checkTestDirectoryOption();
-        testProjectFullPath = Utility.resolvePath(testProjectFullPath);
+    // private checkAdditionalArgumentsOption(): string {
+    //     const testArguments = Utility.getConfiguration().get<string>("testArguments");
+    //     return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
+    // }
 
-        if (!fs.existsSync(testProjectFullPath)) {
-            Logger.Log(`Path ${testProjectFullPath} is not valid`);
-        }
-
-        this.testDirectoryPath = testProjectFullPath;
-    }
-
-    private checkAdditionalArgumentsOption(): string {
-        const testArguments = Utility.getConfiguration().get<string>("testArguments");
-        return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
-    }
-
-    /**
-     * @description
-     * Gets the options for build/restore before running tests.
-     */
-    private getDotNetTestOptions(): string {
-        return this.checkAdditionalArgumentsOption();
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify a directory to run the
-     * dotnet-cli test commands in.
-     * @summary
-     * This will use the project root by default.
-     */
-    private checkTestDirectoryOption(): string {
-        const option = Utility.getConfiguration().get<string>("testProjectPath");
-        return option ? option : vscode.workspace.rootPath;
-    }
+    // /**
+    //  * @description
+    //  * Gets the options for build/restore before running tests.
+    //  */
+    // private getDotNetTestOptions(): string {
+    //     return this.checkAdditionalArgumentsOption();
+    // }
 
 }

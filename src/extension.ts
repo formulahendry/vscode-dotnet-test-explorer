@@ -16,6 +16,7 @@ import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
+import { Watch } from "./watch";
 
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
@@ -26,12 +27,13 @@ export function activate(context: vscode.ExtensionContext) {
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
     const statusBar = new StatusBar();
+    const watch = new Watch(testCommands, testDirectories, testResults);
 
     Logger.Log("Starting extension");
 
     testDirectories.parseTestDirectories();
 
-    context.subscriptions.push(testResults);
+    context.subscriptions.push(watch);
     context.subscriptions.push(problems);
     context.subscriptions.push(statusBar);
 
