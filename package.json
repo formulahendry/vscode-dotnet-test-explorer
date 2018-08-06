@@ -141,7 +141,7 @@
         "dotnet-test-explorer.testProjectPath": {
           "type": "string",
           "default": "",
-          "description": "Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path."
+          "description": "Glob pattern that points to path of .NET Core test project(s)."
         },
         "dotnet-test-explorer.useTreeView": {
           "type": "boolean",
