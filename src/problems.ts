@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
+import { TestCommands } from "./testCommands";
 import { TestNode } from "./testNode";
 import { TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
@@ -47,9 +48,9 @@ export class Problems {
     private static regex = /in (.*):line (.*)/gm;
     private _diagnosticCollection: vscode.DiagnosticCollection;
 
-    constructor(private resultsFile: TestResultsFile) {
+    constructor(private testCommands: TestCommands) {
         if (Utility.getConfiguration().get<boolean>("addProblems")) {
-            resultsFile.onNewResults(this.addTestResults, this);
+            testCommands.onNewTestResults(this.addTestResults, this);
             this._diagnosticCollection = vscode.languages.createDiagnosticCollection("dotnet-test-explorer");
         }
     }

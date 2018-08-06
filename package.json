@@ -233,6 +233,7 @@
   "dependencies": {
     "applicationinsights": "^0.21.0",
     "chokidar": "^2.0.4",
+    "glob": "^7.1.2",
     "xmldom": "^0.1.27"
   }
 }
