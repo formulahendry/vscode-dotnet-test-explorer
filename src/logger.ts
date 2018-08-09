@@ -2,7 +2,7 @@
 import * as vscode from "vscode";
 
 export class Logger {
-    public static Log(message: string, output: string = this.DefaultOutput): void {
+    public static Log(message: string, output: string = this.defaultOutput): void {
         if (this.outputTerminals[output] === undefined ) {
             this.outputTerminals[output] = vscode.window.createOutputChannel(output);
         }
@@ -19,12 +19,12 @@ export class Logger {
     }
 
     public static Show(): void {
-        if (this.outputTerminals && this.outputTerminals[this.DefaultOutput]) {
-            this.outputTerminals[this.DefaultOutput].show();
+        if (this.outputTerminals && this.outputTerminals[this.defaultOutput]) {
+            this.outputTerminals[this.defaultOutput].show();
         }
     }
 
-    private static DefaultOutput = "Test Explorer";
+    private static defaultOutput = "Test Explorer";
 
     private static outputTerminals: { [id: string]: vscode.OutputChannel } = {};
 
