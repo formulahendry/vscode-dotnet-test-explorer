@@ -14,7 +14,7 @@
 ## New in 0.5.0
 
 #### Multiple test projects in a workspace
-Support multiple test project in the same workspace. Setting dotnet-test-explorer.testProjectPath now accepts a glob pattern that should point to your test directories. You can also point to files and it will figure our the corresponding path. 
+Support multiple test project in the same workspace. Setting dotnet-test-explorer.testProjectPath now accepts a glob pattern that should point to your test directories. You can also point to files and it will figure out the corresponding path. 
 
 Given the folder structure
 * root
@@ -23,17 +23,19 @@ Given the folder structure
   * testProjectTwo
     * testproject2.Tests.csproj
 
-the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects. The Output/Test explorer terminal should give some info on which directories your pattern is matching
+the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects. The Output/Test explorer terminal should give some info on which directories your pattern is matching.
 
 ![glob-matching](images/globmatching.PNG)
 
 Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enought to figure out which test directory should be run and only run tests for that directory.
 
 #### Auto watch
-Auto watch only supports one test directory at the current time. If you specify a glob patter matching multiple test directories only the first one will be watched.
+Auto watch only supports one test directory at the current time. If you specify a glob pattern matching multiple test directories only the first one will be watched.
 
 #### Moved test output to Output terminal
-Text from the dotnet test output is now ritten to the Output/Test explorer terminal window instead of using the Terminal window.
+Text from the dotnet test output is now written to the Output/Test explorer terminal window instead of using the Terminal window. To view the log you can access it simply by clicking the view log icon.
+
+![showlog](images/showlog.png)
 
 ## Usage
 
