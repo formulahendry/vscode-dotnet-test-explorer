@@ -192,6 +192,16 @@
           "type": "string",
           "default": "",
           "description": "Additional arguments that are added to the dotnet test command."
+        },
+        "dotnet-test-explorer.leftClickAction": {
+          "type": "string",
+          "default": "gotoTest",
+          "enum": [
+            "gotoTest",
+            "runTest",
+            "doNothing"
+          ],
+          "description": "What happens when a test in the list is left clicked."
         }
       }
     },

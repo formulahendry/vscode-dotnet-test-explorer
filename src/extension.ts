@@ -6,6 +6,7 @@ import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
+import { LeftClickTest } from "./leftClickTest";
 import { Logger } from "./logger";
 import { MessagesController } from "./messages";
 import { Problems } from "./problems";
@@ -28,6 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
     const problems = new Problems(testCommands);
     const statusBar = new StatusBar();
     const watch = new Watch(testCommands, testDirectories, testResults);
+    const leftClickTest = new LeftClickTest();
 
     Logger.Log("Starting extension");
 
@@ -83,6 +85,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.rerunLastCommand", (test: TestNode) => {
         testCommands.rerunLastCommand();
+    }));
+
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.leftClickTest", (test: TestNode) => {
+        leftClickTest.handle(test);
     }));
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
