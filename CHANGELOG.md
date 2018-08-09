@@ -1,3 +1,7 @@
+## 0.5.0 ()
+* [#112](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/112): Support multiple test projects in a workspace 
+* [#111](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/111): Left clicking on test open test by default
+
 ## 0.4.0 (2018-07-11)
 * [#100](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/100): Status bar displays test status
 * [#97](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/97): Added setting for additional test arguments
