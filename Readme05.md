@@ -37,6 +37,9 @@ Text from the dotnet test output is now written to the Output/Test explorer term
 
 ![showlog](images/showlog.png)
 
+#### Left clicking on test open test by default
+A new setting leftClickAction was added to control what happens when you left click a test. Default is to try and navigate to the test but you can also set it to run a test or do nothing.
+
 ## Usage
 
 Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
