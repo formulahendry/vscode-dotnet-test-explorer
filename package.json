@@ -45,6 +45,14 @@
     },
     "commands": [
       {
+        "command": "dotnet-test-explorer.showLog",
+        "title": "Show log",
+        "icon": {
+          "light": "resources/light/log.svg",
+          "dark": "resources/dark/log.svg"
+        }
+      },
+      {
         "command": "dotnet-test-explorer.refreshTestExplorer",
         "title": "Refresh",
         "icon": {
@@ -83,6 +91,11 @@
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "dotnet-test-explorer.showLog",
+          "when": "view == dotnetTestExplorer",
+          "group": "navigation@2"
+        },
         {
           "command": "dotnet-test-explorer.refreshTestExplorer",
           "when": "view == dotnetTestExplorer",

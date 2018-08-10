@@ -61,6 +61,10 @@ export function activate(context: vscode.ExtensionContext) {
         { language: "csharp", scheme: "file" },
         codeLensProvider));
 
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.showLog", () => {
+        Logger.Show();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.refreshTestExplorer", () => {
         dotnetTestExplorer.refreshTestExplorer();
     }));

@@ -14,7 +14,7 @@
 ## New in 0.5.0
 
 #### Multiple test projects in a workspace
-Support multiple test project in the same workspace. Setting dotnet-test-explorer.testProjectPath now accepts a glob pattern that should point to your test directories. You can also point to files and it will figure our the corresponding path. 
+Support multiple test project in the same workspace. Setting dotnet-test-explorer.testProjectPath now accepts a glob pattern that should point to your test directories. You can also point to files and it will figure out the corresponding path. 
 
 Given the folder structure
 * root
@@ -23,17 +23,19 @@ Given the folder structure
   * testProjectTwo
     * testproject2.Tests.csproj
 
-the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects. The Output/Test explorer terminal should give some info on which directories your pattern is matching
+the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects. The Output/Test explorer terminal should give some info on which directories your pattern is matching.
 
 ![glob-matching](images/globmatching.PNG)
 
 Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enought to figure out which test directory should be run and only run tests for that directory.
 
 #### Auto watch
-Auto watch only supports one test directory at the current time. If you specify a glob patter matching multiple test directories only the first one will be watched.
+Auto watch only supports one test directory at the current time. If you specify a glob pattern matching multiple test directories only the first one will be watched.
 
 #### Moved test output to Output terminal
-Text from the dotnet test output is now ritten to the Output/Test explorer terminal window instead of using the Terminal window.
+Text from the dotnet test output is now written to the Output/Test explorer terminal window instead of using the Terminal window. To view the log you can access it simply by clicking the view log icon.
+
+![showlog](images/showlog.png)
 
 ## Usage
 
@@ -62,14 +64,12 @@ Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to 
 * `dotnet-test-explorer.addProblems`: If true, failed tests will add to problems view. (Default is **true**)
 * `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
 * `dotnet-test-explorer.testArguments`: Additional arguments that are added to the dotnet test command
+* `dotnet-test-explorer.leftClickAction`: What happens when a test in the list is left clicked. (Default is **gotoTest**)
 
 ## Known issues
 
 ##### Test result is not shown in codelens / tree
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
-
-##### Multiple workspaces and multiple test projects
-Currently the extension only support one workspace / test project.
 
 ##### No tree view or color coded explorer for nunit / mstest
 This requieres you to run dotnet sdk version 2.1.2 or higher and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
