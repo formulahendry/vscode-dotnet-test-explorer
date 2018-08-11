@@ -1,4 +1,4 @@
-## 0.5.0 ()
+## 0.5.0 (2018-08-11)
 * [#112](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/112): Support multiple test projects in a workspace 
 * [#111](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/111): Left clicking on test open test by default
 
