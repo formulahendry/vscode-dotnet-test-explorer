@@ -1,6 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import { AppInsights } from "./appInsights";
 import { AppInsightsClient } from "./appInsightsClient";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
@@ -29,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
     const problems = new Problems(testCommands);
     const statusBar = new StatusBar();
     const watch = new Watch(testCommands, testDirectories, testResults);
+    const appInsights = new AppInsights(testCommands, testDirectories);
     const leftClickTest = new LeftClickTest();
 
     Logger.Log("Starting extension");
