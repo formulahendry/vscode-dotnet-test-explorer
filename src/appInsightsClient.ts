@@ -6,9 +6,9 @@ export class AppInsightsClient {
 
     public static EnableTelemetry = Utility.getConfiguration().get<boolean>("enableTelemetry");
 
-    public static sendEvent(eventName: string, properties?: { [key: string]: string; }): void {
+    public static sendEvent(eventName: string, properties?: { [key: string]: string; }, measurments?: { [key: string]: number; }): void {
         if (this.EnableTelemetry) {
-            this._client.trackEvent(eventName, properties);
+            this._client.trackEvent(eventName, properties, measurments);
         }
     }
 

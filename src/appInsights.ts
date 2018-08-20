@@ -1,12 +1,11 @@
 "use strict";
-import appInsights = require("applicationinsights");
 import * as fs from "fs";
 import * as glob from "glob";
 import { AppInsightsClient } from "./appInsightsClient";
+import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
 import { IDiscoverTestsResult } from "./testDiscovery";
-import { Utility } from "./utility";
 
 export class AppInsights {
 
@@ -20,19 +19,35 @@ export class AppInsights {
 
     private telemetryDiscoveredTests(results: IDiscoverTestsResult[]) {
         const numberOfTests = [].concat(...results.map( (r) => r.testNames)).length;
+        const testDirectories = this.testDirectories.getTestDirectories();
+        const firstTestDirectory = testDirectories[0];
 
-        const firstTestDirectory = this.testDirectories.getTestDirectories()[0];
+        glob(firstTestDirectory + "**/+(*.csproj|*.fsproj)", {}, (errorReadDirectory, files) => {
+            if (!errorReadDirectory) {
 
-        glob(firstTestDirectory + "+(*.csproj|*.fsproj)", {}, (errorReadDirectory, files) => {
-            fs.readFile(files[0], (errorReadFile, data) => {
-                if (!errorReadFile) {
-                    console.log(data.toString());
-                }
-            });
+                fs.readFile(files[0], (errorReadFile, data) => {
+                    if (!errorReadFile) {
+
+                        try {
+                            const projContent = data.toString().toLowerCase();
+                            let testFramework = "unknown";
+
+                            if (projContent.includes("nunit")) {
+                                testFramework = "nunit";
+                            } else if (projContent.includes("xunit")) {
+                                testFramework = "xunit";
+                            } else if (projContent.includes("mstest.testframework")) {
+                                testFramework = "mstest";
+                            }
+
+                            Logger.Log(`Discoverd tests with ${testFramework}. Found ${numberOfTests} in ${testDirectories.length} directories`);
+                            AppInsightsClient.sendEvent("Discoverd tests", {"Test framework": testFramework}, {Tests: numberOfTests, Directories: testDirectories.length} );
+                        } catch (err) {
+                            Logger.LogError("Failed to send telemetry for discovered tests", err);
+                        }
+                    }
+                });
+            }
         });
-
-        const z = 1;
-        // this.statusBar.discovered(this.discoveredTests.length);
-        // this._onDidChangeTreeData.fire();
     }
 }
