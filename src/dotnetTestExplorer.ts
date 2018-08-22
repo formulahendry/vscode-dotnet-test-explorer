@@ -2,7 +2,6 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { Executor } from "./executor";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
@@ -16,17 +15,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
-    /**
-     * The directory where the dotnet-cli will
-     * execute commands.
-     */
-    private testDirectoryPath: string;
     private discoveredTests: string[];
     private testResults: TestResult[];
     private allNodes: TestNode[] = [];
 
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile, private statusBar: StatusBar) {
-        testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
+        testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
+        testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
         testCommands.onNewTestResults(this.addTestResults, this);
     }
@@ -41,12 +36,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public refreshTestExplorer(): void {
-        this.discoveredTests = null;
-        this._onDidChangeTreeData.fire();
-
         this.testCommands.discoverTests();
-
-        this.statusBar.discovering();
 
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
@@ -163,6 +153,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.allNodes = this.allNodes.concat(testNodes);
 
         return testNodes;
+    }
+
+    private updateWithDiscoveringTest() {
+        this.discoveredTests = null;
+        this._onDidChangeTreeData.fire();
     }
 
     private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {

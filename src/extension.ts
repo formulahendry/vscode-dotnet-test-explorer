@@ -9,7 +9,6 @@ import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
 import { LeftClickTest } from "./leftClickTest";
 import { Logger } from "./logger";
-import { MessagesController } from "./messages";
 import { Problems } from "./problems";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
@@ -23,15 +22,14 @@ import { Watch } from "./watch";
 export function activate(context: vscode.ExtensionContext) {
     const testResults = new TestResultsFile();
     const testDirectories = new TestDirectories();
-    const messagesController = new MessagesController(context.globalState);
-    const testCommands = new TestCommands(testResults, messagesController, testDirectories);
+    const testCommands = new TestCommands(testResults, testDirectories);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
-    const statusBar = new StatusBar();
+    const statusBar = new StatusBar(testCommands);
     const watch = new Watch(testCommands, testDirectories, testResults);
-    const appInsights = new AppInsights(testCommands, testDirectories);
     const leftClickTest = new LeftClickTest();
+    const appInsights = new AppInsights(testCommands, testDirectories);
 
     Logger.Log("Starting extension");
 
@@ -44,8 +42,9 @@ export function activate(context: vscode.ExtensionContext) {
     Utility.updateCache();
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
 
-        if (e.affectsConfiguration("dotnet-test-explorer.pathForResultFile")) {
+        if (e.affectsConfiguration("dotnet-test-explorer.testProjectPath")) {
             testDirectories.parseTestDirectories();
+            testCommands.discoverTests();
         }
 
         Utility.updateCache();
