@@ -1,4 +1,6 @@
 ## 0.5.1 ()
+* [#122](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/122): Handle testProjectPath change
+* [#118](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/118): More telemetry
 * [#117](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/117): Better test result icons for light theme
 
 ## 0.5.0 (2018-08-11)
