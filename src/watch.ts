@@ -20,7 +20,7 @@ export class Watch implements vscode.Disposable {
         private testDirectories: TestDirectories,
         private resultsFile: TestResultsFile) {
             if (Utility.getConfiguration().get<boolean>("autoWatch")) {
-                this.testCommands.onNewTestDiscovery(this.setupWatch, this);
+                this.testCommands.onTestDiscoveryFinished(this.setupWatch, this);
             }
         }
 

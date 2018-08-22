@@ -1,6 +1,7 @@
 "use strict";
 import * as fs from "fs";
 import * as glob from "glob";
+import { Disposable } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
@@ -9,17 +10,25 @@ import { IDiscoverTestsResult } from "./testDiscovery";
 
 export class AppInsights {
 
+    private testDiscoveryFinishedEvent: Disposable;
+
     constructor(
         private testCommands: TestCommands,
         private testDirectories: TestDirectories) {
             if (AppInsightsClient.EnableTelemetry) {
-                this.testCommands.onNewTestDiscovery(this.telemetryDiscoveredTests, this);
+                this.testDiscoveryFinishedEvent = this.testCommands.onTestDiscoveryFinished(this.telemetryDiscoveredTests, this);
             }
         }
 
     private telemetryDiscoveredTests(results: IDiscoverTestsResult[]) {
+
+        // Dispose to unsubscribe, we only try to report these metrics first time tests are discovered
+        this.testDiscoveryFinishedEvent.dispose();
+
         const numberOfTests = [].concat(...results.map( (r) => r.testNames)).length;
         const testDirectories = this.testDirectories.getTestDirectories();
+
+        // Only look for the test framework in the first test direcoty. If users are using multiple test frameworks we don't care too much.
         const firstTestDirectory = testDirectories[0];
 
         glob(firstTestDirectory + "**/+(*.csproj|*.fsproj)", {}, (errorReadDirectory, files) => {

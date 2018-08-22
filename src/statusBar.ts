@@ -1,12 +1,14 @@
 import * as vscode from "vscode";
+import { TestCommands } from "./testCommands";
 import { TestResult } from "./testResult";
 
 export class StatusBar {
     private status: vscode.StatusBarItem;
     private baseStatusText: string;
 
-    public constructor() {
+    public constructor(testCommand: TestCommands) {
         this.status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
+        testCommand.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         this.discovering();
     }
 
@@ -37,5 +39,9 @@ export class StatusBar {
         if (this.status) {
             this.status.dispose();
         }
+    }
+
+    private updateWithDiscoveringTest() {
+        this.discovering();
     }
 }

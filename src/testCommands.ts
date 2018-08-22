@@ -1,11 +1,8 @@
-import * as fs from "fs";
 import * as path from "path";
-import * as vscode from "vscode";
-import { Disposable, Event, EventEmitter } from "vscode";
+import { Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
-import { IMessagesController } from "./messages";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
@@ -14,15 +11,14 @@ import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class TestCommands {
-    private onNewTestDiscoveryEmitter = new EventEmitter<IDiscoverTestsResult[]>();
+    private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
+    private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
     private onTestRunEmitter = new EventEmitter<string>();
     private onNewTestResultsEmitter = new EventEmitter<TestResult[]>();
-    private testDirectoryPath: string;
     private lastRunTestName: string = null;
 
     constructor(
         private resultsFile: TestResultsFile,
-        private messagesController: IMessagesController,
         private testDirectories: TestDirectories) { }
 
     /**
@@ -61,6 +57,8 @@ export class TestCommands {
     }
 
     public discoverTests() {
+        this.onTestDiscoveryStartedEmitter.fire();
+
         this.testDirectories.clearTestsForDirectory();
 
         // We want to make sure test discovery across multiple directories are run in sequence to avoid excessive cpu usage
@@ -75,17 +73,21 @@ export class TestCommands {
                     discoveredTests.push(testsForDir);
                 }
 
-                this.onNewTestDiscoveryEmitter.fire(discoveredTests);
+                this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
             } catch (error) {
-                this.onNewTestDiscoveryEmitter.fire([]);
+                this.onTestDiscoveryFinishedEmitter.fire([]);
             }
         };
 
         runSeq();
     }
 
-    public get onNewTestDiscovery(): Event<IDiscoverTestsResult[]> {
-        return this.onNewTestDiscoveryEmitter.event;
+    public get onTestDiscoveryStarted(): Event<string> {
+        return this.onTestDiscoveryStartedEmitter.event;
+    }
+
+    public get onTestDiscoveryFinished(): Event<IDiscoverTestsResult[]> {
+        return this.onTestDiscoveryFinishedEmitter.event;
     }
 
     public get onTestRun(): Event<string> {
@@ -126,7 +128,7 @@ export class TestCommands {
 
         const trxTestName = index + ".trx";
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
             let command = `dotnet test${Utility.additionalArgumentsOption} --logger \"trx;LogFileName=${testResultFile}\"`;
 
@@ -138,7 +140,7 @@ export class TestCommands {
             Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
             this.onTestRunEmitter.fire(testName);
 
-            Executor.exec(command, (err: Error, stdout: string, stderr: string) => {
+            Executor.exec(command, (err: Error, stdout: string) => {
 
                 Logger.Log(stdout);
 
