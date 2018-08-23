@@ -26,6 +26,11 @@ export class AppInsights {
         this.testDiscoveryFinishedEvent.dispose();
 
         const numberOfTests = [].concat(...results.map( (r) => r.testNames)).length;
+
+        if (numberOfTests < 1) {
+            return;
+        }
+
         const testDirectories = this.testDirectories.getTestDirectories();
 
         // Only look for the test framework in the first test direcoty. If users are using multiple test frameworks we don't care too much.
