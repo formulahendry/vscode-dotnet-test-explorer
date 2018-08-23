@@ -11,10 +11,21 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.5.0
+## New in 0.5.1
 
-#### Multiple test projects in a workspace
-Support multiple test project in the same workspace. Setting dotnet-test-explorer.testProjectPath now accepts a glob pattern that should point to your test directories. You can also point to files and it will figure out the corresponding path. 
+* Changes to the setting testProjectPath causes a rediscovery of tests without having to restart the extension
+* Better icons for tree when using a light theme
+* More telemetry data (test framework used, number of tests and number of test directories) to help us make informed decisions when prioritizing features. As always you can [opt out of telemetry](https://github.com/formulahendry/vscode-dotnet-test-explorer#telemetry-data)
+
+## Usage
+
+Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
+
+![test-explorer](images/test-explorer.gif)
+
+#### Configuring multiple test projects
+
+Setting dotnet-test-explorer.testProjectPath accepts a glob pattern that should point to your test directories. You can also point to files and it will figure out the corresponding path. 
 
 Given the folder structure
 * root
@@ -23,28 +34,16 @@ Given the folder structure
   * testProjectTwo
     * testproject2.Tests.csproj
 
-the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects. The Output/Test explorer terminal should give some info on which directories your pattern is matching.
-
-![glob-matching](images/globmatching.PNG)
+the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects.
 
 Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enought to figure out which test directory should be run and only run tests for that directory.
 
-#### Auto watch
-Auto watch only supports one test directory at the current time. If you specify a glob pattern matching multiple test directories only the first one will be watched.
+#### Logging
 
-#### Moved test output to Output terminal
-Text from the dotnet test output is now written to the Output/Test explorer terminal window instead of using the Terminal window. To view the log you can access it simply by clicking the view log icon.
+Text from the dotnet test output as well as debug info is written to the Output/Test explorer terminal window. To view the log you can access it simply by clicking the view log icon.
 
 ![showlog](images/showlog.png)
 
-#### Controlling what happens when left clicking on test
-A new setting leftClickAction was added to control what happens when you left click a test. Default is to try and navigate to the test but you can also set it to run a test or do nothing.
-
-## Usage
-
-Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
-
-![test-explorer](images/test-explorer.gif)
 
 ## Keyboard shortcuts
 
