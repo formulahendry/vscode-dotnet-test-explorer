@@ -71,7 +71,7 @@ function extractTestNames(testCommandStdout: string): string[] {
         * text that are not relevant, even in complicated project
         * structures.
         **/
-        .filter((item) => item && item.startsWith("  "))
+        .filter((item) => item && item.startsWith("    "))
         .sort()
         .map((item) => item.trim());
 }

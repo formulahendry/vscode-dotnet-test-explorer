@@ -6,3 +6,4 @@ npm-debug.log
 yarn.*
 [Bb]in/
 [Oo]bj/
+lcov.info
