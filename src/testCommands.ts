@@ -6,7 +6,7 @@ import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { TestResult } from "./testResult";
+import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
@@ -14,7 +14,7 @@ export class TestCommands {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
     private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
     private onTestRunEmitter = new EventEmitter<string>();
-    private onNewTestResultsEmitter = new EventEmitter<TestResult[]>();
+    private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
     private lastRunTestName: string = null;
 
     constructor(
@@ -94,11 +94,11 @@ export class TestCommands {
         return this.onTestRunEmitter.event;
     }
 
-    public get onNewTestResults(): Event<TestResult[]> {
+    public get onNewTestResults(): Event<ITestResult> {
         return this.onNewTestResultsEmitter.event;
     }
 
-    public sendNewTestResults(testResults: TestResult[]) {
+    public sendNewTestResults(testResults: ITestResult) {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 
@@ -118,7 +118,7 @@ export class TestCommands {
             }
 
             const merged = [].concat(...testResults);
-            this.sendNewTestResults(merged);
+            this.sendNewTestResults({ testName, testResults: merged});
         };
 
         runSeq();

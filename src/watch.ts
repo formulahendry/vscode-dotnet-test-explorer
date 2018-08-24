@@ -60,7 +60,7 @@ export class Watch implements vscode.Disposable {
         this.watcher = chokidar.watch(this.trxPath).on("all", () => {
             me.resultsFile.parseResults(me.trxPath)
                 .then( (testResults) => {
-                    me.testCommands.sendNewTestResults(testResults);
+                    me.testCommands.sendNewTestResults({testName: "", testResults});
                 });
         });
 

@@ -1,8 +1,7 @@
 "use strict";
 import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument } from "vscode";
 import { TestCommands } from "./testCommands";
-import { TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
+import { ITestResult, TestResult } from "./testResult";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
 import { Utility } from "./utility";
 
@@ -77,8 +76,8 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
         return codeLens;
     }
 
-    private addTestResults(results: TestResult[]) {
-        for (const result of results) {
+    private addTestResults(results: ITestResult) {
+        for (const result of results.testResults) {
             this.testResults.set(result.fullName, result);
         }
 

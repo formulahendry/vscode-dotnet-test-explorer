@@ -13,6 +13,12 @@ namespace XunitTests
         }
 
         [Fact]
+        public void PassNew()
+        {
+            (1+1).ShouldBe(2);
+        }        
+
+        [Fact]
         public void AnotherPass()
         {
             (1+1).ShouldBe(2);
