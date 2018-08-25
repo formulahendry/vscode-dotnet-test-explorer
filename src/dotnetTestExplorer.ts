@@ -1,12 +1,12 @@
 import * as path from "path";
-import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
+import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { TestResult } from "./testResult";
+import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
@@ -178,10 +178,26 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
     }
 
-    private addTestResults(results: TestResult[]) {
+    private addTestResults(results: ITestResult) {
+
+        const fullNamesForTestResults = results.testResults.map( (r) => r.fullName);
+
+        if (results.testName === "") {
+            this.discoveredTests = [...fullNamesForTestResults];
+        } else {
+            const newTests = fullNamesForTestResults.filter( (r) => this.discoveredTests.indexOf(r) === -1);
+
+            if (newTests.length > 0) {
+                this.discoveredTests.push(...newTests);
+            }
+        }
+
+        this.discoveredTests = this.discoveredTests.sort();
+
+        this.statusBar.discovered(this.discoveredTests.length);
 
         if (this.testResults) {
-            results.forEach( (newTestResult: TestResult) => {
+            results.testResults.forEach( (newTestResult: TestResult) => {
                 const indexOldTestResult = this.testResults.findIndex( (tr) => tr.fullName === newTestResult.fullName);
 
                 if (indexOldTestResult < 0) {
@@ -191,10 +207,10 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 }
             });
         } else {
-            this.testResults = results;
+            this.testResults = results.testResults;
         }
 
-        this.statusBar.testRun(results);
+        this.statusBar.testRun(results.testResults);
 
         this._onDidChangeTreeData.fire();
     }

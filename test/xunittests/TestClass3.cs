@@ -12,6 +12,7 @@ namespace XunitTests
 
         [Theory]
         [InlineData(2)]
+        [InlineData(3)]
         public void Pass(int value)
         {
             (value).ShouldBe(2);

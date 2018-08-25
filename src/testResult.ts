@@ -1,3 +1,8 @@
+export interface ITestResult {
+    testName: string;
+    testResults: TestResult[];
+}
+
 export class TestResult {
     private className: string;
     private method: string;
