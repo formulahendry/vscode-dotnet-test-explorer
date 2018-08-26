@@ -1,3 +1,7 @@
+## 0.5.2 ()
+* [#130](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/130): Update tree based on test results
+* [#126](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/126): Fixed so custom tests parameters does not cause display issues
+
 ## 0.5.1 (2018-08-23)
 * [#122](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/122): Handle testProjectPath change
 * [#118](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/118): More telemetry
