@@ -1,4 +1,4 @@
-## 0.5.2 ()
+## 0.5.2 (2018-08-27)
 * [#130](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/130): Update tree based on test results
 * [#126](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/126): Fixed so custom tests parameters does not cause display issues
 

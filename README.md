@@ -11,11 +11,10 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.5.1
+## New in 0.5.2
 
-* Changes to the setting testProjectPath causes a rediscovery of tests without having to restart the extension
-* Better icons for tree when using a light theme
-* More telemetry data (test framework used, number of tests and number of test directories) to help us make informed decisions when prioritizing features. As always you can [opt out of telemetry](https://github.com/formulahendry/vscode-dotnet-test-explorer#telemetry-data)
+* If a test run results in tests that the tree did not know about from test discovery (eg, you added a new test) it will now be added to the tree without having to refresh. When you run **all** tests any tests that are part of the tree but not in the latest test result are removed.
+* Additional test paramaters used to gain code coverage results where included as tests in the tree. They are not anymore.
 
 ## Usage
 
