@@ -37,6 +37,14 @@ namespace XunitTests
         public void SkippedTest(int value)
         {
             (value).ShouldBe(3);
-        }             
+        }     
+
+        [Theory]
+        [InlineData("Häj")]
+        public void WithSpecialChars(string value)
+        {
+            (value).ShouldBe("Häj");
+        }
+        
     }
 }

@@ -1,5 +1,6 @@
 "use strict";
 import { exec, execSync } from "child_process";
+import { platform } from "os";
 import * as vscode from "vscode";
 
 export class Executor {
@@ -15,11 +16,11 @@ export class Executor {
     }
 
     public static exec(command: string, callback, cwd?: string) {
-        return exec(command, { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
+        return exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
     }
 
     public static execSync(command: string, cwd?: string) {
-        return execSync(command, { encoding: "utf8", maxBuffer: 5120000, cwd });
+        return execSync(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd });
     }
 
     public static onDidCloseTerminal(closedTerminal: vscode.Terminal): void {
@@ -27,4 +28,11 @@ export class Executor {
     }
 
     private static terminals: { [id: string]: vscode.Terminal } = {};
+
+    private static isWindows: boolean = platform() === "win32";
+
+    private static handleWindowsEncoding(command: string): string {
+        return this.isWindows ? `chcp 65001 | ${command}` : command;
+    }
+
 }
