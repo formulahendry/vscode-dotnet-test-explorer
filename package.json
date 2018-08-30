@@ -5,7 +5,7 @@
   "version": "0.5.2",
   "publisher": "formulahendry",
   "license": "MIT",
-  "icon": "logo.png",
+  "icon": "testexplorer_dark.png",
   "engines": {
     "vscode": "^1.23.1"
   },

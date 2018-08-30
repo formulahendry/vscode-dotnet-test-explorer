@@ -50,7 +50,7 @@ export class AppInsights {
                                 testFramework = "nunit";
                             } else if (projContent.includes("xunit")) {
                                 testFramework = "xunit";
-                            } else if (projContent.includes("mstest.testframework")) {
+                            } else if (projContent.includes("mstest")) {
                                 testFramework = "mstest";
                             }
 
