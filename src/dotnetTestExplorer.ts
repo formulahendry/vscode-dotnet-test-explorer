@@ -97,7 +97,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.discoveredTests.forEach((name: string) => {
             // this regex matches test names that include data in them - for e.g.
             //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
-            const match = /([^\(]+)(.*)/g.exec(name);
+            const match = /([^]+)(.*)/g.exec(name);
             if (match && match.length > 1) {
                 const parts = match[1].split(".");
                 if (match.length > 2 && match[2].trim().length > 0) {
