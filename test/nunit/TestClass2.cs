@@ -8,6 +8,10 @@ namespace NunitTests
     [TestFixture("Second")]
     public class MultipleTestFixtures
     {
+        public MultipleTestFixtures(string x)
+        {
+        }
+
         [Test]
         public void Pass()
         {
