@@ -4,6 +4,7 @@ using Shouldly;
 
 namespace NunitTests
 {
+    [TestFixture]
     public class TestClass2
     {
         [Test]
