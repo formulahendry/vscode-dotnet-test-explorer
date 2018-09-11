@@ -1,11 +1,11 @@
-import * as path from "path";
 import * as vscode from "vscode";
+import { SymbolKind } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { TestNode } from "./testNode";
+import { ITestRunContext } from "./testCommands";
 
 export class FindTestInContext {
 
-    public async find(doc: vscode.TextDocument, lineNumber: number): Promise<string> {
+    public async find(doc: vscode.TextDocument, lineNumber: number): Promise<ITestRunContext> {
 
         AppInsightsClient.sendEvent("findTestInContext");
 
@@ -26,7 +26,7 @@ export class FindTestInContext {
         return result ? result[1] : "";
     }
 
-    public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string): string {
+    public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string): ITestRunContext {
         let symbolToRunTestsFor: vscode.SymbolInformation;
 
         symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method || s.kind === vscode.SymbolKind.Class);
@@ -45,8 +45,10 @@ export class FindTestInContext {
 
         namespace = namespace.length > 0 ? namespace + "." : "";
 
-        return namespace + (symbolToRunTestsFor.containerName
+        const testName = namespace + (symbolToRunTestsFor.containerName
             ? symbolToRunTestsFor.containerName + "." + symbolToRunTestsFor.name
             : symbolToRunTestsFor.name);
+
+        return {testName, isSingleTest: symbolToRunTestsFor.kind === SymbolKind.Method};
     }
 }

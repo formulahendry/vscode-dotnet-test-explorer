@@ -3,7 +3,7 @@ import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { StatusBar } from "./statusBar";
-import { TestCommands } from "./testCommands";
+import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
@@ -167,8 +167,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this._onDidChangeTreeData.fire();
     }
 
-    private updateTreeWithRunningTests(testName: string) {
-        const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && testNode.fullName.startsWith(testName) );
+    private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
+
+        const filter = testRunContext.isSingleTest ?
+            ((testNode: TestNode) => testNode.fullName === testRunContext.testName)
+            : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
+
+        const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && filter(testNode));
 
         this.statusBar.testRunning(testRun.length);
 

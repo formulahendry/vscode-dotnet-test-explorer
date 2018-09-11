@@ -10,51 +10,21 @@ import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
+export interface ITestRunContext {
+    testName: string;
+    isSingleTest: boolean;
+}
+
 export class TestCommands {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
     private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
-    private onTestRunEmitter = new EventEmitter<string>();
+    private onTestRunEmitter = new EventEmitter<ITestRunContext>();
     private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
-    private lastRunTestName: string = null;
+    private lastRunTestContext: ITestRunContext = null;
 
     constructor(
         private resultsFile: TestResultsFile,
         private testDirectories: TestDirectories) { }
-
-    /**
-     * @description
-     * Runs all tests discovered in the project directory.
-     * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
-     */
-    public runAllTests(): void {
-        this.runTestCommand("");
-        AppInsightsClient.sendEvent("runAllTests");
-    }
-
-    /**
-     * @description
-     * Runs a specific test discovered from the project directory.
-     * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
-     */
-    public runTest(test: TestNode): void {
-        this.runTestByName(test.fullName);
-    }
-
-    public runTestByName(testName: string): void {
-        this.runTestCommand(testName);
-        AppInsightsClient.sendEvent("runTest");
-    }
-
-    public rerunLastCommand(): void {
-        if (this.lastRunTestName != null) {
-            this.runTestCommand(this.lastRunTestName);
-            AppInsightsClient.sendEvent("rerunLastCommand");
-        }
-    }
 
     public discoverTests() {
         this.onTestDiscoveryStartedEmitter.fire();
@@ -90,7 +60,7 @@ export class TestCommands {
         return this.onTestDiscoveryFinishedEmitter.event;
     }
 
-    public get onTestRun(): Event<string> {
+    public get onTestRun(): Event<ITestRunContext> {
         return this.onTestRunEmitter.event;
     }
 
@@ -102,7 +72,28 @@ export class TestCommands {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 
-    private runTestCommand(testName: string): void {
+    public runAllTests(): void {
+        this.runTestCommand("", false);
+        AppInsightsClient.sendEvent("runAllTests");
+    }
+
+    public runTest(test: TestNode): void {
+        this.runTestByName(test.fullName, !test.isFolder);
+    }
+
+    public runTestByName(testName: string, isSingleTest: boolean): void {
+        this.runTestCommand(testName, isSingleTest);
+        AppInsightsClient.sendEvent("runTest");
+    }
+
+    public rerunLastCommand(): void {
+        if (this.lastRunTestContext != null) {
+            this.runTestCommand(this.lastRunTestContext.testName, this.lastRunTestContext.isSingleTest);
+            AppInsightsClient.sendEvent("rerunLastCommand");
+        }
+    }
+
+    private runTestCommand(testName: string, isSingleTest: boolean): void {
 
         const testDirectories = this
             .testDirectories
@@ -114,7 +105,7 @@ export class TestCommands {
         const runSeq = async () => {
 
             for (let i = 0; i < testDirectories.length; i++) {
-                testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, i));
+                testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
             }
 
             const merged = [].concat(...testResults);
@@ -124,21 +115,27 @@ export class TestCommands {
         runSeq();
     }
 
-    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, index: number): Promise<TestResult[]> {
+    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number): Promise<TestResult[]> {
 
         const trxTestName = index + ".trx";
+
+        const textContext = {testName, isSingleTest};
 
         return new Promise((resolve) => {
             const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
             let command = `dotnet test${Utility.additionalArgumentsOption} --logger \"trx;LogFileName=${testResultFile}\"`;
 
             if (testName && testName.length) {
-                command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+                if (isSingleTest) {
+                    command = command + ` --filter FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}`;
+                } else {
+                    command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+                }
             }
 
-            this.lastRunTestName = testName;
+            this.lastRunTestContext = textContext;
             Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
-            this.onTestRunEmitter.fire(testName);
+            this.onTestRunEmitter.fire(textContext);
 
             Executor.exec(command, (err: Error, stdout: string) => {
 
