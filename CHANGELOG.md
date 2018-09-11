@@ -1,4 +1,4 @@
-## 0.5.3 ()
+## 0.5.3 (2018-09-11)
 * [#138](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/138): Better support for TestFixture names
 * [#135](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/135): Supporting special characters in test cases on windows
 

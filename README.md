@@ -11,10 +11,10 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.5.2
+## New in 0.5.3
 
-* If a test run results in tests that the tree did not know about from test discovery (eg, you added a new test) it will now be added to the tree without having to refresh. When you run **all** tests any tests that are part of the tree but not in the latest test result are removed.
-* Additional test paramaters used to gain code coverage results where included as tests in the tree. They are not anymore.
+* Better support for TestFixture attribute in nunit that leads to it actually showing up in the tree
+* If you are on windows and using special chars in your test cases your life will now be slightly less miserable.
 
 ## Usage
 
