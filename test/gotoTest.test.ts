@@ -154,7 +154,6 @@ suite("Find test location", () => {
 
         assert.equal(result.location, symbols[0].location);
     });
-
 });
 
 suite("Get test names", () => {
@@ -223,9 +222,5 @@ suite("Get test namesspace", () => {
 });
 
 function GetSymbol(name: string, kind: vscode.SymbolKind, filePath: string): vscode.SymbolInformation {
-    return new vscode.SymbolInformation(name,  kind, "", new vscode.Location(vscode.Uri.parse(filePath), new vscode.Range(new vscode.Position(10, 10), new vscode.Position(20, 20))));
-}
-
-function GetSymbolWithLocation(name: string, kind: vscode.SymbolKind, filePath: string): vscode.SymbolInformation {
     return new vscode.SymbolInformation(name,  kind, "", new vscode.Location(vscode.Uri.parse(filePath), new vscode.Range(new vscode.Position(10, 10), new vscode.Position(20, 20))));
 }
