@@ -79,8 +79,8 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
-        findTestInContext.find(editor.document, editor.selection.start.line).then( (testName) => {
-            testCommands.runTestByName(testName);
+        findTestInContext.find(editor.document, editor.selection.start.line).then( (testRunContext) => {
+            testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
         });
     }));
 

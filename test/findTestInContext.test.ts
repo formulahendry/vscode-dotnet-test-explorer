@@ -2,8 +2,6 @@ import * as assert from "assert";
 import * as path from "path";
 import { Location, Position, Range, SymbolInformation, SymbolKind, Uri, workspace } from "vscode";
 import { FindTestInContext } from "../src/findTestInContext";
-import { TestNode } from "../src/testNode";
-import { TestResult } from "../src/testResult";
 
 suite("Find test in context tests", () => {
 
@@ -17,7 +15,8 @@ suite("Find test in context tests", () => {
 
         const result = await findTestInContext.getTestString(symbols, 10, "");
 
-        assert.equal(result, "MyClass");
+        assert.equal(result.testName, "MyClass");
+        assert.equal(result.isSingleTest, false);
     });
 
     test("Only symbols of type class and methods are found", async () => {
@@ -32,7 +31,8 @@ suite("Find test in context tests", () => {
 
         const result = await findTestInContext.getTestString(symbols, 16, "");
 
-        assert.equal(result, "MyClass");
+        assert.equal(result.testName, "MyClass");
+        assert.equal(result.isSingleTest, false);
     });
 
     test("Multiple symbols, match closest in context", async () => {
@@ -45,18 +45,20 @@ suite("Find test in context tests", () => {
             new SymbolInformation("TestMethod2", SymbolKind.Method, "MyClass", new Location(Uri.file("c:/"), new Range(new Position(15, 1), new Position(15, 11)))),
         ];
 
-        assert.equal(findTestInContext.getTestString(symbols, 8, ""), "MyClass.TestMethod");
-        assert.equal(findTestInContext.getTestString(symbols, 14, ""), "MyClass.TestMethod");
-        assert.equal(findTestInContext.getTestString(symbols, 14, "Namespace"), "Namespace.MyClass.TestMethod");
+        assert.equal(findTestInContext.getTestString(symbols, 8, "").testName, "MyClass.TestMethod");
+        assert.equal(findTestInContext.getTestString(symbols, 8, "").isSingleTest, true);
 
-        assert.equal(findTestInContext.getTestString(symbols, 15, ""), "MyClass.TestMethod2");
-        assert.equal(findTestInContext.getTestString(symbols, 1000, ""), "MyClass.TestMethod2");
-        assert.equal(findTestInContext.getTestString(symbols, 1000, "Name.Space"), "Name.Space.MyClass.TestMethod2");
+        assert.equal(findTestInContext.getTestString(symbols, 14, "").testName, "MyClass.TestMethod");
+        assert.equal(findTestInContext.getTestString(symbols, 14, "Namespace").testName, "Namespace.MyClass.TestMethod");
 
-        assert.equal(findTestInContext.getTestString(symbols, 5, ""), "MyClass");
-        assert.equal(findTestInContext.getTestString(symbols, 6, ""), "MyClass");
-        assert.equal(findTestInContext.getTestString(symbols, 1, ""), "MyClass");
-        assert.equal(findTestInContext.getTestString(symbols, 1, "Name.Space"), "Name.Space.MyClass");
+        assert.equal(findTestInContext.getTestString(symbols, 15, "").testName, "MyClass.TestMethod2");
+        assert.equal(findTestInContext.getTestString(symbols, 1000, "").testName, "MyClass.TestMethod2");
+        assert.equal(findTestInContext.getTestString(symbols, 1000, "Name.Space").testName, "Name.Space.MyClass.TestMethod2");
+
+        assert.equal(findTestInContext.getTestString(symbols, 5, "").testName, "MyClass");
+        assert.equal(findTestInContext.getTestString(symbols, 6, "").testName, "MyClass");
+        assert.equal(findTestInContext.getTestString(symbols, 1, "").testName, "MyClass");
+        assert.equal(findTestInContext.getTestString(symbols, 1, "Name.Space").testName, "Name.Space.MyClass");
     });
 });
 
