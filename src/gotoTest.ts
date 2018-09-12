@@ -61,6 +61,11 @@ export class GotoTest {
                 throw Error("Could not find test (namespace not matching uri)");
             }
 
+            const firstLocation = symbols[0].location;
+            if (symbols.every((s) => s.location.uri.toString() === firstLocation.uri.toString() && s.location.range.isEqual(firstLocation.range))) {
+                return symbols[0];
+            }
+
             if (symbols.length > 1) {
                 throw Error("Could not find test (found multiple matching symbols)");
             }

@@ -140,6 +140,20 @@ suite("Find test location", () => {
         assert.equal(result.location.uri.fsPath, vscode.Uri.parse("file:\\c:/temp/folderx/test.txt").fsPath);
     });
 
+    test("Match with multiple symbols matching same location", () => {
+        const symbols = [
+            GetSymbol("Test", vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test.txt"),
+            GetSymbol("Test", vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test.txt"),
+        ];
+
+        const testNode = new TestNode("MyFolder.Test", "Test", null);
+
+        const gotoTest = new GotoTest();
+
+        const result = gotoTest.findTestLocation(symbols, testNode);
+
+        assert.equal(result.location, symbols[0].location);
+    });
 });
 
 suite("Get test names", () => {
