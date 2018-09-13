@@ -1,5 +1,6 @@
 ## 0.5.4 ()
-* [#143](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/138): Fix for testcases with similar names get run together
+* [#143](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/143): Fix for testcases with similar names get run together
+* [#141](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/141): Better navigate to test when multiple symbols points to same test
 
 ## 0.5.3 (2018-09-11)
 * [#138](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/138): Better support for TestFixture names
