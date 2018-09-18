@@ -1,7 +1,8 @@
 import * as path from "path";
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
 import * as vscode from "vscode";
+import { TreeDataProvider, TreeItem } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
+import { Logger } from "./logger";
 import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
@@ -95,19 +96,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.allNodes = [];
 
         this.discoveredTests.forEach((name: string) => {
-            // this regex matches test names that include data in them - for e.g.
-            //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
-            const match = /([^]+)(.*)/g.exec(name);
-            if (match && match.length > 1) {
-                const parts = match[1].split(".");
-                if (match.length > 2 && match[2].trim().length > 0) {
-                    // append the data bit of the test to the test method name
-                    // so we can distinguish one test from another in the explorer
-                    // pane
-                    const testMethodName = parts[parts.length - 1];
-                    parts[parts.length - 1] = testMethodName + match[2];
-                }
-                this.addToObject(structuredTests, parts);
+            try {
+                // Split name on all dots that are not inside parenthesis MyNamespace.MyClass.MyMethod(value: "My.Dot") -> MyNamespace, MyClass, MyMethod(value: "My.Dot")
+                this.addToObject(structuredTests, name.split(/\.(?![^\(]*\))/g));
+            } catch (err) {
+                Logger.LogError(`Failed to add test with name ${name}`, err);
             }
         });
 
