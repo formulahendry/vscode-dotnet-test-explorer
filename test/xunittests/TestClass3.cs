@@ -45,6 +45,14 @@ namespace XunitTests
         {
             (value).ShouldBe("Häj");
         }
+
+        [Theory]
+        [InlineData("With.Dot", 5.5)]
+        public void WithDot(string value, decimal value2)
+        {
+            (value).ShouldBe("With.Dot");
+            value2.ShouldBe(5.5m);
+        }
         
     }
 }
