@@ -1,5 +1,5 @@
 import * as path from "path";
-import { Event, EventEmitter } from "vscode";
+import { commands, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
@@ -94,6 +94,8 @@ export class TestCommands {
     }
 
     private runTestCommand(testName: string, isSingleTest: boolean): void {
+
+        commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
 
         const testDirectories = this
             .testDirectories
