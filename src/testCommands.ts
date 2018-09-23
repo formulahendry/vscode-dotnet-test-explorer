@@ -95,7 +95,7 @@ export class TestCommands {
 
     private runTestCommand(testName: string, isSingleTest: boolean): void {
 
-        commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test")
+        commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
 
         const testDirectories = this
             .testDirectories
