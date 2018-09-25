@@ -1,6 +1,6 @@
 ## 0.5.4 ()
 * [#146](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/146): Support dot in inline data
-* [#142](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/142): Fix for testcases with similar names get run together
+* [#142](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/142): Fix for tests with similar names get run together
 * [#141](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/141): Better navigate to test when multiple symbols points to same test
 
 ## 0.5.3 (2018-09-11)
