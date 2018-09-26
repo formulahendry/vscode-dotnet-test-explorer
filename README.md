@@ -11,10 +11,11 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.5.3
+## New in 0.5.4
 
-* Better support for TestFixture attribute in nunit that leads to it actually showing up in the tree
-* If you are on windows and using special chars in your test cases your life will now be slightly less miserable.
+* Test cases that contains dots does not break the tree
+* Running a single test should just run that test and not other tests that has a similar name
+* Navigation to test where many symbols points to same test should work better
 
 ## Usage
 
