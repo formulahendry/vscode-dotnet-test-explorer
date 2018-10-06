@@ -256,7 +256,7 @@
     "vscode": "^1.1.21"
   },
   "dependencies": {
-    "applicationinsights": "^0.21.0",
+    "applicationinsights": "^1.0.5",
     "chokidar": "^2.0.4",
     "glob": "^7.1.2",
     "ts-node": "^7.0.1",
