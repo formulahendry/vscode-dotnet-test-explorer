@@ -1,4 +1,5 @@
 ## 0.5.5 ()
+* [#152](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/152): Better handling when tests fail to build
 * [#151](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/151): Allow user to cancel running test proccesses
 
 ## 0.5.4 (2018-09-26)
