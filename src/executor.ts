@@ -1,5 +1,5 @@
 "use strict";
-import { exec, execSync, ChildProcess } from "child_process";
+import { ChildProcess, exec } from "child_process";
 import * as fkill from "fkill";
 import { platform } from "os";
 import * as vscode from "vscode";
@@ -29,7 +29,7 @@ export class Executor {
             const index = this.processes.map( (p) => p.pid).indexOf(childProcess.pid);
             if (index > -1) {
                 this.processes.splice(index, 1);
-                Logger.Log(`Process ${p.pid} finished`);
+                Logger.Log(`Process ${childProcess.pid} finished`);
             }
         });
 

@@ -56,8 +56,8 @@
         "command": "dotnet-test-explorer.stop",
         "title": "Stop running proccesses",
         "icon": {
-          "light": "resources/light/log.svg",
-          "dark": "resources/dark/log.svg"
+          "light": "resources/light/stop.svg",
+          "dark": "resources/dark/stop.svg"
         }
       },      
       {
