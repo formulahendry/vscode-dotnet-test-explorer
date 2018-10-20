@@ -1,5 +1,6 @@
 "use strict";
 
+import * as psList from "ps-list";
 import * as vscode from "vscode";
 import { AppInsights } from "./appInsights";
 import { AppInsightsClient } from "./appInsightsClient";
@@ -66,6 +67,10 @@ export function activate(context: vscode.ExtensionContext) {
         Logger.Show();
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.stop", () => {
+        Executor.stop();
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.refreshTestExplorer", () => {
         dotnetTestExplorer.refreshTestExplorer();
     }));
@@ -99,6 +104,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
         Executor.onDidCloseTerminal(closedTerminal);
     }));
+
+    // (async () => {
+    //     console.log(await psList());
+    //     //=> [{pid: 3213, name: 'node', cmd: 'node test.js', ppid: 1, cpu: 0.1, memory: 1.5}, …]
+    // })();
 }
 
 export function deactivate() {

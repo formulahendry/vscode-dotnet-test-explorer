@@ -53,6 +53,14 @@
         }
       },
       {
+        "command": "dotnet-test-explorer.stop",
+        "title": "Stop running proccesses",
+        "icon": {
+          "light": "resources/light/log.svg",
+          "dark": "resources/dark/log.svg"
+        }
+      },      
+      {
         "command": "dotnet-test-explorer.refreshTestExplorer",
         "title": "Refresh",
         "icon": {
@@ -93,6 +101,11 @@
       "view/title": [
         {
           "command": "dotnet-test-explorer.showLog",
+          "when": "view == dotnetTestExplorer",
+          "group": "navigation@3"
+        },
+        {
+          "command": "dotnet-test-explorer.stop",
           "when": "view == dotnetTestExplorer",
           "group": "navigation@2"
         },

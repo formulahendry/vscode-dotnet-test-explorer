@@ -106,12 +106,17 @@ export class TestCommands {
         // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
         const runSeq = async () => {
 
-            for (let i = 0; i < testDirectories.length; i++) {
-                testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
-            }
+            try {
+                for (let i = 0; i < testDirectories.length; i++) {
+                    testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
+                }
 
-            const merged = [].concat(...testResults);
-            this.sendNewTestResults({ testName, testResults: merged});
+                const merged = [].concat(...testResults);
+                this.sendNewTestResults({ testName, testResults: merged});
+            } catch (err) {
+                Logger.Log(`Error while executing test command: ${err}`);
+                this.discoverTests();
+            }
         };
 
         runSeq();
@@ -123,7 +128,7 @@ export class TestCommands {
 
         const textContext = {testName, isSingleTest};
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
             let command = `dotnet test${Utility.additionalArgumentsOption} --logger \"trx;LogFileName=${testResultFile}\"`;
 
@@ -139,7 +144,12 @@ export class TestCommands {
             Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
             this.onTestRunEmitter.fire(textContext);
 
-            Executor.exec(command, (err: Error, stdout: string) => {
+            Executor.exec(command, (err, stdout: string) => {
+
+                if (err.killed) {
+                    Logger.Log("User has probably cancelled test run");
+                    reject(new Error("UserAborted"));
+                }
 
                 Logger.Log(stdout);
 
