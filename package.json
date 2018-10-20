@@ -53,6 +53,14 @@
         }
       },
       {
+        "command": "dotnet-test-explorer.stop",
+        "title": "Stop running proccesses",
+        "icon": {
+          "light": "resources/light/stop.svg",
+          "dark": "resources/dark/stop.svg"
+        }
+      },
+      {
         "command": "dotnet-test-explorer.refreshTestExplorer",
         "title": "Refresh",
         "icon": {
@@ -93,6 +101,11 @@
       "view/title": [
         {
           "command": "dotnet-test-explorer.showLog",
+          "when": "view == dotnetTestExplorer",
+          "group": "navigation@3"
+        },
+        {
+          "command": "dotnet-test-explorer.stop",
           "when": "view == dotnetTestExplorer",
           "group": "navigation@2"
         },
@@ -258,6 +271,7 @@
   "dependencies": {
     "applicationinsights": "^1.0.5",
     "chokidar": "^2.0.4",
+    "fkill": "^5.3.0",
     "glob": "^7.1.2",
     "ts-node": "^7.0.1",
     "xmldom": "^0.1.27"
