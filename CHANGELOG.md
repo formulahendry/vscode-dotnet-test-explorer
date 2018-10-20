@@ -1,3 +1,6 @@
+## 0.5.5 ()
+* [#151](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/151): Allow user to cancel running test proccesses
+
 ## 0.5.4 (2018-09-26)
 * [#146](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/146): Support dot in inline data
 * [#142](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/142): Fix for tests with similar names get run together
