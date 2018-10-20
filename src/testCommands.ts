@@ -122,6 +122,18 @@ export class TestCommands {
         runSeq();
     }
 
+    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<void>  {
+        return new Promise((resolve, reject) => {
+
+            Executor.exec("dotnet build", (err, stdout: string) => {
+                if (err) {
+                    reject(new Error("Build command failed"));
+                }
+                resolve();
+            }, testDirectoryPath);
+        });
+    }
+
     private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number): Promise<TestResult[]> {
 
         const trxTestName = index + ".trx";
@@ -130,7 +142,7 @@ export class TestCommands {
 
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
-            let command = `dotnet test${Utility.additionalArgumentsOption} --logger \"trx;LogFileName=${testResultFile}\"`;
+            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
 
             if (testName && testName.length) {
                 if (isSingleTest) {
@@ -144,19 +156,26 @@ export class TestCommands {
             Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
             this.onTestRunEmitter.fire(textContext);
 
-            Executor.exec(command, (err, stdout: string) => {
+            this.runBuildCommandForSpecificDirectory(testDirectoryPath)
+                .then( () =>
 
-                if (err.killed) {
-                    Logger.Log("User has probably cancelled test run");
-                    reject(new Error("UserAborted"));
-                }
+                    Executor.exec(command, (err, stdout: string) => {
 
-                Logger.Log(stdout);
+                        if (err.killed) {
+                            Logger.Log("User has probably cancelled test run");
+                            reject(new Error("UserAborted"));
+                        }
 
-                this.resultsFile.parseResults(testResultFile).then( (result) => {
-                    resolve(result);
+                        Logger.Log(stdout);
+
+                        this.resultsFile.parseResults(testResultFile).then( (result) => {
+                            resolve(result);
+                        });
+                    }, testDirectoryPath),
+                )
+                .catch( (err) => {
+                    reject(err);
                 });
-            }, testDirectoryPath);
         });
     }
 }
