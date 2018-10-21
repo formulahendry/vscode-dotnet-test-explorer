@@ -171,7 +171,7 @@ export class TestCommands {
                         this.resultsFile.parseResults(testResultFile).then( (result) => {
                             resolve(result);
                         });
-                    }, testDirectoryPath),
+                    }, testDirectoryPath, true),
                 )
                 .catch( (err) => {
                     reject(err);

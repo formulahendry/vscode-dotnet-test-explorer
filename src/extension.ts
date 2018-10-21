@@ -1,6 +1,5 @@
 "use strict";
 
-import * as psList from "ps-list";
 import * as vscode from "vscode";
 import { AppInsights } from "./appInsights";
 import { AppInsightsClient } from "./appInsightsClient";

@@ -7,7 +7,7 @@ import { Logger } from "./logger";
 
 export class Executor {
     public static runInTerminal(command: string, cwd?: string, addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
-        if (this.terminals[terminal] === undefined ) {
+        if (this.terminals[terminal] === undefined) {
             this.terminals[terminal] = vscode.window.createTerminal(terminal);
         }
         this.terminals[terminal].show();
@@ -17,21 +17,24 @@ export class Executor {
         this.terminals[terminal].sendText(command, addNewLine);
     }
 
-    public static exec(command: string, callback, cwd?: string) {
+    public static exec(command: string, callback, cwd?: string, addToProcessList?: boolean) {
         const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
 
-        Logger.Log(`Process ${childProcess.pid} started`);
+        if (addToProcessList) {
 
-        this.processes.push(childProcess);
+            Logger.Log(`Process ${childProcess.pid} started`);
 
-        childProcess.on("close", (code: number) => {
+            this.processes.push(childProcess);
 
-            const index = this.processes.map( (p) => p.pid).indexOf(childProcess.pid);
-            if (index > -1) {
-                this.processes.splice(index, 1);
-                Logger.Log(`Process ${childProcess.pid} finished`);
-            }
-        });
+            childProcess.on("close", (code: number) => {
+
+                const index = this.processes.map((p) => p.pid).indexOf(childProcess.pid);
+                if (index > -1) {
+                    this.processes.splice(index, 1);
+                    Logger.Log(`Process ${childProcess.pid} finished`);
+                }
+            });
+        }
 
         return childProcess;
     }
@@ -41,10 +44,10 @@ export class Executor {
     }
 
     public static stop() {
-        this.processes.forEach( (p) => {
+        this.processes.forEach((p) => {
             Logger.Log(`Stop processes requested - ${p.pid} stopped`);
             p.killed = true;
-            fkill(p.pid, {force: true});
+            fkill(p.pid, { force: true });
         });
 
         this.processes = [];
