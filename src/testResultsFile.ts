@@ -81,6 +81,8 @@ export class TestResultsFile {
                     updateUnitTestDefinitions(xdoc.documentElement, results);
                     resolve(results);
                 }
+
+                fs.unlinkSync(filePath);
             });
 
         });
