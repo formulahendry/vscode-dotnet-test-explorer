@@ -125,6 +125,8 @@ export class TestCommands {
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<void>  {
         return new Promise((resolve, reject) => {
 
+            Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
+
             Executor.exec("dotnet build", (err, stdout: string) => {
                 if (err) {
                     reject(new Error("Build command failed"));
@@ -153,15 +155,16 @@ export class TestCommands {
             }
 
             this.lastRunTestContext = textContext;
-            Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+
             this.onTestRunEmitter.fire(textContext);
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
-                .then( () =>
+                .then( () => {
+                    Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
-                    Executor.exec(command, (err, stdout: string) => {
+                    return Executor.exec(command, (err, stdout: string) => {
 
-                        if (err.killed) {
+                        if (err && err.killed) {
                             Logger.Log("User has probably cancelled test run");
                             reject(new Error("UserAborted"));
                         }
@@ -171,8 +174,8 @@ export class TestCommands {
                         this.resultsFile.parseResults(testResultFile).then( (result) => {
                             resolve(result);
                         });
-                    }, testDirectoryPath, true),
-                )
+                    }, testDirectoryPath, true);
+                })
                 .catch( (err) => {
                     reject(err);
                 });
