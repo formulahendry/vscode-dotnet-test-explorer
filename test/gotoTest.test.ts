@@ -1,5 +1,4 @@
 import * as assert from "assert";
-import * as path from "path";
 import * as vscode from "vscode";
 import { GotoTest } from "../src/gotoTest";
 import { TestNode } from "../src/testNode";

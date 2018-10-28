@@ -30,7 +30,7 @@ namespace XunitTests
             (1+new InnerC().Get()).ShouldBe(3);
         }      
 
-                [Fact]
+        [Fact]
         public void Fail2()
         {
             (1+new InnerC().Get()).ShouldBe(3);
