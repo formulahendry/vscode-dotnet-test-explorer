@@ -24,6 +24,7 @@ namespace MsTestTests { // Curly bracket on same line as namespace for testing n
         {
             (1 + 1).ShouldBe(22);
         }
+        
         [TestMethod]
         [DataRow("First")]
         [DataRow("Second")]

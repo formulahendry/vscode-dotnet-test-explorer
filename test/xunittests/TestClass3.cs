@@ -43,7 +43,7 @@ namespace XunitTests
         [InlineData("Häj")]
         public void WithSpecialChars(string value)
         {
-            (value).ShouldBe("Häj");
+            (value).ShouldBe("Häjx");
         }
 
         [Theory]
