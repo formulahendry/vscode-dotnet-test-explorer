@@ -18,6 +18,7 @@
 ![test-explorer](images/stop.PNG)
 
 * If the build fails the tree reflects this better
+* Code lens status symbols and running in tests in context should now work again.
 
 ## Usage
 
