@@ -1,4 +1,5 @@
 ## 0.5.5 ()
+* [#158](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/158): Fixed code lense and test in context after executeDocumentSymbolProvider changes
 * [#152](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/152): Better handling when tests fail to build
 * [#151](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/151): Allow user to cancel running test proccesses
 
