@@ -37,7 +37,7 @@ export class Watch implements vscode.Disposable {
                     fs.unlinkSync(this.trxPath);
                 }
 
-                fs.rmdir(path.dirname(this.trxPath));
+                fs.rmdirSync(path.dirname(this.trxPath));
             }
 
         } catch (err) {
