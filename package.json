@@ -260,7 +260,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^2.2.32",
-    "@types/node": "^6.0.40",
+    "@types/node": "^10.12.1",
     "@types/sinon": "^4.3.0",
     "mocha": "^2.3.3",
     "sinon": "^4.5.0",
