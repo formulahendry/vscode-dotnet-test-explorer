@@ -122,7 +122,7 @@ export class TestCommands {
         runSeq();
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<void>  {
+    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
         return new Promise((resolve, reject) => {
 
             Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
