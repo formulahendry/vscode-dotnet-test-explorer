@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { SymbolKind } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { Symbols } from "./symbols";
+import { ITestSymbol, Symbols } from "./symbols";
 import { ITestRunContext } from "./testCommands";
 
 export class FindTestInContext {
@@ -10,23 +10,23 @@ export class FindTestInContext {
 
         AppInsightsClient.sendEvent("findTestInContext");
 
-        return Symbols.getSymbols(doc.uri, true).then( (documentSymbols: vscode.DocumentSymbol[]) => {
+        return Symbols.getSymbols(doc.uri, true).then( (documentSymbols: ITestSymbol[]) => {
 
-            const symbolsInRange = documentSymbols.filter( (ds) => ds.range.contains(position));
+            const symbolsInRange = documentSymbols.filter( (ds) => ds.documentSymbol.range.contains(position));
 
             // When need to type as any since containerName is not exposed in the DocumentSymbol typescript object
-            let symbolCandidate: any;
+            let symbolCandidate: ITestSymbol;
 
-            symbolCandidate = symbolsInRange.find( (s) => s.kind === vscode.SymbolKind.Method);
+            symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Method);
 
             if (symbolCandidate) {
-                return {testName: (symbolCandidate.containerName + "." + symbolCandidate.name), isSingleTest: true};
+                return {testName: (symbolCandidate.fullName), isSingleTest: true};
             }
 
-            symbolCandidate = symbolsInRange.find( (s) => s.kind === vscode.SymbolKind.Class);
+            symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Class);
 
             if (symbolCandidate) {
-                return {testName: symbolCandidate.name, isSingleTest: false};
+                return {testName: symbolCandidate.fullName, isSingleTest: false};
             }
         });
     }
