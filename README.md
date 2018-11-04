@@ -11,11 +11,14 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.5.4
+## New in 0.5.5
 
-* Test cases that contains dots does not break the tree
-* Running a single test should just run that test and not other tests that has a similar name
-* Navigation to test where many symbols points to same test should work better
+* You can now stop the current test run. After killing the processe(s) it will perform a new test discovery.
+
+![test-explorer](images/stop.PNG)
+
+* If the build fails the tree reflects this better
+* Code lens status symbols and running in tests in context should now work again.
 
 ## Usage
 
