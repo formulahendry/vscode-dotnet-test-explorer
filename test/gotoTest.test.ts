@@ -40,6 +40,32 @@ suite("Find test location", () => {
         assert.equal(result.location.uri.fsPath, vscode.Uri.parse("c:\\temp\\test.txt").fsPath);
     });
 
+    test("One F# symbol matching", () => {
+        const symbols = [
+            GetSymbol("Test", vscode.SymbolKind.Variable, "c:\\temp\\test.fs"),
+        ];
+
+        const testNode = new TestNode("", "Test", null);
+
+        const gotoTest = new GotoTest();
+        const result = gotoTest.findTestLocation(symbols, testNode);
+
+        assert.equal(result.location.uri.fsPath, vscode.Uri.parse("c:\\temp\\test.fs").fsPath);
+    });
+
+    test("One F# symbol with spaces matching", () => {
+        const symbols = [
+            GetSymbol("Test with spaces", vscode.SymbolKind.Variable, "c:\\temp\\test.fs"),
+        ];
+
+        const testNode = new TestNode("", "Test with spaces", null);
+
+        const gotoTest = new GotoTest();
+        const result = gotoTest.findTestLocation(symbols, testNode);
+
+        assert.equal(result.location.uri.fsPath, vscode.Uri.parse("c:\\temp\\test.fs").fsPath);
+    });
+
     test("Multiple symbols matching with no namespace matching uri", () => {
         const symbols = [
             GetSymbol("Test",  vscode.SymbolKind.Method, "file:\\c:/temp/folderx/test.txt"),
