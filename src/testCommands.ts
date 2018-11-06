@@ -148,9 +148,9 @@ export class TestCommands {
 
             if (testName && testName.length) {
                 if (isSingleTest) {
-                    command = command + ` --filter FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}`;
+                    command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
                 } else {
-                    command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
+                    command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
                 }
             }
 
