@@ -73,6 +73,23 @@
             "preLaunchTask": "npm"
         },     
         {
+            "name": "Launch Extension (multiple workspaces)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/xunittests",
+                "${workspaceRoot}/test/nunit",
+                "${workspaceRoot}/test/fsxunittests",
+                "${workspaceRoot}/test/mstest",
+                "--extensionDevelopmentPath=${workspaceRoot}", 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/test/**/*.js" ],
+            "preLaunchTask": "npm"
+        },          
+        {
             "name": "Launch Tests",
             "type": "extensionHost",
             "request": "launch",
