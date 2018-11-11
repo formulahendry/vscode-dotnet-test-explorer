@@ -1,11 +1,13 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { TreeDataProvider, TreeItem, TreeItemCollapsibleState } from "vscode";
+import { TreeDataProvider, TreeItem } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { Executor } from "./executor";
-import { TestCommands } from "./testCommands";
+import { Logger } from "./logger";
+import { StatusBar } from "./statusBar";
+import { ITestRunContext, TestCommands } from "./testCommands";
+import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { TestResult } from "./testResult";
+import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
@@ -14,19 +16,15 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
-    /**
-     * The directory where the dotnet-cli will
-     * execute commands.
-     */
-    private testDirectoryPath: string;
     private discoveredTests: string[];
     private testResults: TestResult[];
     private allNodes: TestNode[] = [];
 
-    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile) {
-        testCommands.onNewTestDiscovery(this.updateWithDiscoveredTests, this);
+    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile, private statusBar: StatusBar) {
+        testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
+        testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
-        resultsFile.onNewResults(this.addTestResults, this);
+        testCommands.onNewTestResults(this.addTestResults, this);
     }
 
     /**
@@ -39,10 +37,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      * to do a restore, so it can be very slow.
      */
     public refreshTestExplorer(): void {
-        this.discoveredTests = null;
-        this._onDidChangeTreeData.fire();
-
         this.testCommands.discoverTests();
+
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
 
@@ -50,8 +46,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         if (element.isError) {
             return new TreeItem(element.name);
         }
-
-        this.allNodes.push(element);
 
         return {
             label: element.name,
@@ -61,6 +55,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
             } : void 0,
             contextValue: element.isFolder ? "folder" : "test",
+            command: element.isFolder ? null : {
+                command: "dotnet-test-explorer.leftClickTest",
+                title: "",
+                arguments: [element],
+            },
         };
     }
 
@@ -94,20 +93,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         const structuredTests = {};
 
+        this.allNodes = [];
+
         this.discoveredTests.forEach((name: string) => {
-            // this regex matches test names that include data in them - for e.g.
-            //  Foo.Bar.BazTest(p1=10, p2="blah.bleh")
-            const match = /([^\(]+)(.*)/g.exec(name);
-            if (match && match.length > 1) {
-                const parts = match[1].split(".");
-                if (match.length > 2 && match[2].trim().length > 0) {
-                    // append the data bit of the test to the test method name
-                    // so we can distinguish one test from another in the explorer
-                    // pane
-                    const testMethodName = parts[parts.length - 1];
-                    parts[parts.length - 1] = testMethodName + match[2];
-                }
-                this.addToObject(structuredTests, parts);
+            try {
+                // Split name on all dots that are not inside parenthesis MyNamespace.MyClass.MyMethod(value: "My.Dot") -> MyNamespace, MyClass, MyMethod(value: "My.Dot")
+                this.addToObject(structuredTests, name.split(/\.(?![^\(]*\))/g));
+            } catch (err) {
+                Logger.LogError(`Failed to add test with name ${name}`, err);
             }
         });
 
@@ -136,27 +129,46 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private createTestNode(parentPath: string, test: object | string): TestNode[] {
+        let testNodes: TestNode[];
+
         if (Array.isArray(test)) {
-            return test.map((t) => {
+            testNodes = test.map((t) => {
                 return new TestNode(parentPath, t, this.testResults);
             });
         } else if (typeof test === "object") {
-            return Object.keys(test).map((key) => {
+            testNodes = Object.keys(test).map((key) => {
                 return new TestNode(parentPath, key, this.testResults, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
             });
         } else {
-            return [new TestNode(parentPath, test, this.testResults)];
+            testNodes = [new TestNode(parentPath, test, this.testResults)];
         }
+
+        this.allNodes = this.allNodes.concat(testNodes);
+
+        return testNodes;
     }
 
-    private updateWithDiscoveredTests(results: string[]) {
-        this.allNodes = [];
-        this.discoveredTests = results;
+    private updateWithDiscoveringTest() {
+        this.discoveredTests = null;
         this._onDidChangeTreeData.fire();
     }
 
-    private updateTreeWithRunningTests(testName: string) {
-        const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && testNode.fullName.startsWith(testName) );
+    private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
+        this.allNodes = [];
+        this.discoveredTests = [].concat(...results.map( (r) => r.testNames));
+        this.statusBar.discovered(this.discoveredTests.length);
+        this._onDidChangeTreeData.fire();
+    }
+
+    private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
+
+        const filter = testRunContext.isSingleTest ?
+            ((testNode: TestNode) => testNode.fullName === testRunContext.testName)
+            : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
+
+        const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && filter(testNode));
+
+        this.statusBar.testRunning(testRun.length);
 
         testRun.forEach( (testNode: TestNode) => {
             testNode.setAsLoading();
@@ -164,10 +176,26 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
     }
 
-    private addTestResults(results: TestResult[]) {
+    private addTestResults(results: ITestResult) {
+
+        const fullNamesForTestResults = results.testResults.map( (r) => r.fullName);
+
+        if (results.testName === "") {
+            this.discoveredTests = [...fullNamesForTestResults];
+        } else {
+            const newTests = fullNamesForTestResults.filter( (r) => this.discoveredTests.indexOf(r) === -1);
+
+            if (newTests.length > 0) {
+                this.discoveredTests.push(...newTests);
+            }
+        }
+
+        this.discoveredTests = this.discoveredTests.sort();
+
+        this.statusBar.discovered(this.discoveredTests.length);
 
         if (this.testResults) {
-            results.forEach( (newTestResult: TestResult) => {
+            results.testResults.forEach( (newTestResult: TestResult) => {
                 const indexOldTestResult = this.testResults.findIndex( (tr) => tr.fullName === newTestResult.fullName);
 
                 if (indexOldTestResult < 0) {
@@ -177,8 +205,10 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 }
             });
         } else {
-            this.testResults = results;
+            this.testResults = results.testResults;
         }
+
+        this.statusBar.testRun(results.testResults);
 
         this._onDidChangeTreeData.fire();
     }

@@ -1,3 +1,38 @@
+## 0.5.5 (2018-11-04)
+* [#158](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/158): Fixed code lense and test in context after executeDocumentSymbolProvider changes
+* [#152](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/152): Better handling when tests fail to build
+* [#151](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/151): Allow user to cancel running test proccesses
+
+## 0.5.4 (2018-09-26)
+* [#146](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/146): Support dot in inline data
+* [#142](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/142): Fix for tests with similar names get run together
+* [#141](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/141): Better navigate to test when multiple symbols points to same test
+
+## 0.5.3 (2018-09-11)
+* [#138](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/138): Better support for TestFixture names
+* [#135](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/135): Supporting special characters in test cases on windows
+
+## 0.5.2 (2018-08-27)
+* [#130](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/130): Update tree based on test results
+* [#126](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/126): Fixed so custom tests parameters does not cause display issues
+
+## 0.5.1 (2018-08-23)
+* [#122](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/122): Handle testProjectPath change
+* [#118](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/118): More telemetry
+* [#117](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/117): Better test result icons for light theme
+
+## 0.5.0 (2018-08-11)
+* [#112](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/112): Support multiple test projects in a workspace 
+* [#111](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/111): Left clicking on test open test by default
+
+## 0.4.0 (2018-07-11)
+* [#100](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/100): Status bar displays test status
+* [#97](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/97): Added setting for additional test arguments
+
+## 0.3.1 (2018-06-13)
+* [#92](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/92): Added setting to enable auto watching
+* [#90](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/90): Adding double quotes to filter command line option
+
 ## 0.3.0 (2018-05-15)
 * [#74](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/74): Move the view to Test view container
 * [#72](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/72): Add failed tests to problems view

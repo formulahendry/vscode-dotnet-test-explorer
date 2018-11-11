@@ -2,12 +2,12 @@
   "name": "dotnet-test-explorer",
   "displayName": ".NET Core Test Explorer",
   "description": "Test Explorer for .NET Core (MSTest, xUnit, NUnit)",
-  "version": "0.3.0",
+  "version": "0.5.5",
   "publisher": "formulahendry",
   "license": "MIT",
-  "icon": "logo.png",
+  "icon": "testexplorer_dark.png",
   "engines": {
-    "vscode": "^1.23.1"
+    "vscode": "^1.25.1"
   },
   "categories": [
     "Programming Languages"
@@ -29,6 +29,8 @@
     "url": "https://github.com/formulahendry/vscode-dotnet-test-explorer.git"
   },
   "activationEvents": [
+    "workspaceContains:**/*.csproj",
+    "workspaceContains:**/*.fsproj",
     "onView:dotnetTestExplorer"
   ],
   "main": "./out/src/extension",
@@ -42,6 +44,22 @@
       ]
     },
     "commands": [
+      {
+        "command": "dotnet-test-explorer.showLog",
+        "title": "Show log",
+        "icon": {
+          "light": "resources/light/log.svg",
+          "dark": "resources/dark/log.svg"
+        }
+      },
+      {
+        "command": "dotnet-test-explorer.stop",
+        "title": "Stop running proccesses",
+        "icon": {
+          "light": "resources/light/stop.svg",
+          "dark": "resources/dark/stop.svg"
+        }
+      },
       {
         "command": "dotnet-test-explorer.refreshTestExplorer",
         "title": "Refresh",
@@ -81,6 +99,16 @@
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "dotnet-test-explorer.showLog",
+          "when": "view == dotnetTestExplorer",
+          "group": "navigation@3"
+        },
+        {
+          "command": "dotnet-test-explorer.stop",
+          "when": "view == dotnetTestExplorer",
+          "group": "navigation@2"
+        },
         {
           "command": "dotnet-test-explorer.refreshTestExplorer",
           "when": "view == dotnetTestExplorer",
@@ -139,22 +167,12 @@
         "dotnet-test-explorer.testProjectPath": {
           "type": "string",
           "default": "",
-          "description": "Folder path of .NET Core test project. You could set the full path or the relative path to the workspace root path."
+          "description": "Glob pattern that points to path of .NET Core test project(s)."
         },
         "dotnet-test-explorer.useTreeView": {
           "type": "boolean",
           "default": true,
           "description": "If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Only xUnit tests will be listed in a tree view)"
-        },
-        "dotnet-test-explorer.build": {
-          "type": "boolean",
-          "default": true,
-          "description": "If true, projects will be built when refreshing the test explorer."
-        },
-        "dotnet-test-explorer.restore": {
-          "type": "boolean",
-          "default": true,
-          "description": "If true, dotnet restore will run when refreshing the test explorer."
         },
         "dotnet-test-explorer.showCodeLens": {
           "type": "boolean",
@@ -190,6 +208,26 @@
           "type": "boolean",
           "default": true,
           "description": "If true, failed test will add to the problems view"
+        },
+        "dotnet-test-explorer.autoWatch": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, starts dotnet watch test after test discovery is completed"
+        },
+        "dotnet-test-explorer.testArguments": {
+          "type": "string",
+          "default": "",
+          "description": "Additional arguments that are added to the dotnet test command."
+        },
+        "dotnet-test-explorer.leftClickAction": {
+          "type": "string",
+          "default": "gotoTest",
+          "enum": [
+            "gotoTest",
+            "runTest",
+            "doNothing"
+          ],
+          "description": "What happens when a test in the list is left clicked."
         }
       }
     },
@@ -213,29 +251,29 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "tslint": "tslint -t verbose src/**/*.ts"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.32",
-    "@types/node": "^6.0.40",
+    "@types/node": "^8.10.36",
     "@types/sinon": "^4.3.0",
     "mocha": "^2.3.3",
     "sinon": "^4.5.0",
     "tslint": "^5.6.0",
-    "typescript": "^2.0.3",
-    "vscode": "^1.0.0"
+    "typescript": "^2.6.2",
+    "vscode": "^1.1.21"
   },
   "dependencies": {
-    "applicationinsights": "^0.21.0",
-    "xmldom": "^0.1.27",
-    "@types/fs-extra": "^3.0.1",
-    "@types/glob": "^5.0.30",
-    "amd-loader": "0.0.8",
-    "freeport": "^1.0.5",
+    "applicationinsights": "^1.0.5",
+    "chokidar": "^2.0.4",
+    "fkill": "^5.3.0",
     "glob": "^7.1.2",
-    "typescript-collections": "^1.2.3"
+    "ts-node": "^7.0.1",
+    "xmldom": "^0.1.27"
   }
 }

@@ -1,80 +1,126 @@
-import * as fs from "fs";
 import * as path from "path";
-import * as vscode from "vscode";
-import { Disposable, Event, EventEmitter } from "vscode";
+import { commands, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
-import { IMessagesController } from "./messages";
-import { discoverTests } from "./testDiscovery";
+import { TestDirectories } from "./testDirectories";
+import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
+import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 import { VSTestServiceIDE } from "./vsTestPlatform/vsCode/vsTest/vsTestServiceIDE";
 
+export interface ITestRunContext {
+    testName: string;
+    isSingleTest: boolean;
+}
+
 export class TestCommands {
-    private onNewTestDiscoveryEmitter = new EventEmitter<string[]>();
-    private onTestRunEmitter = new EventEmitter<string>();
-    private testDirectoryPath: string;
-    private lastRunTestName: string = null;
+    private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
+    private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
+    private onTestRunEmitter = new EventEmitter<ITestRunContext>();
+    private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
+    private lastRunTestContext: ITestRunContext = null;
 
     constructor(
         private resultsFile: TestResultsFile,
-        private messagesController: IMessagesController) { }
+        private testDirectories: TestDirectories) { }
 
-    /**
-     * @description
-     * Runs all tests discovered in the project directory.
-     * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
-     */
+    public discoverTests() {
+        this.onTestDiscoveryStartedEmitter.fire();
+
+        this.testDirectories.clearTestsForDirectory();
+
+        // We want to make sure test discovery across multiple directories are run in sequence to avoid excessive cpu usage
+        const runSeq = async () => {
+
+            const discoveredTests = [];
+
+            try {
+                for (const dir of this.testDirectories.getTestDirectories()) {
+                    const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
+                    this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
+                    discoveredTests.push(testsForDir);
+                }
+
+                this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
+            } catch (error) {
+                this.onTestDiscoveryFinishedEmitter.fire([]);
+            }
+        };
+
+        runSeq();
+    }
+
+    public get onTestDiscoveryStarted(): Event<string> {
+        return this.onTestDiscoveryStartedEmitter.event;
+    }
+
+    public get onTestDiscoveryFinished(): Event<IDiscoverTestsResult[]> {
+        return this.onTestDiscoveryFinishedEmitter.event;
+    }
+
+    public get onTestRun(): Event<ITestRunContext> {
+        return this.onTestRunEmitter.event;
+    }
+
+    public get onNewTestResults(): Event<ITestResult> {
+        return this.onNewTestResultsEmitter.event;
+    }
+
+    public sendNewTestResults(testResults: ITestResult) {
+        this.onNewTestResultsEmitter.fire(testResults);
+    }
+
     public runAllTests(): void {
-        this.runTestCommand("");
+        this.runTestCommand("", false);
         AppInsightsClient.sendEvent("runAllTests");
     }
 
-    /**
-     * @description
-     * Runs a specific test discovered from the project directory.
-     * @summary
-     * This method can cause the project to rebuild or try
-     * to do a restore, so it can be very slow.
-     */
     public runTest(test: TestNode): void {
-        this.runTestByName(test.fullName);
+        this.runTestByName(test.fullName, !test.isFolder);
     }
 
-    public runTestByName(testName: string): void {
-        this.runTestCommand(testName);
+    public runTestByName(testName: string, isSingleTest: boolean): void {
+        this.runTestCommand(testName, isSingleTest);
         AppInsightsClient.sendEvent("runTest");
     }
 
     public rerunLastCommand(): void {
-        if (this.lastRunTestName != null) {
-            this.runTestCommand(this.lastRunTestName);
+        if (this.lastRunTestContext != null) {
+            this.runTestCommand(this.lastRunTestContext.testName, this.lastRunTestContext.isSingleTest);
             AppInsightsClient.sendEvent("rerunLastCommand");
         }
     }
 
-    public discoverTests() {
-        this.evaluateTestDirectory();
+    private runTestCommand(testName: string, isSingleTest: boolean): void {
 
-        discoverTests(this.testDirectoryPath, this.getDotNetTestOptions())
-            .then((result) => {
-                if (result.warningMessage) {
-                    Logger.LogWarning(result.warningMessage.text);
+        commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
 
-                    this.messagesController.showWarningMessage(result.warningMessage);
+        const testDirectories = this
+            .testDirectories
+            .getTestDirectories(testName);
+
+        const testResults = [];
+
+        // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
+        const runSeq = async () => {
+
+            try {
+                for (let i = 0; i < testDirectories.length; i++) {
+                    testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
                 }
 
-                this.onNewTestDiscoveryEmitter.fire(result.testNames);
-            })
-            .catch((err) => {
-                Logger.LogError("Error while discovering tests", err);
+                const merged = [].concat(...testResults);
+                this.sendNewTestResults({ testName, testResults: merged });
+            } catch (err) {
+                Logger.Log(`Error while executing test command: ${err}`);
+                this.discoverTests();
+            }
+        };
 
-                this.onNewTestDiscoveryEmitter.fire([]);
-            });
+        runSeq();
     }
 
     public vsDiscoverTests(testService: VSTestServiceIDE) {
@@ -91,99 +137,63 @@ export class TestCommands {
     public get onNewTestDiscovery(): Event<string[]> {
         return this.onNewTestDiscoveryEmitter.event;
     }
+    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
+        return new Promise((resolve, reject) => {
 
-    public get onTestRun(): Event<string> {
-        return this.onTestRunEmitter.event;
+            Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
+
+            Executor.exec("dotnet build", (err, stdout: string) => {
+                if (err) {
+                    reject(new Error("Build command failed"));
+                }
+                resolve();
+            }, testDirectoryPath);
+        });
     }
 
-    private runTestCommand(testName: string): void {
-        let command = `dotnet test${this.getDotNetTestOptions()}${this.outputTestResults()}`;
+    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number): Promise<TestResult[]> {
 
-        if (testName && testName.length) {
-            command = command + ` --filter FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}`;
-        }
+        const trxTestName = index + ".trx";
 
-        this.lastRunTestName = testName;
-        Logger.Log(`Executing ${command} in ${this.testDirectoryPath}`);
-        this.onTestRunEmitter.fire(testName);
-        Executor.runInTerminal(command, this.testDirectoryPath);
+        const textContext = { testName, isSingleTest };
+
+        return new Promise((resolve, reject) => {
+            const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
+            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
+
+            if (testName && testName.length) {
+                if (isSingleTest) {
+                    command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
+                } else {
+                    command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
+                }
+            }
+
+            this.lastRunTestContext = textContext;
+
+            this.onTestRunEmitter.fire(textContext);
+
+            this.runBuildCommandForSpecificDirectory(testDirectoryPath)
+                .then(() => {
+                    Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+
+                    return Executor.exec(command, (err, stdout: string) => {
+
+                        if (err && err.killed) {
+                            Logger.Log("User has probably cancelled test run");
+                            reject(new Error("UserAborted"));
+                        }
+
+                        Logger.Log(stdout);
+
+                        this.resultsFile.parseResults(testResultFile).then((result) => {
+                            resolve(result);
+                        });
+                    }, testDirectoryPath, true);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
     }
-
-    /**
-     * @description
-     * Discover the directory where the dotnet-cli
-     * will execute commands, taken from the options.
-     * @summary
-     * This will be the @see{vscode.workspace.rootPath}
-     * by default.
-     */
-    private evaluateTestDirectory(): void {
-        let testProjectFullPath = this.checkTestDirectoryOption();
-        testProjectFullPath = Utility.resolvePath(testProjectFullPath);
-
-        if (!fs.existsSync(testProjectFullPath)) {
-            Logger.Log(`Path ${testProjectFullPath} is not valid`);
-        }
-
-        this.testDirectoryPath = testProjectFullPath;
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify that the dotnet-cli
-     * should run `dotnet build` before loading tests.
-     * @summary
-     * If this is set to **false**, then `--no-build` is passed into the
-     * command line arguments. It is prefixed by a space only if **false**.
-     */
-    private checkBuildOption(): string {
-        const option = Utility.getConfiguration().get<boolean>("build");
-        return option ? "" : " --no-build";
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify that the dotnet-cli
-     * should run `dotnet restore` before loading tests.
-     * @summary
-     * If this is set to **false**, then `--no-restore` is passed into the
-     * command line arguments. It is prefixed by a space only if **false**.
-     */
-    private checkRestoreOption(): string {
-        const option = Utility.getConfiguration().get<boolean>("restore");
-        return option ? "" : " --no-restore";
-    }
-
-    /**
-     * @description
-     * Gets the options for build/restore before running tests.
-     */
-    private getDotNetTestOptions(): string {
-        return this.checkBuildOption() + this.checkRestoreOption();
-    }
-
-    /**
-     * @description
-     * Gets the dotnet test argument to speicfy the output for the test results.
-     */
-    private outputTestResults(): string {
-        if (Utility.codeLensEnabled) {
-            return " --logger \"trx;LogFileName=" + this.resultsFile.fileName + "\"";
-        } else {
-            return "";
-        }
-    }
-
-    /**
-     * @description
-     * Checks to see if the options specify a directory to run the
-     * dotnet-cli test commands in.
-     * @summary
-     * This will use the project root by default.
-     */
-    private checkTestDirectoryOption(): string {
-        const option = Utility.getConfiguration().get<string>("testProjectPath");
-        return option ? option : vscode.workspace.rootPath;
-    }
-
 }

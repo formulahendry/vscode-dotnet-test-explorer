@@ -46,7 +46,7 @@ export class GotoTest {
 
         const testName = this.getTestName(testNode.name);
 
-        symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method && this.getTestName(s.name) === testName);
+        symbols = symbols.filter((s) => this.isSymbolATestCandidate(s) && this.getTestName(s.name) === testName);
 
         if (symbols.length === 0) {
             throw Error("Could not find test (no symbols matching)");
@@ -59,6 +59,11 @@ export class GotoTest {
 
             if (symbols.length === 0) {
                 throw Error("Could not find test (namespace not matching uri)");
+            }
+
+            const firstLocation = symbols[0].location;
+            if (symbols.every((s) => s.location.uri.toString() === firstLocation.uri.toString() && s.location.range.isEqual(firstLocation.range))) {
+                return symbols[0];
             }
 
             if (symbols.length > 1) {
@@ -88,5 +93,9 @@ export class GotoTest {
         }
 
         return testNode.parentPath;
+    }
+
+    private isSymbolATestCandidate(s: vscode.SymbolInformation): boolean {
+        return s.location.uri.toString().endsWith(".fs") ? s.kind === vscode.SymbolKind.Variable : s.kind === vscode.SymbolKind.Method;
     }
 }

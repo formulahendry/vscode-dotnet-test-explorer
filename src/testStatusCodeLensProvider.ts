@@ -1,7 +1,8 @@
 "use strict";
 import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument } from "vscode";
-import { TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
+import { ITestSymbol, Symbols } from "./symbols";
+import { TestCommands } from "./testCommands";
+import { ITestResult, TestResult } from "./testResult";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
 import { Utility } from "./utility";
 
@@ -15,9 +16,9 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     // a memory impact)
     private testResults = new Map<string, TestResult>();
 
-    public constructor(testResultFile: TestResultsFile) {
+    public constructor(testCommands: TestCommands) {
         this.disposables.push(
-            testResultFile.onNewResults(this.addTestResults, this));
+            testCommands.onNewTestResults(this.addTestResults, this));
     }
 
     public dispose() {
@@ -36,48 +37,49 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
         }
 
         const results = this.testResults;
-        return commands.executeCommand<SymbolInformation[]>("vscode.executeDocumentSymbolProvider", document.uri)
-            .then((symbols) => {
-                const mapped: CodeLens[] = [];
-                for (const symbol of symbols.filter((x) => x.kind === SymbolKind.Method)) {
-                    for (const result of results.values()) {
-                        if (result.matches(symbol.containerName, symbol.name)) {
-                            const state = TestStatusCodeLens.parseOutcome(result.outcome);
-                            if (state) {
-                                mapped.push(new TestStatusCodeLens(symbol.location.range, state));
-                                break;
-                            }
-                        } else if (result.matchesTheory(symbol.containerName, symbol.name)) {
-                            const state = TestStatusCodeLens.parseOutcome(result.outcome);
-                            if (state === Utility.codeLensFailed) {
-                                mapped.push(new TestStatusCodeLens(symbol.location.range, Utility.codeLensFailed));
-                                break;
-                            } else {
-                                // Checks if any input values for this theory fails
-                                for (const theoryResult of results.values()) {
-                                    if (theoryResult.matchesTheory(symbol.containerName, symbol.name)) {
-                                        if (theoryResult.outcome === Utility.codeLensFailed) {
-                                            mapped.push(new TestStatusCodeLens(symbol.location.range, Utility.codeLensFailed));
-                                            break;
-                                        }
+
+        return Symbols.getSymbols(document.uri, true)
+        .then((symbols: ITestSymbol[]) => {
+            const mapped: CodeLens[] = [];
+            for (const symbol of symbols.filter((x) => x.documentSymbol.kind === SymbolKind.Method)) {
+                for (const result of results.values()) {
+                    if (result.matches(symbol.parentName, symbol.documentSymbol.name)) {
+                        const state = TestStatusCodeLens.parseOutcome(result.outcome);
+                        if (state) {
+                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, state));
+                            break;
+                        }
+                    } else if (result.matchesTheory(symbol.parentName, symbol.documentSymbol.name)) {
+                        const state = TestStatusCodeLens.parseOutcome(result.outcome);
+                        if (state === Utility.codeLensFailed) {
+                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, Utility.codeLensFailed));
+                            break;
+                        } else {
+                            // Checks if any input values for this theory fails
+                            for (const theoryResult of results.values()) {
+                                if (theoryResult.matchesTheory(symbol.parentName, symbol.documentSymbol.name)) {
+                                    if (theoryResult.outcome === Utility.codeLensFailed) {
+                                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, Utility.codeLensFailed));
+                                        break;
                                     }
                                 }
                             }
-                            mapped.push(new TestStatusCodeLens(symbol.location.range, state));
                         }
+                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, state));
                     }
                 }
+            }
 
-                return mapped;
-            });
+            return mapped;
+        });
     }
 
     public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): CodeLens {
         return codeLens;
     }
 
-    private addTestResults(results: TestResult[]) {
-        for (const result of results) {
+    private addTestResults(results: ITestResult) {
+        for (const result of results.testResults) {
             this.testResults.set(result.fullName, result);
         }
 

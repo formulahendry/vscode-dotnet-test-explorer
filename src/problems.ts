@@ -1,9 +1,6 @@
-import * as path from "path";
 import * as vscode from "vscode";
-import { AppInsightsClient } from "./appInsightsClient";
-import { TestNode } from "./testNode";
-import { TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
+import { TestCommands } from "./testCommands";
+import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class Problems {
@@ -39,7 +36,7 @@ export class Problems {
         return problems.reduce( (groups, item) => {
             const val = item.uri;
             groups[val] = groups[val] || [];
-            groups[val].push(new vscode.Diagnostic(new vscode.Range(item.lineNumber - 1, 0, item.lineNumber - 1, 100), item.message));
+            groups[val].push(new vscode.Diagnostic(new vscode.Range(item.lineNumber - 1, 0, item.lineNumber - 1, 10000), item.message));
             return groups;
           }, {});
     }
@@ -47,9 +44,9 @@ export class Problems {
     private static regex = /in (.*):line (.*)/gm;
     private _diagnosticCollection: vscode.DiagnosticCollection;
 
-    constructor(private resultsFile: TestResultsFile) {
+    constructor(testCommands: TestCommands) {
         if (Utility.getConfiguration().get<boolean>("addProblems")) {
-            resultsFile.onNewResults(this.addTestResults, this);
+            testCommands.onNewTestResults(this.addTestResults, this);
             this._diagnosticCollection = vscode.languages.createDiagnosticCollection("dotnet-test-explorer");
         }
     }
@@ -60,11 +57,11 @@ export class Problems {
         }
     }
 
-    private addTestResults(results: TestResult[]) {
+    private addTestResults(results: ITestResult) {
 
         this._diagnosticCollection.clear();
 
-        const problems = Problems.createProblemsFromResults(results);
+        const problems = Problems.createProblemsFromResults(results.testResults);
 
         const newDiagnostics: Array<[vscode.Uri, vscode.Diagnostic[]]> = [];
 

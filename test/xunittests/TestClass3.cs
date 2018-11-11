@@ -12,6 +12,7 @@ namespace XunitTests
 
         [Theory]
         [InlineData(2)]
+        [InlineData(3)]
         public void Pass(int value)
         {
             (value).ShouldBe(2);
@@ -36,6 +37,22 @@ namespace XunitTests
         public void SkippedTest(int value)
         {
             (value).ShouldBe(3);
-        }             
+        }     
+
+        [Theory]
+        [InlineData("Häj")]
+        public void WithSpecialChars(string value)
+        {
+            (value).ShouldBe("Häjx");
+        }
+
+        [Theory]
+        [InlineData("With.Dot", 5.5)]
+        public void WithDot(string value, decimal value2)
+        {
+            (value).ShouldBe("With.Dot");
+            value2.ShouldBe(5.5m);
+        }
+        
     }
 }

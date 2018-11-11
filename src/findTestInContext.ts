@@ -1,52 +1,33 @@
-import * as path from "path";
 import * as vscode from "vscode";
+import { SymbolKind } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { TestNode } from "./testNode";
+import { ITestSymbol, Symbols } from "./symbols";
+import { ITestRunContext } from "./testCommands";
 
 export class FindTestInContext {
 
-    public async find(doc: vscode.TextDocument, lineNumber: number): Promise<string> {
+    public async find(doc: vscode.TextDocument, position: vscode.Position): Promise<ITestRunContext> {
 
         AppInsightsClient.sendEvent("findTestInContext");
 
-        return vscode.commands.executeCommand<vscode.SymbolInformation[]>(
-                "vscode.executeDocumentSymbolProvider",
-                doc.uri,
-            ).then((symbols) => {
-                const documentContent = doc.getText();
-                const namespace = this.getNamespace(documentContent);
-                return this.getTestString(symbols, lineNumber, namespace);
-            });
-    }
+        return Symbols.getSymbols(doc.uri, true).then( (documentSymbols: ITestSymbol[]) => {
 
-    public getNamespace(sourceText: string) {
-        const regexp = /namespace (\S*)/igm;
-        const result = regexp.exec(sourceText);
+            const symbolsInRange = documentSymbols.filter( (ds) => ds.documentSymbol.range.contains(position));
 
-        return result ? result[1] : "";
-    }
+            // When need to type as any since containerName is not exposed in the DocumentSymbol typescript object
+            let symbolCandidate: ITestSymbol;
 
-    public getTestString(symbols: vscode.SymbolInformation[], lineNumber: number, namespace: string): string {
-        let symbolToRunTestsFor: vscode.SymbolInformation;
+            symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Method);
 
-        symbols = symbols.filter( (s) => s.kind === vscode.SymbolKind.Method || s.kind === vscode.SymbolKind.Class);
+            if (symbolCandidate) {
+                return {testName: (symbolCandidate.fullName), isSingleTest: true};
+            }
 
-        if (symbols.length === 1) {
-            symbolToRunTestsFor = symbols[0];
-        } else {
-            const allSymbolsAboveLine = symbols
-                .map((s) => ({ symbol: s, lineDiff: lineNumber - s.location.range.start.line }) )
-                .filter((x) => x.lineDiff >= 0);
+            symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Class);
 
-            symbolToRunTestsFor = allSymbolsAboveLine.length > 0
-                ? allSymbolsAboveLine.reduce((prev, curr) => prev.lineDiff < curr.lineDiff ? prev : curr).symbol
-                : symbols[0];
-        }
-
-        namespace = namespace.length > 0 ? namespace + "." : "";
-
-        return namespace + (symbolToRunTestsFor.containerName
-            ? symbolToRunTestsFor.containerName + "." + symbolToRunTestsFor.name
-            : symbolToRunTestsFor.name);
+            if (symbolCandidate) {
+                return {testName: symbolCandidate.fullName, isSingleTest: false};
+            }
+        });
     }
 }
