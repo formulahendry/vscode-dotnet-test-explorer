@@ -75,6 +75,8 @@ Text from the dotnet test output as well as debug info is written to the Output/
 * `dotnet-test-explorer.leftClickAction`: What happens when a test in the list is left clicked. (Default is **gotoTest**)
 
 ## Known issues
+##### Go to test does not work with multiple workspaces
+This is because of limitations in the omnisharp extensions. We can only navigate to symbols which are in the currently selected workspace.
 
 ##### Test result is not shown in codelens / tree
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
