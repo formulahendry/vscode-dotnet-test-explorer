@@ -13,7 +13,9 @@
   - [ ] Mstest project
   - [ ] Nunit project
   - [ ] Xunit project
-- [ ] Does it perform better than than running `dotnet vstest` and parsing TRX?
+- [ ] Test discovery performs better than running `dotnet vstest` and parsing TRX?
+  - with a 100+ tests, Discovery seem to be slightly (20-30ms) quicker for the first run. Refershes are quicker with the cli. Not sure why. VTP is the same-ish as the first run.
+- [ ] Test exection performs better than running with the cli
 - [x] Check if test **discovery** results data schema are the smae across test frameworks for key data?
   - displayName value is FQN for Xunit but not for Nunit and Mstest. See examples below. Believe this is the same as TRX.
 - [ ] Check if test **execution** results data schema are the smae across test frameworks for key data?
@@ -25,6 +27,10 @@
     "typescript-collections": "^1.3.2",
     "freeport": "^1.0.5",
     "amd-loader": "^0.0.8"
+
+## Configuring the test project
+
+This is currently required manual editting of `/vsTestPlatform/vsCode/config.ts`
 
 ## Check before shipping TODO
 

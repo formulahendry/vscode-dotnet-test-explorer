@@ -96,8 +96,14 @@ export class TestCommands {
     }
 
     public vsDiscoverTests(testService: VSTestServiceIDE) {
+        const date1 = new Date();
+        Logger.Log(date1.toLocaleString() + " - Start discovery VTP2");
         testService.discoveryTests(vscode.workspace.rootPath).then((result) => {
             if (result) {
+                Logger.Log(result.TotalTests.toString() + " tests discovered using VTP");
+                const date2 = new Date();
+                Logger.Log(date1.toLocaleString() + " - End discovery VTP2 in " + (date2.getMilliseconds() - date1.getMilliseconds()).toString() + "ms");
+                Logger.Log("");
                 // this._onDidChangeTreeData.fire();
             } else {
                 // tslint:disable-next-line:no-console
@@ -120,11 +126,19 @@ export class TestCommands {
         const runSeq = async () => {
 
             try {
+                const date1 = new Date();
+                Logger.Log(date1.toLocaleString() + " - Start execution via cli");
+
                 for (let i = 0; i < testDirectories.length; i++) {
                     testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
                 }
 
                 const merged = [].concat(...testResults);
+
+                const date2 = new Date();
+                Logger.Log(date2.toLocaleString() + " - End execution via cli in " + (date2.getMilliseconds() - date1.getMilliseconds()).toString() + "ms");
+                Logger.Log("");
+
                 this.sendNewTestResults({ testName, testResults: merged });
             } catch (err) {
                 Logger.Log(`Error while executing test command: ${err}`);

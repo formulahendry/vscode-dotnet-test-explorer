@@ -10,6 +10,7 @@ import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
+import { TestManager } from "./vsTestPlatform/vsCode/vsTest/vsTestManager";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
@@ -38,6 +39,16 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
      */
     public refreshTestExplorer(): void {
         this.testCommands.discoverTests();
+
+        // VTP testing code
+        TestManager.initialize(this.context, vscode.workspace.rootPath).then(() => {
+            // this.isTestExplorerInitialized = true;
+            // this._onDidChangeTreeData.fire();
+            const testManagerInstance = TestManager.getInstance();
+            const testService = testManagerInstance.getTestService();
+            Logger.Log("Test Manager initialised", "vsTest");
+            this.testCommands.vsDiscoverTests(testService);
+        });
 
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }

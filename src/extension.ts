@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
         // this._onDidChangeTreeData.fire();
         const testManagerInstance = TestManager.getInstance();
         const testService = testManagerInstance.getTestService();
-        testManagerInstance.testOutputChannel.appendData("Initialized TestManaer");
+        Logger.Log("Test Manager initialised", "vsTest");
         testCommands.vsDiscoverTests(testService);
     });
 
