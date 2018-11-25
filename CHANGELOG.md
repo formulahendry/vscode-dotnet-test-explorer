@@ -1,3 +1,8 @@
+## 0.6.0 (2018-11-14)
+* [#165](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/165): Multiple workspace support
+* [#164](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/164): Double-quote argument to dotnet --filter
+* [#156](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/156): Fix unfound tests when using Go to Test feature with F# 
+
 ## 0.5.5 (2018-11-04)
 * [#158](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/158): Fixed code lense and test in context after executeDocumentSymbolProvider changes
 * [#152](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/152): Better handling when tests fail to build

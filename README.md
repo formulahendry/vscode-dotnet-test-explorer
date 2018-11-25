@@ -11,14 +11,11 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.5.5
+## New in 0.6.0
 
-* You can now stop the current test run. After killing the processe(s) it will perform a new test discovery.
-
-![test-explorer](images/stop.PNG)
-
-* If the build fails the tree reflects this better
-* Code lens status symbols and running in tests in context should now work again.
+* We now support multiple workspaces. We will try to find tests in all of the folders according to the testProjectPath setting. See the section regarding [configuring multiple test projects](#configuring-multiple-test-projects)
+* Tests written in fsharp should be less unfoundable when trying to navigate to them
+* Filter argument are now double-quoted (again, let's hope they stay that way from now on)
 
 ## Usage
 
@@ -40,6 +37,12 @@ Given the folder structure
 the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects.
 
 Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enought to figure out which test directory should be run and only run tests for that directory.
+
+#### Stopping the current test runner(s)
+
+Press the stop button in the top menu. After killing the processe(s) it will perform a new test discovery.
+
+![test-explorer](images/stop.PNG)
 
 #### Logging
 
@@ -72,6 +75,8 @@ Text from the dotnet test output as well as debug info is written to the Output/
 * `dotnet-test-explorer.leftClickAction`: What happens when a test in the list is left clicked. (Default is **gotoTest**)
 
 ## Known issues
+##### Go to test does not work with multiple workspaces
+This is because of limitations in the omnisharp extensions. We can only navigate to symbols which are in the currently selected workspace.
 
 ##### Test result is not shown in codelens / tree
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 

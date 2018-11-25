@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "xunittests"
+		},
+		{
+			"path": "nunit"
+		},
+		{
+			"path": "fsxunittests"
+		},
+		{
+			"path": "mstest"
+		}
+	],
+	"settings": {
+		"dotnet-test-explorer.autoWatch": true
+	}
+}
