@@ -20,7 +20,7 @@
 - [ ] Check what new data do we have available?
 - [ ] Can it handle multiple test projects in a single workspace?
 
-## Track before shipping TODO
+## Check before shipping TODO
 
 - Works cross platform
 - Unit tests for VS Test Platform

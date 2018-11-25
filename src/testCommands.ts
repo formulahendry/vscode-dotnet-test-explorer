@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as vscode from "vscode";
 import { commands, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
@@ -94,6 +95,17 @@ export class TestCommands {
         }
     }
 
+    public vsDiscoverTests(testService: VSTestServiceIDE) {
+        testService.discoveryTests(vscode.workspace.rootPath).then((result) => {
+            if (result) {
+                // this._onDidChangeTreeData.fire();
+            } else {
+                // tslint:disable-next-line:no-console
+                console.info("vsTestPlatform: No tests discovered.");
+            }
+        });
+    }
+
     private runTestCommand(testName: string, isSingleTest: boolean): void {
 
         commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
@@ -123,20 +135,6 @@ export class TestCommands {
         runSeq();
     }
 
-    public vsDiscoverTests(testService: VSTestServiceIDE) {
-        testService.discoveryTests(vscode.workspace.rootPath).then((result) => {
-            if (result) {
-                // this._onDidChangeTreeData.fire();
-            } else {
-                // tslint:disable-next-line:no-console
-                console.info("vsTestPlatform: No tests discovered.");
-            }
-        });
-    }
-
-    public get onNewTestDiscovery(): Event<string[]> {
-        return this.onNewTestDiscoveryEmitter.event;
-    }
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
         return new Promise((resolve, reject) => {
 

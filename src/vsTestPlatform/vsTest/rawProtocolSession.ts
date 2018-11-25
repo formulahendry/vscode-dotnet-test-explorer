@@ -140,17 +140,19 @@ export abstract class RawProtocolSession {
         // processes. Therefore we use TASKKILL.EXE
         // FIXME: add platform check  
         if (/*platform.isWindows*/false) {
-            ret = new TPromise<void>((c, e) => {
-                const killer = cp.exec(`taskkill /F /T /PID ${this.serverProcess.pid}`, function (err, stdout, stderr) {
-                    if (err) {
-                        return e(err);
-                    }
-                });
-                killer.on("exit", () => {
-                    this.stdServer.close(c);
-                });
-                killer.on("error", e);
-            });
+            // ** code for Windows. Uncomment when adding Window platform support.
+
+            // ret = new TPromise<void>((c, e) => {
+            //     const killer = cp.exec(`taskkill /F /T /PID ${this.serverProcess.pid}`, function (err, stdout, stderr) {
+            //         if (err) {
+            //             return e(err);
+            //         }
+            //     });
+            //     killer.on("exit", () => {
+            //         this.stdServer.close(c);
+            //     });
+            //     killer.on("error", e);
+            // });
         } else {
 			this.serverProcess.kill("SIGTERM");
 			ret = TPromise.as(null);

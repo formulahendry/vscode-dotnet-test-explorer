@@ -66,7 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
         testCommands.vsDiscoverTests(testService);
     });
 
-    const codeLensProvider = new TestStatusCodeLensProvider(testResults);
+    const codeLensProvider = new TestStatusCodeLensProvider(testCommands);
     context.subscriptions.push(codeLensProvider);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(
         { language: "csharp", scheme: "file" },
