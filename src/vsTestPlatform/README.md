@@ -20,6 +20,12 @@
 - [ ] Check what new data do we have available?
 - [ ] Can it handle multiple test projects in a single workspace?
 
+## additional npm dependencies
+
+    "typescript-collections": "^1.3.2",
+    "freeport": "^1.0.5",
+    "amd-loader": "^0.0.8"
+
 ## Check before shipping TODO
 
 - Works cross platform
