@@ -125,14 +125,19 @@ export class TestCommands {
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
         return new Promise((resolve, reject) => {
 
-            Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
-
-            Executor.exec("dotnet build", (err, stdout: string) => {
-                if (err) {
-                    reject(new Error("Build command failed"));
-                }
+            if (Utility.additionalArgumentsOption.indexOf("--no-build") > -1) {
+                Logger.Log(`User has passed --no-build, skipping build`);
                 resolve();
-            }, testDirectoryPath);
+            } else {
+                Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
+
+                Executor.exec("dotnet build", (err, stdout: string) => {
+                    if (err) {
+                        reject(new Error("Build command failed"));
+                    }
+                    resolve();
+                }, testDirectoryPath);
+            }
         });
     }
 
