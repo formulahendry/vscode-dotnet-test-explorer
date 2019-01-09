@@ -54,8 +54,8 @@ export class AppInsights {
                                 testFramework = "mstest";
                             }
 
-                            Logger.Log(`Discoverd tests with ${testFramework}. Found ${numberOfTests} in ${testDirectories.length} directories`);
-                            AppInsightsClient.sendEvent("Discoverd tests", {"Test framework": testFramework}, {Tests: numberOfTests, Directories: testDirectories.length} );
+                            Logger.Log(`Discovered tests with ${testFramework}. Found ${numberOfTests} in ${testDirectories.length} directories`);
+                            AppInsightsClient.sendEvent("Discovered tests", {"Test framework": testFramework}, {Tests: numberOfTests, Directories: testDirectories.length} );
                         } catch (err) {
                             Logger.LogError("Failed to send telemetry for discovered tests", err);
                         }
