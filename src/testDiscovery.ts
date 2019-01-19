@@ -47,6 +47,9 @@ function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string)
     return new Promise((resolve, reject) => {
         const command = `dotnet test -t -v=q${dotnetTestOptions}`;
 
+        const date1 = new Date();
+        Logger.Log(date1.toLocaleString() + " - Start discovery via cli");
+
         Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
         Executor.exec(command, (err: Error, stdout: string, stderr: string) => {
@@ -56,9 +59,12 @@ function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string)
                 reject(err);
                 return;
             }
-
+            const date2 = new Date();
+            Logger.Log(date2.toLocaleString() + " - End discovery via cli in " + (date2.getMilliseconds() - date1.getMilliseconds()).toString() + "ms");
+            Logger.Log("");
             resolve(stdout);
         }, testDirectoryPath);
+
     });
 }
 

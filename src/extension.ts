@@ -17,6 +17,7 @@ import { TestNode } from "./testNode";
 import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
+import { TestManager } from "./vsTestPlatform/vsCode/vsTest/vsTestManager";
 import { Watch } from "./watch";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -56,6 +57,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     testCommands.discoverTests();
 
+    TestManager.initialize(this.context, vscode.workspace.rootPath).then(() => {
+        // this.isTestExplorerInitialized = true;
+        // this._onDidChangeTreeData.fire();
+        const testManagerInstance = TestManager.getInstance();
+        const testService = testManagerInstance.getTestService();
+        Logger.Log("Test Manager initialised", "vsTest");
+        testCommands.vsDiscoverTests(testService);
+    });
+
     const codeLensProvider = new TestStatusCodeLensProvider(testCommands);
     context.subscriptions.push(codeLensProvider);
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(
@@ -83,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
-        findTestInContext.find(editor.document, editor.selection.start).then( (testRunContext) => {
+        findTestInContext.find(editor.document, editor.selection.start).then((testRunContext) => {
             testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
         });
     }));

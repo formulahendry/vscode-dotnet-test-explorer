@@ -14,5 +14,10 @@
         ],
         "no-empty": false,
         "object-literal-sort-keys": false
-    }
+    },
+    "linterOptions": {
+        "exclude": [
+            "**/src/vsTestPlatform/**/**.*"
+        ]
+      }
 }

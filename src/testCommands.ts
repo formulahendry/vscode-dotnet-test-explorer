@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as vscode from "vscode";
 import { commands, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
@@ -9,6 +10,7 @@ import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
+import { VSTestServiceIDE } from "./vsTestPlatform/vsCode/vsTest/vsTestServiceIDE";
 
 export interface ITestRunContext {
     testName: string;
@@ -39,7 +41,7 @@ export class TestCommands {
             try {
                 for (const dir of this.testDirectories.getTestDirectories()) {
                     const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-                    this.testDirectories.addTestsForDirectory(testsForDir.testNames.map( (tn) => ({dir, name: tn})));
+                    this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
                     discoveredTests.push(testsForDir);
                 }
 
@@ -93,6 +95,23 @@ export class TestCommands {
         }
     }
 
+    public vsDiscoverTests(testService: VSTestServiceIDE) {
+        const date1 = new Date();
+        Logger.Log(date1.toLocaleString() + " - Start discovery VTP2");
+        testService.discoveryTests(vscode.workspace.rootPath).then((result) => {
+            if (result) {
+                Logger.Log(result.TotalTests.toString() + " tests discovered using VTP");
+                const date2 = new Date();
+                Logger.Log(date1.toLocaleString() + " - End discovery VTP2 in " + (date2.getMilliseconds() - date1.getMilliseconds()).toString() + "ms");
+                Logger.Log("");
+                // this._onDidChangeTreeData.fire();
+            } else {
+                // tslint:disable-next-line:no-console
+                console.info("vsTestPlatform: No tests discovered.");
+            }
+        });
+    }
+
     private runTestCommand(testName: string, isSingleTest: boolean): void {
 
         commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
@@ -107,12 +126,20 @@ export class TestCommands {
         const runSeq = async () => {
 
             try {
+                const date1 = new Date();
+                Logger.Log(date1.toLocaleString() + " - Start execution via cli");
+
                 for (let i = 0; i < testDirectories.length; i++) {
                     testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
                 }
 
                 const merged = [].concat(...testResults);
-                this.sendNewTestResults({ testName, testResults: merged});
+
+                const date2 = new Date();
+                Logger.Log(date2.toLocaleString() + " - End execution via cli in " + (date2.getMilliseconds() - date1.getMilliseconds()).toString() + "ms");
+                Logger.Log("");
+
+                this.sendNewTestResults({ testName, testResults: merged });
             } catch (err) {
                 Logger.Log(`Error while executing test command: ${err}`);
                 this.discoverTests();
@@ -122,7 +149,7 @@ export class TestCommands {
         runSeq();
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
+    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
         return new Promise((resolve, reject) => {
 
             Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
@@ -140,7 +167,7 @@ export class TestCommands {
 
         const trxTestName = index + ".trx";
 
-        const textContext = {testName, isSingleTest};
+        const textContext = { testName, isSingleTest };
 
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
@@ -159,7 +186,7 @@ export class TestCommands {
             this.onTestRunEmitter.fire(textContext);
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
-                .then( () => {
+                .then(() => {
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
                     return Executor.exec(command, (err, stdout: string) => {
@@ -171,12 +198,12 @@ export class TestCommands {
 
                         Logger.Log(stdout);
 
-                        this.resultsFile.parseResults(testResultFile).then( (result) => {
+                        this.resultsFile.parseResults(testResultFile).then((result) => {
                             resolve(result);
                         });
                     }, testDirectoryPath, true);
                 })
-                .catch( (err) => {
+                .catch((err) => {
                     reject(err);
                 });
         });
