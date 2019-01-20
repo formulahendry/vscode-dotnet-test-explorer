@@ -1,3 +1,7 @@
+## 0.6.1 ()
+* [#176](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/176): Fix typo discoverd -> discovered
+* [#174](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/174): Don't build when user has passed --no-build
+
 ## 0.6.0 (2018-11-14)
 * [#165](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/165): Multiple workspace support
 * [#164](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/164): Double-quote argument to dotnet --filter
