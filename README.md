@@ -11,11 +11,10 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.6.0
+## New in 0.6.1
 
-* We now support multiple workspaces. We will try to find tests in all of the folders according to the testProjectPath setting. See the section regarding [configuring multiple test projects](#configuring-multiple-test-projects)
-* Tests written in fsharp should be less unfoundable when trying to navigate to them
-* Filter argument are now double-quoted (again, let's hope they stay that way from now on)
+* Don't build when user has set --no-build
+* Discoverd a typo and fixed it
 
 ## Usage
 
