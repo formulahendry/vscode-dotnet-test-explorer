@@ -82,6 +82,7 @@
                 "${workspaceRoot}/test/nunit",
                 "${workspaceRoot}/test/fsxunittests",
                 "${workspaceRoot}/test/mstest",
+                "${workspaceRoot}/test/.vscode",
                 "--extensionDevelopmentPath=${workspaceRoot}", 
             ],
             "stopOnEntry": false,
