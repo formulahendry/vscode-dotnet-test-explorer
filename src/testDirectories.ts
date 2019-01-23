@@ -72,8 +72,12 @@ export class TestDirectories {
                 testProjectFullPath = path.dirname(testProjectFullPath);
             }
 
-            Logger.Log(`Adding directory ${testProjectFullPath}`);
-            this.directories.push(testProjectFullPath);
+            if (glob.sync(`${testProjectFullPath}/+(*.csproj|*.sln|*.fsproj)`).length < 1) {
+                Logger.LogWarning(`Skipping path ${testProjectFullPath} since it does not contain something we can build (.sln, .csproj, .fsproj)`);
+            } else {
+                Logger.Log(`Adding directory ${testProjectFullPath}`);
+                this.directories.push(testProjectFullPath);
+            }
         }
     }
 }
