@@ -12,7 +12,7 @@ suite("Find test location", () => {
 
         const gotoTest = new GotoTest();
 
-        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "Could not find test (no symbols found)");
+        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "No symbols found)");
     });
 
     test("No symbol matching", () => {
@@ -24,7 +24,7 @@ suite("Find test location", () => {
 
         const gotoTest = new GotoTest();
 
-        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "Could not find test (no symbols matching)");
+        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "No symbols matching");
     });
 
     test("One symbol matching", () => {
@@ -75,7 +75,7 @@ suite("Find test location", () => {
         const testNode = new TestNode("MyFolder.Test", "Test", null);
 
         const gotoTest = new GotoTest();
-        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "Could not find test (namespace not matching uri)");
+        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "Namespace not matching uri");
     });
 
     test("Match with multiple symbols for tests without namespace", () => {
@@ -88,7 +88,7 @@ suite("Find test location", () => {
         const testNode = new TestNode("", "Test", null);
 
         const gotoTest = new GotoTest();
-        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "Could not find test (found multiple matching symbols)");
+        assert.throws(() => gotoTest.findTestLocation(symbols, testNode), "Found multiple matching symbols");
     });
 
     test("Classes are not matches", () => {

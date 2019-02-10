@@ -270,7 +270,7 @@
   },
   "dependencies": {
     "applicationinsights": "^1.0.5",
-    "chokidar": "^2.0.4",
+    "chokidar": "^2.1.0",
     "fkill": "^5.3.0",
     "glob": "^7.1.2",
     "ts-node": "^7.0.1",
