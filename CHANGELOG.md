@@ -1,3 +1,6 @@
+## 0.6.1.1 ()
+* [#183](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/183): Fix crash for VSCode Version 1.31.0 on Mac.
+
 ## 0.6.1 (2019-01-21)
 * [#176](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/176): Fix typo discoverd -> discovered
 * [#174](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/174): Don't build when user has passed --no-build
