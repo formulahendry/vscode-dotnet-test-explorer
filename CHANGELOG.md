@@ -1,4 +1,4 @@
-## 0.6.1.1 ()
+## 0.6.2 (2019-02-12)
 * [#183](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/183): Fixed crash for VSCode Version 1.31.0 on Mac.
 
 ## 0.6.1 (2019-01-21)
