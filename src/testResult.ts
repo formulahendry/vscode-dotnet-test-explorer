@@ -31,9 +31,7 @@ export class TestResult {
     }
 
     public matches(className: string, method: string): boolean {
-        // The passed in class name won't have the namespace, hence the
-        // check with endsWith
-        return (this.method === method) && this.className.endsWith(className);
+        return this.fullName.indexOf(className + "." + method) > -1;
     }
 
     public matchesTheory(className: string, method: string): boolean {
