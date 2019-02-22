@@ -1,4 +1,4 @@
-## 0.6.3 ()
+## 0.6.3 (2019-02-22)
 * [#184](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/184): Fixed codelens display for xunit
 
 ## 0.6.2 (2019-02-12)
