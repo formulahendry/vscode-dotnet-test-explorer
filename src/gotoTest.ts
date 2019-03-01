@@ -9,11 +9,9 @@ export class GotoTest {
 
         AppInsightsClient.sendEvent("gotoTest");
 
-        const testName = this.getTestName(test.name);
-
         const symbolInformation = vscode.commands.executeCommand<vscode.SymbolInformation[]>(
             "vscode.executeWorkspaceSymbolProvider",
-            testName,
+            test.fqn,
         ).then((symbols) => {
 
             let symbol: vscode.SymbolInformation;
@@ -52,23 +50,8 @@ export class GotoTest {
             throw Error("Could not find test (no symbols matching)");
         }
 
-        // If multiple results are found, try to match the uri of the match to the parent path of the test
         if (symbols.length > 1) {
-            const testNamespace = this.getTestNamespace(testNode);
-            symbols = symbols.filter((x) => x.location.uri.toString().replace(/\//g, ".").toLowerCase().indexOf(testNamespace.toLowerCase() + ".") > -1);
-
-            if (symbols.length === 0) {
-                throw Error("Could not find test (namespace not matching uri)");
-            }
-
-            const firstLocation = symbols[0].location;
-            if (symbols.every((s) => s.location.uri.toString() === firstLocation.uri.toString() && s.location.range.isEqual(firstLocation.range))) {
-                return symbols[0];
-            }
-
-            if (symbols.length > 1) {
-                throw Error("Could not find test (found multiple matching symbols)");
-            }
+            throw Error("Could not find test (found multiple matching symbols)");
         }
 
         return symbols[0];
