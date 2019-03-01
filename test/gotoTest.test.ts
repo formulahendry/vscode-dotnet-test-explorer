@@ -134,54 +134,9 @@ suite("Find test location", () => {
 
         assert.equal(result.location.uri.fsPath, vscode.Uri.parse("c:\\temp\\test.txt").fsPath);
     });
-
-    test("Match with multiple symbols matching namespace with uri", () => {
-        const symbols = [
-            GetSymbol("Test3", vscode.SymbolKind.Method, "file:\\c:/temp/test3.txt"),
-            GetSymbol("Test", vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test2.txt"),
-            GetSymbol("Test",  vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test.txt"),
-        ];
-
-        const testNode = new TestNode("MyFolder.Test", "Test", null);
-
-        const gotoTest = new GotoTest();
-        const result = gotoTest.findTestLocation(symbols, testNode);
-
-        assert.equal(result.location.uri.fsPath, vscode.Uri.parse("file:\\c:/temp/myfolder/test.txt").fsPath);
-    });
-
-    test("Match with multiple symbols matching classname with uri", () => {
-        const symbols = [
-            GetSymbol("Test3", vscode.SymbolKind.Method, "file:\\c:/temp/test3.txt"),
-            GetSymbol("Test", vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test.txt"),
-            GetSymbol("Test",  vscode.SymbolKind.Method, "file:\\c:/temp/folderx/test.txt"),
-        ];
-
-        const testNode = new TestNode("FolderX.Test", "Test", null);
-
-        const gotoTest = new GotoTest();
-        const result = gotoTest.findTestLocation(symbols, testNode);
-
-        assert.equal(result.location.uri.fsPath, vscode.Uri.parse("file:\\c:/temp/folderx/test.txt").fsPath);
-    });
-
-    test("Match with multiple symbols matching same location", () => {
-        const symbols = [
-            GetSymbol("Test", vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test.txt"),
-            GetSymbol("Test", vscode.SymbolKind.Method, "file:\\c:/temp/myfolder/test.txt"),
-        ];
-
-        const testNode = new TestNode("MyFolder.Test", "Test", null);
-
-        const gotoTest = new GotoTest();
-
-        const result = gotoTest.findTestLocation(symbols, testNode);
-
-        assert.equal(result.location, symbols[0].location);
-    });
 });
 
-suite("Get test names", () => {
+suite("Get test method name", () => {
 
     test("Test name without namespace", () => {
 

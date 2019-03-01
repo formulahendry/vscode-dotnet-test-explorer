@@ -17,6 +17,10 @@ export class TestNode {
         return (this._parentPath ? `${this._parentPath}.` : "") + this._name;
     }
 
+    public get fqn(): string {
+        return this.fullName.replace(/ *\([^)]*\) */g, "");
+    }
+
     public get parentPath(): string {
         return this._parentPath;
     }
