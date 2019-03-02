@@ -11,9 +11,9 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.6.3
+## New in 0.6.4
 
-* Fixes for displaying codelens test result symbols when using xunit
+* "Go to test" should now work better when multiple tests have the same name
 
 ## Usage
 
