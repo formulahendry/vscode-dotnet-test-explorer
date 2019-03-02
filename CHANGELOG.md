@@ -1,3 +1,6 @@
+## 0.6.4 ()
+* [#187](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/187): Made "go to test" more robust
+
 ## 0.6.3 (2019-02-22)
 * [#184](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/184): Fixed codelens display for xunit
 
