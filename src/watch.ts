@@ -25,13 +25,7 @@ export class Watch implements vscode.Disposable {
         private resultsFile: TestResultsFile) {
             if (Utility.getConfiguration().get<boolean>("autoWatch")) {
 
-                this.testCommands.onTestDiscoveryFinished(() => {
-                    const allDirectories = this.testDirectories.getTestDirectories();
-
-                    for (let i = 0; i < allDirectories.length; i++) {
-                        this.setupWatch(allDirectories[i], this.getNamespaceForTestDirectory(allDirectories[i]), i);
-                    }
-                }, this);
+                this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
             }
         }
 
@@ -42,9 +36,12 @@ export class Watch implements vscode.Disposable {
         }
     }
 
-    private getNamespaceForTestDirectory(testDirectory: string) {
-        const firstTestForDirectory = this.testDirectories.getFirstTestForDirectory(testDirectory);
-        return firstTestForDirectory.substring(0, firstTestForDirectory.indexOf(".") - 1);
+    private setupWatcherForAllDirectories(): void {
+        const allDirectories = this.testDirectories.getTestDirectories();
+
+        for (let i = 0; i < allDirectories.length; i++) {
+            this.setupWatch(allDirectories[i], this.getNamespaceForTestDirectory(allDirectories[i]), i);
+        }
     }
 
     private setupWatch(testDirectory: string, namespaceForDirectory: string, index: number) {
@@ -85,8 +82,13 @@ export class Watch implements vscode.Disposable {
         }, testDirectory, true);
 
         p.stdout.on("data", (buf) => {
-            Logger.Log(String(buf));
-            this.testCommands.watchRunningTests(namespaceForDirectory);
+            const stdout = String(buf);
+            Logger.Log(stdout);
+
+            // Only notify that test are running when a watch has triggered due to changes
+            if (stdout.indexOf("watch : Started") > -1) {
+                this.testCommands.watchRunningTests(namespaceForDirectory);
+            }
         });
 
         p.stdout.on("close", (buf: any) => {
@@ -94,5 +96,10 @@ export class Watch implements vscode.Disposable {
 
             this.watchedDirectories = this.watchedDirectories.filter( (wd) => wd.directory !== testDirectory);
         });
+    }
+
+    private getNamespaceForTestDirectory(testDirectory: string) {
+        const firstTestForDirectory = this.testDirectories.getFirstTestForDirectory(testDirectory);
+        return firstTestForDirectory.substring(0, firstTestForDirectory.indexOf(".") - 1);
     }
 }
