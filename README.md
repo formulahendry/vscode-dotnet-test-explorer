@@ -85,6 +85,12 @@ This requieres you to run dotnet sdk version 2.1.2 or higher and running dotnet 
 ##### DisplayName attribute not working for xunit
 See [#56](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/56)
 
+##### Project discovery with UNC Paths doesn't work
+See [#179](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/179)
+
+##### AutoWatch does not work with multiple projects
+The watcher is only setup to watch the first directory it finds.
+
 ## Telemetry data
 
 By default, anonymous telemetry data collection is turned on to understand user behavior to improve this extension. To disable it, update the settings.json as below:
