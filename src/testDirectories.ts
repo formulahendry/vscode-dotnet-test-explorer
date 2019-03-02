@@ -48,6 +48,12 @@ export class TestDirectories {
         this.testsForDirectory = [];
     }
 
+    public getFirstTestForDirectory(directory: string): string {
+        return this
+            .testsForDirectory
+            .find( (t) => t.dir === directory).name;
+    }
+
     public getTestDirectories(testName?: string): string[] {
 
         if (testName && testName !== "") {
