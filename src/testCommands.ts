@@ -72,6 +72,11 @@ export class TestCommands {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 
+    public watchRunningTests(namespace: string): void {
+        const textContext = {testName: namespace, isSingleTest: false};
+        this.onTestRunEmitter.fire(textContext);
+    }
+
     public runAllTests(): void {
         this.runTestCommand("", false);
         AppInsightsClient.sendEvent("runAllTests");
