@@ -1,3 +1,6 @@
+## 0.6.5 ()
+* [#188](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/188): Auto watch now works for mutliple test directories
+
 ## 0.6.4 (2019-03-03)
 * [#187](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/187): Made "go to test" more robust
 
