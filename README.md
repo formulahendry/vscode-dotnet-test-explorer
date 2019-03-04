@@ -19,7 +19,11 @@
 
 Open a .NET Core test project, or set `dotnet-test-explorer.testProjectPath` to the folder path of .NET Core test project. Then, you will see all the tests in Test Explorer.
 
-![test-explorer](images/test-explorer.gif)
+![test-explorer](images/test-explorer-065.gif)
+
+By utilizing auto watch (see settings) test can be run upon changing in files.
+
+![test-explorer](images/test-explorer-065-autowatch.gif)
 
 #### Configuring multiple test projects
 
