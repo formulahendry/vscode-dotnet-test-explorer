@@ -14,6 +14,7 @@
 ## New in 0.6.5
 
 * Auto watch now works for multiple test directories
+* Made some changes to how we load test result files in order to be compatible with dotnet core 3 sdk.
 
 ## Usage
 
