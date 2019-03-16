@@ -1,12 +1,14 @@
+import * as chokidar from "chokidar";
+import * as fs from "fs";
 import * as path from "path";
-import { commands, Event, EventEmitter } from "vscode";
+import { commands, Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
@@ -15,21 +17,34 @@ export interface ITestRunContext {
     isSingleTest: boolean;
 }
 
-export class TestCommands {
+export class TestCommands implements Disposable {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
     private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
     private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
     private lastRunTestContext: ITestRunContext = null;
+    private testResultsFolder: string;
+    private testResultsFolderWatcher: any;
 
     constructor(
         private resultsFile: TestResultsFile,
         private testDirectories: TestDirectories) { }
 
+    public dispose(): void {
+        try {
+            if (this.testResultsFolderWatcher) {
+                this.testResultsFolderWatcher.close();
+            }
+        } catch (err) {
+        }
+    }
+
     public discoverTests() {
         this.onTestDiscoveryStartedEmitter.fire();
 
         this.testDirectories.clearTestsForDirectory();
+
+        this.setupTestResultFolder();
 
         // We want to make sure test discovery across multiple directories are run in sequence to avoid excessive cpu usage
         const runSeq = async () => {
@@ -50,6 +65,10 @@ export class TestCommands {
         };
 
         runSeq();
+    }
+
+    public get testResultFolder(): string {
+        return this.testResultsFolder;
     }
 
     public get onTestDiscoveryStarted(): Event<string> {
@@ -98,6 +117,20 @@ export class TestCommands {
         }
     }
 
+    private setupTestResultFolder(): void {
+        if (!this.testResultsFolder) {
+            const me = this;
+
+            this.testResultsFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
+            this.testResultsFolderWatcher = chokidar.watch("*.trx", { cwd: this.testResultsFolder}).on("add", (p) => {
+                me.resultsFile.parseResults(path.join(me.testResultsFolder, p))
+                .then( (testResults) => {
+                    me.sendNewTestResults({clearPreviousTestResults: false, testResults});
+                });
+            });
+        }
+    }
+
     private runTestCommand(testName: string, isSingleTest: boolean): void {
 
         commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
@@ -117,7 +150,7 @@ export class TestCommands {
                 }
 
                 const merged = [].concat(...testResults);
-                this.sendNewTestResults({ testName, testResults: merged});
+                this.sendNewTestResults({ clearPreviousTestResults: false, testResults: merged});
             } catch (err) {
                 Logger.Log(`Error while executing test command: ${err}`);
                 this.discoverTests();
@@ -146,14 +179,14 @@ export class TestCommands {
         });
     }
 
-    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number): Promise<TestResult[]> {
+    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number): Promise<any[]> {
 
         const trxTestName = index + ".trx";
 
         const textContext = {testName, isSingleTest};
 
         return new Promise((resolve, reject) => {
-            const testResultFile = path.join(Utility.pathForResultFile, "test-explorer", trxTestName);
+            const testResultFile = path.join(this.testResultsFolder, trxTestName);
             let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
 
             if (testName && testName.length) {
@@ -181,9 +214,7 @@ export class TestCommands {
 
                         Logger.Log(stdout);
 
-                        this.resultsFile.parseResults(testResultFile).then( (result) => {
-                            resolve(result);
-                        });
+                        resolve();
                     }, testDirectoryPath, true);
                 })
                 .catch( (err) => {

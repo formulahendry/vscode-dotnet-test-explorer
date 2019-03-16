@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
     const statusBar = new StatusBar(testCommands);
-    const watch = new Watch(testCommands, testDirectories, testResults);
+    const watch = new Watch(testCommands, testDirectories);
     const leftClickTest = new LeftClickTest();
     const appInsights = new AppInsights(testCommands, testDirectories);
 
