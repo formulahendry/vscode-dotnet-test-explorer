@@ -1,5 +1,3 @@
-import * as chokidar from "chokidar";
-import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
@@ -21,8 +19,7 @@ export class Watch implements vscode.Disposable {
 
     constructor(
         private testCommands: TestCommands,
-        private testDirectories: TestDirectories,
-        private resultsFile: TestResultsFile) {
+        private testDirectories: TestDirectories) {
             if (Utility.getConfiguration().get<boolean>("autoWatch")) {
 
                 this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
@@ -53,25 +50,7 @@ export class Watch implements vscode.Disposable {
 
         Logger.Log("Starting watch for " + testDirectory);
 
-        const tempFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
-        const trxPath = path.join(tempFolder, `autoWatch${index}.trx`);
-
-        const me = this;
-
-        const watcher = chokidar.watch(trxPath).on("all", () => {
-            me.resultsFile.parseResults(trxPath)
-                .then( (testResults) => {
-                    me.testCommands.sendNewTestResults({testName: namespaceForDirectory, testResults});
-
-                    try {
-                        if (fs.existsSync(trxPath)) {
-                            fs.unlinkSync(trxPath);
-                        }
-                    } catch (err) {}
-                });
-        });
-
-        this.watchedDirectories.push({watcher, directory: testDirectory});
+        const trxPath = path.join(this.testCommands.testResultFolder, `autoWatch${index}.trx`);
 
         AppInsightsClient.sendEvent("runWatchCommand");
         const command = `dotnet watch test${Utility.additionalArgumentsOption} --logger "trx;LogFileName=${trxPath}"`;

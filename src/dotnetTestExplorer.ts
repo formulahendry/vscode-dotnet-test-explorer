@@ -180,7 +180,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         const fullNamesForTestResults = results.testResults.map( (r) => r.fullName);
 
-        if (results.testName === "") {
+        if (results.clearPreviousTestResults) {
             this.discoveredTests = [...fullNamesForTestResults];
         } else {
             const newTests = fullNamesForTestResults.filter( (r) => this.discoveredTests.indexOf(r) === -1);

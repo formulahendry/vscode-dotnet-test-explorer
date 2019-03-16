@@ -1,5 +1,5 @@
 export interface ITestResult {
-    testName: string;
+    clearPreviousTestResults: boolean;
     testResults: TestResult[];
 }
 

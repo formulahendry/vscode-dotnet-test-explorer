@@ -17,6 +17,7 @@ namespace MsTestTests { // Curly bracket on same line as namespace for testing n
         public void AnotherPass()
         {
             (1 + 1).ShouldBe(2);
+            
         }
 
         [TestMethod()]
