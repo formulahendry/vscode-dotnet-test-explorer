@@ -1,4 +1,5 @@
 ## 0.6.5 ()
+* [#190](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/190): Re-work how we fetch test results
 * [#188](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/188): Auto watch now works for multiple test directories
 
 ## 0.6.4 (2019-03-03)
