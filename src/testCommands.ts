@@ -139,18 +139,13 @@ export class TestCommands implements Disposable {
             .testDirectories
             .getTestDirectories(testName);
 
-        const testResults = [];
-
         // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
         const runSeq = async () => {
 
             try {
                 for (let i = 0; i < testDirectories.length; i++) {
-                    testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
+                    await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i);
                 }
-
-                const merged = [].concat(...testResults);
-                this.sendNewTestResults({ clearPreviousTestResults: false, testResults: merged});
             } catch (err) {
                 Logger.Log(`Error while executing test command: ${err}`);
                 this.discoverTests();
