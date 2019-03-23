@@ -162,7 +162,7 @@ export class TestCommands implements Disposable {
         for (const dir of testDirectories) {
             const testContext = {testName, isSingleTest};
             this.lastRunTestContext = testContext;
-            this.sendRunningTest(testContext)
+            this.sendRunningTest(testContext);
         }
 
         // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
