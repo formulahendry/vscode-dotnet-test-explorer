@@ -1,3 +1,7 @@
+## 0.6.6 ()
+* [#193](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/193): Added setting to run things in parallel
+* [#192](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/192): Removed old way of returning test results
+
 ## 0.6.5 (2019-03-17)
 * [#190](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/190): Re-work how we fetch test results
 * [#188](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/188): Auto watch now works for multiple test directories
