@@ -21,7 +21,7 @@ namespace XunitTests
         [Fact]
         public void AnotherPass()
         {
-            (1+1).ShouldBe(3);
+            (1+1).ShouldBe(2);
 
         }
 
