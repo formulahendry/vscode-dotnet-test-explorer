@@ -8,9 +8,15 @@ import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResult } from "./testResult";
+import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
+
+export interface IWaitForAllTests {
+    currentNumberOfFiles: number;
+    expectedNumberOfFiles: number;
+    testResults: TestResult[];
+}
 
 export interface ITestRunContext {
     testName: string;
@@ -25,6 +31,7 @@ export class TestCommands implements Disposable {
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
     private testResultsFolderWatcher: any;
+    private waitForAllTests: IWaitForAllTests;
 
     constructor(
         private resultsFile: TestResultsFile,
@@ -43,6 +50,8 @@ export class TestCommands implements Disposable {
         this.onTestDiscoveryStartedEmitter.fire();
 
         this.testDirectories.clearTestsForDirectory();
+
+        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: []};
 
         this.setupTestResultFolder();
 
@@ -91,9 +100,14 @@ export class TestCommands implements Disposable {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 
+    public sendRunningTest(testContext: ITestRunContext) {
+        this.waitForAllTests.expectedNumberOfFiles = this.waitForAllTests.expectedNumberOfFiles + 1;
+        this.onTestRunEmitter.fire(testContext);
+    }
+
     public watchRunningTests(namespace: string): void {
         const textContext = {testName: namespace, isSingleTest: false};
-        this.onTestRunEmitter.fire(textContext);
+        this.sendRunningTest(textContext);
     }
 
     public runAllTests(): void {
@@ -125,7 +139,13 @@ export class TestCommands implements Disposable {
             this.testResultsFolderWatcher = chokidar.watch("*.trx", { cwd: this.testResultsFolder}).on("add", (p) => {
                 me.resultsFile.parseResults(path.join(me.testResultsFolder, p))
                 .then( (testResults) => {
-                    me.sendNewTestResults({clearPreviousTestResults: false, testResults});
+                    me.waitForAllTests.currentNumberOfFiles = me.waitForAllTests.currentNumberOfFiles + 1;
+                    me.waitForAllTests.testResults = me.waitForAllTests.testResults.concat(testResults);
+
+                    if (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles) {
+                        me.sendNewTestResults({clearPreviousTestResults: false, testResults: me.waitForAllTests.testResults});
+                        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: []};
+                    }
                 });
             });
         }
@@ -139,18 +159,19 @@ export class TestCommands implements Disposable {
             .testDirectories
             .getTestDirectories(testName);
 
-        const testResults = [];
+        for (const dir of testDirectories) {
+            const testContext = {testName, isSingleTest};
+            this.lastRunTestContext = testContext;
+            this.sendRunningTest(testContext);
+        }
 
         // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
         const runSeq = async () => {
 
             try {
                 for (let i = 0; i < testDirectories.length; i++) {
-                    testResults.push(await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i));
+                    await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i);
                 }
-
-                const merged = [].concat(...testResults);
-                this.sendNewTestResults({ clearPreviousTestResults: false, testResults: merged});
             } catch (err) {
                 Logger.Log(`Error while executing test command: ${err}`);
                 this.discoverTests();
@@ -163,7 +184,7 @@ export class TestCommands implements Disposable {
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
         return new Promise((resolve, reject) => {
 
-            if (Utility.additionalArgumentsOption.indexOf("--no-build") > -1) {
+            if (Utility.skipBuild) {
                 Logger.Log(`User has passed --no-build, skipping build`);
                 resolve();
             } else {
@@ -183,8 +204,6 @@ export class TestCommands implements Disposable {
 
         const trxTestName = index + ".trx";
 
-        const textContext = {testName, isSingleTest};
-
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(this.testResultsFolder, trxTestName);
             let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
@@ -196,10 +215,6 @@ export class TestCommands implements Disposable {
                     command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
                 }
             }
-
-            this.lastRunTestContext = textContext;
-
-            this.onTestRunEmitter.fire(textContext);
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
                 .then( () => {
