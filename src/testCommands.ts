@@ -55,16 +55,18 @@ export class TestCommands implements Disposable {
 
         this.setupTestResultFolder();
 
-        // We want to make sure test discovery across multiple directories are run in sequence to avoid excessive cpu usage
-        const runSeq = async () => {
+        const runSeqOrAsync = async () => {
 
             const discoveredTests = [];
 
             try {
-                for (const dir of this.testDirectories.getTestDirectories()) {
-                    const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-                    this.testDirectories.addTestsForDirectory(testsForDir.testNames.map( (tn) => ({dir, name: tn})));
-                    discoveredTests.push(testsForDir);
+
+                if (Utility.runInParallel) {
+                    await Promise.all(this.testDirectories.getTestDirectories().map( async (dir) => discoveredTests.push(await this.discoverTestsInFolder(dir))));
+                } else {
+                    for (const dir of this.testDirectories.getTestDirectories()) {
+                        discoveredTests.push(await this.discoverTestsInFolder(dir));
+                    }
                 }
 
                 this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
@@ -73,7 +75,13 @@ export class TestCommands implements Disposable {
             }
         };
 
-        runSeq();
+        runSeqOrAsync();
+    }
+
+    public async discoverTestsInFolder(dir: string): Promise<IDiscoverTestsResult> {
+        const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
+        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map( (tn) => ({dir, name: tn})));
+        return testsForDir;
     }
 
     public get testResultFolder(): string {
@@ -165,12 +173,15 @@ export class TestCommands implements Disposable {
             this.sendRunningTest(testContext);
         }
 
-        // We want to make sure test runs across multiple directories are run in sequence to avoid excessive cpu usage
-        const runSeq = async () => {
+        const runSeqOrAsync = async () => {
 
             try {
-                for (let i = 0; i < testDirectories.length; i++) {
-                    await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i);
+                if (Utility.runInParallel) {
+                    await Promise.all(testDirectories.map( async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i)));
+                } else {
+                    for (let i = 0; i < testDirectories.length; i++) {
+                        await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i);
+                    }
                 }
             } catch (err) {
                 Logger.Log(`Error while executing test command: ${err}`);
@@ -178,7 +189,7 @@ export class TestCommands implements Disposable {
             }
         };
 
-        runSeq();
+        runSeqOrAsync();
     }
 
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {

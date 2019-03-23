@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 export class Utility {
 
     public static skipBuild: boolean;
+    public static runInParallel: boolean;
 
     public static get codeLensEnabled(): boolean {
         return Utility.showCodeLens;
@@ -51,6 +52,7 @@ export class Utility {
         Utility.skipped = Utility.getLensText(configuration, "codeLensSkipped", "\u26a0"); // Warning
         Utility.autoExpandTree = configuration.get<boolean>("autoExpandTree", false);
         Utility.skipBuild = Utility.additionalArgumentsOption.indexOf("--no-build") > -1;
+        Utility.runInParallel = configuration.get<boolean>("runInParallel", false);
     }
 
     /**

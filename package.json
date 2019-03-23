@@ -228,6 +228,11 @@
             "doNothing"
           ],
           "description": "What happens when a test in the list is left clicked."
+        },
+        "dotnet-test-explorer.runInParallel": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, will discover/build and run test in parallel if you have multiple test projects"
         }
       }
     },
