@@ -11,10 +11,10 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.6.5
+## New in 0.6.6
 
-* Auto watch now works for multiple test directories
-* Made some changes to how we load test result files in order to be compatible with dotnet core 3 sdk.
+* We had some problems with displaying test fails as Problems. Those problems are hopefully gone now.
+* Added a setting to discover/build and run your tests in parallel if you have multiple test projects. This might use a bit of cpu.
 
 ## Usage
 
@@ -76,6 +76,7 @@ Text from the dotnet test output as well as debug info is written to the Output/
 * `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
 * `dotnet-test-explorer.testArguments`: Additional arguments that are added to the dotnet test command
 * `dotnet-test-explorer.leftClickAction`: What happens when a test in the list is left clicked. (Default is **gotoTest**)
+* `dotnet-test-explorer.runInParallel`: If true, will discover/build and run test in parallel if you have multiple test projects (Default is **false**)
 
 ## Known issues
 ##### Go to test does not work with multiple workspaces
