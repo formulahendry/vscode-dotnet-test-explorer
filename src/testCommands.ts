@@ -184,7 +184,7 @@ export class TestCommands implements Disposable {
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
         return new Promise((resolve, reject) => {
 
-            if (Utility.additionalArgumentsOption.indexOf("--no-build") > -1) {
+            if (Utility.skipBuild) {
                 Logger.Log(`User has passed --no-build, skipping build`);
                 resolve();
             } else {

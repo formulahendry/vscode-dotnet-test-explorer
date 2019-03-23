@@ -4,6 +4,9 @@ import * as path from "path";
 import * as vscode from "vscode";
 
 export class Utility {
+
+    public static skipBuild: boolean;
+
     public static get codeLensEnabled(): boolean {
         return Utility.showCodeLens;
     }
@@ -47,6 +50,7 @@ export class Utility {
         Utility.passed = Utility.getLensText(configuration, "codeLensPassed", osx ? "\u2705" : "\u2714"); // White Heavy Check Mark / Heavy Check Mark
         Utility.skipped = Utility.getLensText(configuration, "codeLensSkipped", "\u26a0"); // Warning
         Utility.autoExpandTree = configuration.get<boolean>("autoExpandTree", false);
+        Utility.skipBuild = Utility.additionalArgumentsOption.indexOf("--no-build") > -1;
     }
 
     /**
