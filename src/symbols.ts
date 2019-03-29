@@ -26,7 +26,15 @@ export class Symbols {
 
         documentSymbols.map( (ds: vscode.DocumentSymbol) => {
 
-            const nameForCurrentLevel = parent ? `${parent}.${ds.name}` : ds.name;
+            // As of know (20190328) it seems that classes contains the namespace in their name once again, so changing this... again.
+            let nameForCurrentLevel;
+
+            if (ds.kind === vscode.SymbolKind.Namespace) {
+                nameForCurrentLevel = "";
+            } else {
+                nameForCurrentLevel = parent ? `${parent}.${ds.name}` : ds.name;
+            }
+            
 
             flattened.push({fullName: nameForCurrentLevel, parentName: parent, documentSymbol: ds});
 

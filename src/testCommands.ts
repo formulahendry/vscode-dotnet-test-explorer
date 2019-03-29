@@ -16,6 +16,7 @@ export interface IWaitForAllTests {
     currentNumberOfFiles: number;
     expectedNumberOfFiles: number;
     testResults: TestResult[];
+    clearPreviousTestResults: boolean;
 }
 
 export interface ITestRunContext {
@@ -51,7 +52,7 @@ export class TestCommands implements Disposable {
 
         this.testDirectories.clearTestsForDirectory();
 
-        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: []};
+        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: [], clearPreviousTestResults: false};
 
         this.setupTestResultFolder();
 
@@ -109,6 +110,10 @@ export class TestCommands implements Disposable {
     }
 
     public sendRunningTest(testContext: ITestRunContext) {
+        if (!this.waitForAllTests.clearPreviousTestResults && testContext.testName === "") {
+            this.waitForAllTests.clearPreviousTestResults = true;
+        }
+
         this.waitForAllTests.expectedNumberOfFiles = this.waitForAllTests.expectedNumberOfFiles + 1;
         this.onTestRunEmitter.fire(testContext);
     }
@@ -128,6 +133,7 @@ export class TestCommands implements Disposable {
     }
 
     public runTestByName(testName: string, isSingleTest: boolean): void {
+        
         this.runTestCommand(testName, isSingleTest);
         AppInsightsClient.sendEvent("runTest");
     }
@@ -151,8 +157,8 @@ export class TestCommands implements Disposable {
                     me.waitForAllTests.testResults = me.waitForAllTests.testResults.concat(testResults);
 
                     if (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles) {
-                        me.sendNewTestResults({clearPreviousTestResults: false, testResults: me.waitForAllTests.testResults});
-                        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: []};
+                        me.sendNewTestResults({clearPreviousTestResults: me.waitForAllTests.clearPreviousTestResults, testResults: me.waitForAllTests.testResults});
+                        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: [], clearPreviousTestResults: false};
                     }
                 });
             });
@@ -201,7 +207,7 @@ export class TestCommands implements Disposable {
             } else {
                 Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
 
-                Executor.exec("dotnet build", (err, stdout: string) => {
+                Executor.exec("dotnet build", (err: any, stdout: string) => {
                     if (err) {
                         reject(new Error("Build command failed"));
                     }

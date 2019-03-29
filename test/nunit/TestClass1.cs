@@ -26,3 +26,16 @@ namespace NunitTests
         }        
     }
 }
+
+namespace NunitTests.NEsted.Space
+{
+     [TestFixture]
+    public class TestClass1
+    {
+        [Test]
+        public void Pass()
+        {
+            (1+1).ShouldBe(2);
+        }
+    }
+}
