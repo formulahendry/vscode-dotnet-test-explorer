@@ -8,14 +8,9 @@ import { TestDirectories } from "./testDirectories";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
-export interface IWatchedDirectory {
-    watcher: any;
-    directory: string;
-}
+export class Watch {
 
-export class Watch implements vscode.Disposable {
-
-    private watchedDirectories: IWatchedDirectory[] = [];
+    private watchedDirectories: string[] = [];
 
     constructor(
         private testCommands: TestCommands,
@@ -25,13 +20,6 @@ export class Watch implements vscode.Disposable {
                 this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
             }
         }
-
-    public dispose(): void {
-        try {
-            this.watchedDirectories.forEach( (wd: IWatchedDirectory) => wd.watcher.close());
-        } catch (err) {
-        }
-    }
 
     private setupWatcherForAllDirectories(): void {
         const allDirectories = this.testDirectories.getTestDirectories();
@@ -43,7 +31,7 @@ export class Watch implements vscode.Disposable {
 
     private setupWatch(testDirectory: string, namespaceForDirectory: string, index: number) {
 
-        if (this.watchedDirectories.some( (wd) => wd.directory === testDirectory)) {
+        if (this.watchedDirectories.some( (wd) => wd === testDirectory)) {
             Logger.Log("Skipping adding watch since already watching directory " + testDirectory);
             return;
         }
@@ -73,7 +61,7 @@ export class Watch implements vscode.Disposable {
         p.stdout.on("close", (buf: any) => {
             Logger.Log("Stopping watch");
 
-            this.watchedDirectories = this.watchedDirectories.filter( (wd) => wd.directory !== testDirectory);
+            this.watchedDirectories = this.watchedDirectories.filter( (wd) => wd !== testDirectory);
         });
     }
 

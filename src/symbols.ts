@@ -10,6 +10,11 @@ export class Symbols {
     public static async getSymbols(uri, removeArgumentsFromMethods?: boolean): Promise<ITestSymbol[]> {
         return vscode.commands.executeCommand<vscode.DocumentSymbol[]>("vscode.executeDocumentSymbolProvider", uri)
             .then((symbols) => {
+
+                if(!symbols) {
+                    return [];
+                }
+
                 const flattenedSymbols = Symbols.flatten(symbols);
 
                 if (removeArgumentsFromMethods) {
