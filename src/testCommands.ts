@@ -160,7 +160,11 @@ export class TestCommands implements Disposable {
 
                     if ((me.waitForAllTests.numberOfTestDirectories === 1) || (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles)) {
                         me.sendNewTestResults({clearPreviousTestResults: me.waitForAllTests.clearPreviousTestResults, testResults: me.waitForAllTests.testResults});
-                        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: [], clearPreviousTestResults: false};
+                        
+                        this.waitForAllTests.currentNumberOfFiles = 0
+                        this.waitForAllTests.expectedNumberOfFiles: 0
+                        this.waitForAllTests.testResults: []
+                        this.waitForAllTests.clearPreviousTestResults: false;
                     }
                 });
             });
