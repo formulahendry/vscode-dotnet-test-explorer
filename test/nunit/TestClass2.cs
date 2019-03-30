@@ -16,13 +16,13 @@ namespace NunitTests
         [Test]
         public void Pass2()
         {
-            (1+1).ShouldBe(2);
+            (1+1).ShouldBe(3);
         }
 
         [Test]
         public void Fail()
         {
-            (1+1).ShouldBe(3);
+            (1+1).ShouldBe(2);
         }   
 
         [Test]

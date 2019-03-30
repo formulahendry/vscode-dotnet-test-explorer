@@ -7,6 +7,15 @@ namespace NunitTests
     [TestFixture]
     public class TestClass1
     {
+        public class NestedClass
+        {
+            [Test]
+            public void Pass()
+            {
+                (1+1).ShouldBe(2);
+            }
+        }
+
         [Test]
         public void Pass()
         {
@@ -22,7 +31,20 @@ namespace NunitTests
         [Test]
         public void Fail()
         {
-            (1+1).ShouldBe(2);
+            (1+1).ShouldBe(3);
         }        
+    }
+}
+
+namespace NunitTests.NEsted.Space
+{
+     [TestFixture]
+    public class TestClass1
+    {
+        [Test]
+        public void Pass()
+        {
+            (1+1).ShouldBe(2);
+        }
     }
 }

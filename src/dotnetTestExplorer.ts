@@ -182,6 +182,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         if (results.clearPreviousTestResults) {
             this.discoveredTests = [...fullNamesForTestResults];
+            this.testResults = null;
         } else {
             const newTests = fullNamesForTestResults.filter( (r) => this.discoveredTests.indexOf(r) === -1);
 

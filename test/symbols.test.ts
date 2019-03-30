@@ -4,23 +4,27 @@ import { Symbols } from "../src/symbols";
 
 suite("Flattend symbols", () => {
 
-    test("Has correct fully qualified names", () => {
+    test("Has correct fully qualified names when classes contains fqn and classes are nested", () => {
 
         const myNamespace = GetDocumentSymbol("MyNameSpace", vscode.SymbolKind.Namespace);
 
-        const myClass = GetDocumentSymbol("MyClass", vscode.SymbolKind.Class);
+        const myClass = GetDocumentSymbol("MyNameSpace.MyClass", vscode.SymbolKind.Class);
+
+        const myNestedClass = GetDocumentSymbol("MyNameSpace.MyClass.MyNestedClass", vscode.SymbolKind.Class);
 
         const myMethodOne = GetDocumentSymbol("MyMethodOne", vscode.SymbolKind.Method);
 
         const myMethodTwo = GetDocumentSymbol("MyMethodTwo", vscode.SymbolKind.Method);
 
-        myClass.children = [myMethodOne, myMethodTwo];
+        myNestedClass.children = [myMethodOne, myMethodTwo];
+
+        myClass.children = [myMethodOne, myMethodTwo, myNestedClass];
 
         myNamespace.children = [myClass];
 
         const flattened = Symbols.flatten([myNamespace]);
 
-        assert.equal(flattened.length, 4);
+        assert.equal(flattened.length, 7);
 
         assert.equal(flattened[0].fullName, "MyNameSpace");
         assert.equal(flattened[0].parentName, null);
@@ -33,6 +37,31 @@ suite("Flattend symbols", () => {
 
         assert.equal(flattened[3].fullName, "MyNameSpace.MyClass.MyMethodTwo");
         assert.equal(flattened[3].parentName, "MyNameSpace.MyClass");
+
+        assert.equal(flattened[4].fullName, "MyNameSpace.MyClass.MyNestedClass");
+        assert.equal(flattened[4].parentName, "MyNameSpace.MyClass");
+
+        assert.equal(flattened[5].fullName, "MyNameSpace.MyClass.MyNestedClass.MyMethodOne");
+        assert.equal(flattened[5].parentName, "MyNameSpace.MyClass.MyNestedClass");
+
+        assert.equal(flattened[6].fullName, "MyNameSpace.MyClass.MyNestedClass.MyMethodTwo");
+        assert.equal(flattened[6].parentName, "MyNameSpace.MyClass.MyNestedClass");
+    });
+
+    test("Can remove arguments to test methods", () => {
+
+        const myMethod = GetDocumentSymbol("MyMethodOne", vscode.SymbolKind.Method);
+
+        let flattened = Symbols.flatten([myMethod]);
+
+        assert.equal(flattened[0].fullName, "MyMethodOne");
+
+        const myMethodWithArguments = GetDocumentSymbol("MyMethodOne(TestCase: Something)", vscode.SymbolKind.Method);
+
+        flattened = Symbols.flatten([myMethodWithArguments], true);
+
+        assert.equal(flattened[0].fullName, "MyMethodOne");
+
     });
 });
 

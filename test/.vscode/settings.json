@@ -1,5 +1,5 @@
 {
     "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
-    "dotnet-test-explorer.autoWatch": false,
+    "dotnet-test-explorer.autoWatch": true,
     "dotnet-test-explorer.runInParallel": true
 }

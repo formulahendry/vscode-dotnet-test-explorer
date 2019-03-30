@@ -2,10 +2,31 @@
 using Shouldly;
 using Xunit;
 
+namespace XunitTests.Nested.One
+{
+    public class TestClass1
+    {
+        [Fact]
+        public void Pass()
+        {
+            (1+1).ShouldBe(2);
+        }
+    }
+}
+
 namespace XunitTests
 {
     public class TestClass1
     {
+        public class NestedClass
+        {
+            [Fact]
+            public void Pass()
+            {
+                (1+1).ShouldBe(2);
+            }
+        }
+
         [Fact]
         public void Pass()
         {
@@ -18,6 +39,7 @@ namespace XunitTests
             (1+1).ShouldBe(2);
         }        
 
+
         [Fact]
         public void AnotherPass()
         {
@@ -25,22 +47,22 @@ namespace XunitTests
 
         }
 
-        [Fact]
-        public void Fail()
-        {
-            (1+new InnerC().Get()).ShouldBe(3);
-        }      
+        // [Fact]
+        // public void Fail()
+        // {
+        //     (1+new InnerC().Get()).ShouldBe(3);
+        // }      
 
-        [Fact]
-        public void Fail2()
-        {
-            (1+new InnerC().Get()).ShouldBe(3);
-        }  
+        // [Fact]
+        // public void Fail2()
+        // {
+        //     (1+new InnerC().Get()).ShouldBe(3);
+        // }  
 
                 [Fact]
         public void Fail3()
         {
-            (1+1).ShouldBe(3);
+            (1+1).ShouldBe(2);
             
         }    
     }
