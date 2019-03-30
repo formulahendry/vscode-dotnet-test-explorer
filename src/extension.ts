@@ -35,9 +35,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     testDirectories.parseTestDirectories();
 
-    context.subscriptions.push(watch);
     context.subscriptions.push(problems);
     context.subscriptions.push(statusBar);
+    context.subscriptions.push(testCommands);
 
     Utility.updateCache();
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {

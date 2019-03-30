@@ -14,7 +14,6 @@ export class FindTestInContext {
 
             const symbolsInRange = documentSymbols.filter( (ds) => ds.documentSymbol.range.contains(position));
 
-            // When need to type as any since containerName is not exposed in the DocumentSymbol typescript object
             let symbolCandidate: ITestSymbol;
 
             symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Method);

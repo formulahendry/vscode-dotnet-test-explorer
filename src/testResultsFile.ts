@@ -79,12 +79,14 @@ export class TestResultsFile {
                     results = parseUnitTestResults(xdoc.documentElement);
 
                     updateUnitTestDefinitions(xdoc.documentElement, results);
+
+                    try {
+                        fs.unlinkSync(filePath);
+                    } catch {}
+
                     resolve(results);
                 }
-
-                fs.unlinkSync(filePath);
             });
-
         });
     }
 }

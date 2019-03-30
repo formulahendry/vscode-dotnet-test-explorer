@@ -7,6 +7,15 @@ namespace NunitTests
     [TestFixture]
     public class TestClass1
     {
+        public class NestedClass
+        {
+            [Test]
+            public void Pass()
+            {
+                (1+1).ShouldBe(2);
+            }
+        }
+
         [Test]
         public void Pass()
         {

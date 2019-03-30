@@ -2,10 +2,31 @@
 using Shouldly;
 using Xunit;
 
+namespace XunitTests.Nested.One
+{
+    public class TestClass1
+    {
+        [Fact]
+        public void Pass()
+        {
+            (1+1).ShouldBe(2);
+        }
+    }
+}
+
 namespace XunitTests
 {
     public class TestClass1
     {
+        public class NestedClass
+        {
+            [Fact]
+            public void Pass()
+            {
+                (1+1).ShouldBe(2);
+            }
+        }
+
         [Fact]
         public void Pass()
         {
