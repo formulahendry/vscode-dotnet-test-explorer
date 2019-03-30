@@ -136,7 +136,6 @@ export class TestCommands implements Disposable {
     }
 
     public runTestByName(testName: string, isSingleTest: boolean): void {
-        
         this.runTestCommand(testName, isSingleTest);
         AppInsightsClient.sendEvent("runTest");
     }
@@ -159,7 +158,7 @@ export class TestCommands implements Disposable {
                     me.waitForAllTests.currentNumberOfFiles = me.waitForAllTests.currentNumberOfFiles + 1;
                     me.waitForAllTests.testResults = me.waitForAllTests.testResults.concat(testResults);
 
-                    if (me.waitForAllTests.numberOfTestDirectories === 1 | (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles)) {
+                    if ((me.waitForAllTests.numberOfTestDirectories === 1) || (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles)) {
                         me.sendNewTestResults({clearPreviousTestResults: me.waitForAllTests.clearPreviousTestResults, testResults: me.waitForAllTests.testResults});
                         this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: [], clearPreviousTestResults: false};
                     }
