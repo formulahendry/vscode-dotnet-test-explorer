@@ -1,4 +1,4 @@
-## 0.6.6 ()
+## 0.6.6 (2019-04-02)
 * [#193](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/193): Added setting to run things in parallel
 * [#192](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/192): Removed old way of returning test results
 
