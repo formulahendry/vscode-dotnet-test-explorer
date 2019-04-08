@@ -55,7 +55,13 @@ export class TestCommands implements Disposable {
 
         const testDirectories = this.testDirectories.getTestDirectories();
 
-        this.waitForAllTests = { currentNumberOfFiles: 0, expectedNumberOfFiles: 0, testResults: [], clearPreviousTestResults: false, numberOfTestDirectories: testDirectories.length};
+        this.waitForAllTests = {
+            currentNumberOfFiles: 0,
+            expectedNumberOfFiles: 0,
+            testResults: [],
+            clearPreviousTestResults: false,
+            numberOfTestDirectories: testDirectories.length,
+        };
 
         this.setupTestResultFolder();
 
@@ -113,11 +119,6 @@ export class TestCommands implements Disposable {
     }
 
     public sendRunningTest(testContext: ITestRunContext) {
-        if (!this.waitForAllTests.clearPreviousTestResults && testContext.testName === "") {
-            this.waitForAllTests.clearPreviousTestResults = true;
-        }
-
-        this.waitForAllTests.expectedNumberOfFiles = this.waitForAllTests.expectedNumberOfFiles + 1;
         this.onTestRunEmitter.fire(testContext);
     }
 
@@ -173,13 +174,25 @@ export class TestCommands implements Disposable {
 
     private runTestCommand(testName: string, isSingleTest: boolean): void {
 
+        if (this.waitForAllTests.expectedNumberOfFiles > 0) {
+            Logger.Log("Tests already running, ignore request to run tests for " + testName);
+            return;
+        }
+
+        if (testName === "") {
+            this.waitForAllTests.expectedNumberOfFiles = this.waitForAllTests.numberOfTestDirectories;
+            this.waitForAllTests.clearPreviousTestResults = true;
+        } else {
+            this.waitForAllTests.expectedNumberOfFiles = 1;
+        }
+
         commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
 
         const testDirectories = this
             .testDirectories
             .getTestDirectories(testName);
 
-        for (const dir of testDirectories) {
+        for (const {} of testDirectories) {
             const testContext = {testName, isSingleTest};
             this.lastRunTestContext = testContext;
             this.sendRunningTest(testContext);
