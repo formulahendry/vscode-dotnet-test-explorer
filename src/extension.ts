@@ -93,6 +93,10 @@ export function activate(context: vscode.ExtensionContext) {
         gotoTest.go(test);
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.debugTest", (test: TestNode) => {
+        testCommands.debugTestByName(test.fqn, true);
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.rerunLastCommand", (test: TestNode) => {
         testCommands.rerunLastCommand();
     }));
