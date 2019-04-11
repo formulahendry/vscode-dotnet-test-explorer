@@ -95,6 +95,10 @@
           "light": "resources/light/gototest.svg",
           "dark": "resources/dark/gototest.svg"
         }
+      },
+      {
+        "command": "dotnet-test-explorer.debugTest",
+        "title": "Debug Test (beta)"
       }
     ],
     "menus": {
@@ -135,6 +139,11 @@
           "command": "dotnet-test-explorer.gotoTest",
           "when": "viewItem == test",
           "group": "dotnetTestExplorer@1"
+        },
+        {
+          "command": "dotnet-test-explorer.debugTest",
+          "when": "viewItem == test",
+          "group": "dotnetTestExplorer@2"
         }
       ],
       "editor/context": [

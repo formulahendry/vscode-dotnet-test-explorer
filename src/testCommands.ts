@@ -133,11 +133,16 @@ export class TestCommands implements Disposable {
     }
 
     public runTest(test: TestNode): void {
-        this.runTestByName(test.fullName, !test.isFolder);
+        this.runTestByName(test.fqn, !test.isFolder);
     }
 
     public runTestByName(testName: string, isSingleTest: boolean): void {
         this.runTestCommand(testName, isSingleTest);
+        AppInsightsClient.sendEvent("runTest");
+    }
+
+    public debugTestByName(testName: string, isSingleTest: boolean): void {
+        this.runTestCommand(testName, isSingleTest, true);
         AppInsightsClient.sendEvent("runTest");
     }
 
@@ -172,7 +177,7 @@ export class TestCommands implements Disposable {
         }
     }
 
-    private runTestCommand(testName: string, isSingleTest: boolean): void {
+    private runTestCommand(testName: string, isSingleTest: boolean, debug?: boolean): void {
 
         if (this.waitForAllTests.expectedNumberOfFiles > 0) {
             Logger.Log("Tests already running, ignore request to run tests for " + testName);
@@ -202,10 +207,10 @@ export class TestCommands implements Disposable {
 
             try {
                 if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map( async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i)));
+                    await Promise.all(testDirectories.map( async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
                 } else {
                     for (let i = 0; i < testDirectories.length; i++) {
-                        await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i);
+                        await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
                     }
                 }
             } catch (err) {
@@ -236,7 +241,7 @@ export class TestCommands implements Disposable {
         });
     }
 
-    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number): Promise<any[]> {
+    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean): Promise<any[]> {
 
         const trxTestName = index + ".trx";
 
@@ -256,17 +261,32 @@ export class TestCommands implements Disposable {
                 .then( () => {
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
-                    return Executor.exec(command, (err, stdout: string) => {
+                    if (!debug) {
+                        return Executor.exec(command, (err, stdout: string) => {
 
-                        if (err && err.killed) {
-                            Logger.Log("User has probably cancelled test run");
-                            reject(new Error("UserAborted"));
-                        }
+                            if (err && err.killed) {
+                                Logger.Log("User has probably cancelled test run");
+                                reject(new Error("UserAborted"));
+                            }
 
-                        Logger.Log(stdout);
+                            Logger.Log(stdout);
 
-                        resolve();
-                    }, testDirectoryPath, true);
+                            resolve();
+                        }, testDirectoryPath, true);
+                    } else {
+                        return Executor.debug(command, (err, stdout: string) => {
+
+                            if (err && err.killed) {
+                                Logger.Log("User has probably cancelled test run");
+                                reject(new Error("UserAborted"));
+                            }
+
+                            Logger.Log(stdout);
+
+                            resolve();
+                        }, testDirectoryPath, true);
+                    }
+
                 })
                 .catch( (err) => {
                     reject(err);

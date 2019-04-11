@@ -3,9 +3,11 @@ import { ChildProcess, exec } from "child_process";
 import * as fkill from "fkill";
 import { platform } from "os";
 import * as vscode from "vscode";
+import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
 
 export class Executor {
+
     public static runInTerminal(command: string, cwd?: string, addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
         if (this.terminals[terminal] === undefined) {
             this.terminals[terminal] = vscode.window.createTerminal(terminal);
@@ -39,6 +41,69 @@ export class Executor {
         return childProcess;
     }
 
+    public static debug(command: string, callback, cwd?: string, addToProcessList?: boolean) {
+        const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd, env: {VSTEST_HOST_DEBUG: 1} }, callback);
+
+        if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
+            Logger.Log("Debugger already running");
+            return;
+        }
+
+        const debug = new Debug();
+
+        if (addToProcessList) {
+
+            Logger.Log(`Process ${childProcess.pid} started`);
+
+            this.processes.push(childProcess);
+
+            childProcess.stdout.on("data", (buf) => {
+
+                if (this.debugRunnerInfo && this.debugRunnerInfo.isRunning) {
+                    return;
+                }
+
+                Logger.Log(`Waiting for debugger to attach`);
+
+                const stdout = String(buf);
+
+                this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
+
+                if (this.debugRunnerInfo.config) {
+
+                    Logger.Log(`Debugger process found, attaching`);
+
+                    this.debugRunnerInfo.isRunning = true;
+
+                    vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then( (c) => {
+                        // When we attach to the debugger it seems to be stuck before loading the actual assembly that's running in code
+                        // This is to try to continue past this invisible break point and into the actual code the user wants to debug
+                        setTimeout(() => {
+                            vscode.commands.executeCommand("workbench.action.debug.continue");
+                        }, 1000);
+                    });
+                }
+            });
+
+            childProcess.on("close", (code: number) => {
+
+                Logger.Log(`Debugger finished`);
+
+                this.debugRunnerInfo = null;
+
+                vscode.commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
+
+                const index = this.processes.map((p) => p.pid).indexOf(childProcess.pid);
+                if (index > -1) {
+                    this.processes.splice(index, 1);
+                    Logger.Log(`Process ${childProcess.pid} finished`);
+                }
+            });
+        }
+
+        return childProcess;
+    }
+
     public static onDidCloseTerminal(closedTerminal: vscode.Terminal): void {
         delete this.terminals[closedTerminal.name];
     }
@@ -51,7 +116,10 @@ export class Executor {
         });
 
         this.processes = [];
+        this.debugRunnerInfo = null;
     }
+
+    private static debugRunnerInfo: IDebugRunnerInfo;
 
     private static terminals: { [id: string]: vscode.Terminal } = {};
 
