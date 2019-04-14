@@ -1,6 +1,6 @@
-Hello! Thanks for opening a new issue. Before you do so however coould you please:
+Hello! Thanks for opening a new issue. Before you do so however could you please:
 
-1. Check the [known issues ](https://github.com/formulahendry/vscode-dotnet-test-explorer#known-issues)
+1. Check the known issues -> https://github.com/formulahendry/vscode-dotnet-test-explorer#known-issues
 2. Check for other opened or closed issue matching yours?
 
 If you open an issue please include
