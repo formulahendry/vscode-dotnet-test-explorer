@@ -20,6 +20,11 @@ export class Executor {
     }
 
     public static exec(command: string, callback, cwd?: string, addToProcessList?: boolean) {
+        // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
+        // function so we set the variable here instead
+        process.env.DOTNET_CLI_UI_LANGUAGE = "en";
+        process.env.VSTEST_HOST_DEBUG = "0";
+
         const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
 
         if (addToProcessList) {
@@ -42,7 +47,12 @@ export class Executor {
     }
 
     public static debug(command: string, callback, cwd?: string, addToProcessList?: boolean) {
-        const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd, env: {VSTEST_HOST_DEBUG: 1} }, callback);
+        // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
+        // function so we set the variable here instead
+        process.env.DOTNET_CLI_UI_LANGUAGE = "en";
+        process.env.VSTEST_HOST_DEBUG = "1";
+
+        const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
 
         if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
             Logger.Log("Debugger already running");
