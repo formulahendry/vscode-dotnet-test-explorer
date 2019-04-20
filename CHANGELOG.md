@@ -1,3 +1,8 @@
+## 0.7 ()
+* [#209](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/209): Set cli language to english before executing our commands 
+* [#208](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/208): Fixes to xunit theories names and go to test 
+* [#204](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/204): Adds beta for debug test 
+
 ## 0.6.6 (2019-04-02)
 * [#193](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/193): Added setting to run things in parallel
 * [#192](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/192): Removed old way of returning test results
