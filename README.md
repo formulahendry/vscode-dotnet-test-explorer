@@ -41,6 +41,12 @@ the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should
 
 Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enought to figure out which test directory should be run and only run tests for that directory.
 
+#### Debugging
+
+To debug a test, right click the test and choose to Debug test. The option to run and debug test that appear in the code lens are provides by the omnisharp plugin and has nothing to do with this extension.
+
+The debugger might get stuck before loading your test assembly code. If this happens you can continue the debug process (F5) and it should load the rest of the assemblies and stop and the desired breakpoint.
+
 #### Stopping the current test runner(s)
 
 Press the stop button in the top menu. After killing the processe(s) it will perform a new test discovery. This also works as a reset of sorts so if the extension has managed to end up in a weird state where it thinks a test is running even though it is not or that the debugger is running even though it is not the stop button can solve these types of issues as well.
