@@ -43,7 +43,7 @@ Due to some performance concerns discovery and test running over multiple direct
 
 #### Debugging
 
-To debug a test, right click the test and choose to Debug test. The option to run and debug test that appear in the code lens are provides by the omnisharp plugin and has nothing to do with this extension.
+To debug a test, right click the test and choose to Debug test. The option to run and debug test that appear in the code lens are provided by the omnisharp plugin and has nothing to do with this extension.
 
 The debugger might get stuck before loading your test assembly code. If this happens you can continue the debug process (F5) and it should load the rest of the assemblies and stop and the desired breakpoint.
 
