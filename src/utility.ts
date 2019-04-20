@@ -42,6 +42,27 @@ export class Utility {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }
 
+    public static getFqnTestName(testName: string): string {
+
+        // Converts a test name to a fqn version
+        // For instance MyNameSpace.Class("Nunit fixture").TestName("With some arguments here") => MyNameSpace.Class.TestName
+
+        return testName
+            .split(/\.(?![^\(]*\))/g) // Split on all . that are not in paranthesis
+            .map( (n) => {
+                let name = n;
+
+                const firstParanthesis = name.indexOf("(");
+
+                if (firstParanthesis > -1) {
+                    name = name.substring(0, firstParanthesis);
+                }
+
+                return name;
+            })
+            .join(".");
+    }
+
     public static updateCache() {
         const configuration = Utility.getConfiguration();
         const osx = platform() === "darwin";
