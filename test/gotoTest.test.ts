@@ -141,7 +141,7 @@ suite("Get test method name", () => {
     test("Test name without namespace", () => {
 
         const gotoTest = new GotoTest();
-        const result = gotoTest.getTestName("Test");
+        const result = gotoTest.getTestMethodFqn("Test");
 
         assert.equal(result, "Test");
     });
@@ -149,55 +149,9 @@ suite("Get test method name", () => {
     test("XUnit theory name without namespace", () => {
 
         const gotoTest = new GotoTest();
-        const result = gotoTest.getTestName("Test(param: value)");
+        const result = gotoTest.getTestMethodFqn("Test(param: value)");
 
         assert.equal(result, "Test");
-    });
-
-    test("Test name with namespace", () => {
-
-        const gotoTest = new GotoTest();
-        const result = gotoTest.getTestName("Name.Space.Test");
-
-        assert.equal(result, "Test");
-    });
-
-    test("XUnit theory name with namespace", () => {
-
-        const gotoTest = new GotoTest();
-        const result = gotoTest.getTestName("Name.Space.Test(param: value)");
-
-        assert.equal(result, "Test");
-    });
-});
-
-suite("Get test namesspace", () => {
-
-    test("Test without parent path or namespace in name", () => {
-
-        const testNode = new TestNode("", "Test", null);
-        const gotoTest = new GotoTest();
-        const result = gotoTest.getTestNamespace(testNode);
-
-        assert.equal(result, "");
-    });
-
-    test("Test with parent path", () => {
-
-        const testNode = new TestNode("Folder.Class", "Test", null);
-        const gotoTest = new GotoTest();
-        const result = gotoTest.getTestNamespace(testNode);
-
-        assert.equal(result, "Folder.Class");
-    });
-
-    test("Test with full path in name", () => {
-
-        const testNode = new TestNode("", "Folder.Class.Test", null);
-        const gotoTest = new GotoTest();
-        const result = gotoTest.getTestNamespace(testNode);
-
-        assert.equal(result, "Folder.Class");
     });
 });
 

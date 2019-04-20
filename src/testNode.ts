@@ -1,12 +1,18 @@
 import { TestResult } from "./testResult";
+import { Utility } from "./utility";
 
 export class TestNode {
     private _isError: boolean;
     private _isLoading: boolean;
     private _icon: string;
+    private _fqn: string;
 
     constructor(private _parentPath: string, private _name: string, testResults: TestResult[], private _children?: TestNode[]) {
         this.setIcon(testResults);
+
+        this._fqn = Utility
+            .getFqnTestName(this.fullName)
+            .replace("+", "."); // nested classes are reported as ParentClass+ChildClass;
     }
 
     public get name(): string {
@@ -19,9 +25,7 @@ export class TestNode {
 
     public get fqn(): string {
         // We need to translate from how the test is represented in the tree to what it's fully qualified name is
-        return this
-            .fullName.replace(/ *\([^)]*\) */g, "") // removes test cases which are contained inside parentheses
-            .replace("+", "."); // nested classes are reported as ParentClass+ChildClass;
+        return this._fqn;
     }
 
     public get parentPath(): string {

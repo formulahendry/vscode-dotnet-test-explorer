@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Logger } from "./logger";
 import { TestNode } from "./testNode";
+import { Utility } from "./utility";
 
 export class GotoTest {
 
@@ -42,9 +43,9 @@ export class GotoTest {
             throw new Error("Could not find test (no symbols found)");
         }
 
-        const testName = this.getTestName(testNode.name);
+        const testFqn = testNode.fqn;
 
-        symbols = symbols.filter((s) => this.isSymbolATestCandidate(s) && this.getTestName(s.name) === testName);
+        symbols = symbols.filter((s) => this.isSymbolATestCandidate(s) && testFqn.endsWith(this.getTestMethodFqn(s.name)));
 
         if (symbols.length === 0) {
             throw Error("Could not find test (no symbols matching)");
@@ -57,25 +58,16 @@ export class GotoTest {
         return symbols[0];
     }
 
-    public getTestName(testName: string): string {
-        const lastDotIndex = testName.lastIndexOf(".");
+    public getTestMethodFqn(testName: string): string {
+        // The symbols are reported on the form Method or Method(string, int) (in case of test cases etc).
+        // We are only interested in the method name, not its arguments
+        const firstParanthesis = testName.indexOf("(");
 
-        if (lastDotIndex > -1) {
-            testName = testName.substring(lastDotIndex + 1);
+        if (firstParanthesis > -1) {
+            testName = testName.substring(0, firstParanthesis);
         }
 
-        // XUnit theories are in the format MethodName(paramName: paramValue) and when need to search just for the MethodName
-        return testName.replace(/(.*)(\(.*)/, "$1");
-    }
-
-    public getTestNamespace(testNode: TestNode): string {
-
-        if (testNode.parentPath.length === 0) {
-            const testName = this.getTestName(testNode.name);
-            return testNode.name.substring(0, testNode.name.indexOf(testName) - 1);
-        }
-
-        return testNode.parentPath;
+        return testName;
     }
 
     private isSymbolATestCandidate(s: vscode.SymbolInformation): boolean {

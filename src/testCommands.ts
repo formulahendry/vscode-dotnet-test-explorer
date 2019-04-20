@@ -184,18 +184,23 @@ export class TestCommands implements Disposable {
             return;
         }
 
+        commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
+
+        const testDirectories = this
+            .testDirectories
+            .getTestDirectories(testName);
+
+        if (testDirectories.length < 1) {
+            Logger.LogWarning("Could not find a matching test directory for test " + testName);
+            return;
+        }
+
         if (testName === "") {
             this.waitForAllTests.expectedNumberOfFiles = this.waitForAllTests.numberOfTestDirectories;
             this.waitForAllTests.clearPreviousTestResults = true;
         } else {
             this.waitForAllTests.expectedNumberOfFiles = 1;
         }
-
-        commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
-
-        const testDirectories = this
-            .testDirectories
-            .getTestDirectories(testName);
 
         for (const {} of testDirectories) {
             const testContext = {testName, isSingleTest};

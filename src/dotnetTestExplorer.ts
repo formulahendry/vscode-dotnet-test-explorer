@@ -163,7 +163,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
 
         const filter = testRunContext.isSingleTest ?
-            ((testNode: TestNode) => testNode.fullName === testRunContext.testName)
+            ((testNode: TestNode) => testNode.fqn === testRunContext.testName)
             : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
 
         const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && filter(testNode));

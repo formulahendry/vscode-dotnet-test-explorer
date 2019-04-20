@@ -4,6 +4,7 @@ using Xunit;
 
 namespace XunitTests
 {
+
     public class TestClass3
     {
         public static TheoryData<int> DataSet = new TheoryData<int> {
