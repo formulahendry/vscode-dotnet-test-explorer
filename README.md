@@ -9,12 +9,12 @@
 ## Prerequisites
 
 * [.NET Core](https://www.microsoft.com/net/core) is installed
-* NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.1.2 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+* NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.6.6
+## New in 0.7
 
-* We had some problems with displaying test fails as Problems. Those problems are hopefully gone now.
-* Added a setting to discover/build and run your tests in parallel if you have multiple test projects. This might use a bit of cpu.
+* A first implementation of debugging test. You can right click the test and select debug. Consider this one an early beta and please give feedback.
+* We set the cli language to english before executing our commands (requieres dotnet sdk version >= 2.2.104).
 
 ## Usage
 
@@ -43,7 +43,7 @@ Due to some performance concerns discovery and test running over multiple direct
 
 #### Stopping the current test runner(s)
 
-Press the stop button in the top menu. After killing the processe(s) it will perform a new test discovery.
+Press the stop button in the top menu. After killing the processe(s) it will perform a new test discovery. This also works as a reset of sorts so if the extension has managed to end up in a weird state where it thinks a test is running even though it is not or that the debugger is running even though it is not the stop button can solve these types of issues as well.
 
 ![test-explorer](images/stop.PNG)
 
@@ -86,16 +86,16 @@ This is because of limitations in the omnisharp extensions. We can only navigate
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
 
 ##### No tree view or color coded explorer for nunit / mstest
-This requieres you to run dotnet sdk version 2.1.2 or higher and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+This requieres you to run dotnet sdk version 2.2.104 or higher. The extension tries to run the commands with the english cli but if things are not working as expected anyway it may be due to the cli language (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+
+##### Xunit projects assembly name needs to match the test class namespace
+See [#201](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/201)
 
 ##### DisplayName attribute not working for xunit
 See [#56](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/56)
 
 ##### Project discovery with UNC Paths doesn't work
 See [#179](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/179)
-
-##### AutoWatch does not work with multiple projects
-The watcher is only setup to watch the first directory it finds.
 
 ## Telemetry data
 
