@@ -9,12 +9,12 @@
 ## Prerequisites
 
 * [.NET Core](https://www.microsoft.com/net/core) is installed
-* NUnit and MsTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in english (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+* NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
 ## New in 0.7
 
 * A first implementation of debugging test. You can right click the test and select debug. Consider this one an early beta and please give feedback.
-* We set the cli language to english before executing our commands (requieres dotnet sdk version >= 2.2.104).
+* We set the cli language to English before executing our commands (requires dotnet sdk version >= 2.2.104).
 
 ## Usage
 
@@ -39,7 +39,7 @@ Given the folder structure
 
 the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should add both of the test projects.
 
-Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enought to figure out which test directory should be run and only run tests for that directory.
+Due to some performance concerns discovery and test running over multiple directories are run one at a time in a synchronous fashion. When running specific tests (eg, not running all tests) the extension should be smart enough to figure out which test directory should be run and only run tests for that directory.
 
 #### Debugging
 
@@ -49,7 +49,7 @@ The debugger might get stuck before loading your test assembly code. If this hap
 
 #### Stopping the current test runner(s)
 
-Press the stop button in the top menu. After killing the processe(s) it will perform a new test discovery. This also works as a reset of sorts so if the extension has managed to end up in a weird state where it thinks a test is running even though it is not or that the debugger is running even though it is not the stop button can solve these types of issues as well.
+Press the stop button in the top menu. After killing the process(es) it will perform a new test discovery. This also works as a reset of sorts so if the extension has managed to end up in a weird state where it thinks a test is running even though it is not or that the debugger is running even though it is not the stop button can solve these types of issues as well.
 
 ![test-explorer](images/stop.PNG)
 
@@ -76,7 +76,7 @@ Text from the dotnet test output as well as debug info is written to the Output/
 * `dotnet-test-explorer.codeLensFailed`: The text to display in the code lens when a test has failed. (Default is **""**)
 * `dotnet-test-explorer.codeLensPassed`: The text to display in the code lens when a test has passed. (Default is **""**)
 * `dotnet-test-explorer.codeLensSkipped`: The text to display in the code lens when a test has been skipped. (Default is **""**)
-* `dotnet-test-explorer.pathForResultFile`: The path to (temporarily) store test result files in. (Default is os temp dir)
+* `dotnet-test-explorer.pathForResultFile`: The path to (temporarily) store test result files in. (Default is OS temp dir)
 * `dotnet-test-explorer.autoExpandTree`: If true, the tree will be in an expanded state by default. (Default is **false**)
 * `dotnet-test-explorer.addProblems`: If true, failed tests will add to problems view. (Default is **true**)
 * `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
@@ -88,16 +88,16 @@ Text from the dotnet test output as well as debug info is written to the Output/
 ##### Go to test does not work with multiple workspaces
 This is because of limitations in the omnisharp extensions. We can only navigate to symbols which are in the currently selected workspace.
 
-##### Test result is not shown in codelens / tree
-Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. Code lense functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
+##### Test result is not shown in CodeLens / tree
+Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. CodeLens functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
 
-##### No tree view or color coded explorer for nunit / mstest
-This requieres you to run dotnet sdk version 2.2.104 or higher. The extension tries to run the commands with the english cli but if things are not working as expected anyway it may be due to the cli language (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+##### No tree view or color coded explorer for NUnit / MSTest
+This requires you to run dotnet SDK version 2.2.104 or higher. The extension tries to run the commands with the English cli but if things are not working as expected anyway it may be due to the cli language (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-##### Xunit projects assembly name needs to match the test class namespace
+##### xUnit projects assembly name needs to match the test class namespace
 See [#201](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/201)
 
-##### DisplayName attribute not working for xunit
+##### DisplayName attribute not working for xUnit
 See [#56](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/56)
 
 ##### Project discovery with UNC Paths doesn't work
