@@ -1,4 +1,4 @@
-## 0.7 ()
+## 0.7.0 (2019-05-09)
 * [#209](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/209): Set cli language to english before executing our commands 
 * [#208](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/208): Fixes to xunit theories names and go to test 
 * [#204](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/204): Adds beta for debug test 
