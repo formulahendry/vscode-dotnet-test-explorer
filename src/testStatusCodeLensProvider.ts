@@ -46,26 +46,26 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
                     if (result.matches(symbol.parentName, symbol.documentSymbol.name)) {
                         const state = TestStatusCodeLens.parseOutcome(result.outcome);
                         if (state) {
-                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, state));
+                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, state));
                             break;
                         }
                     } else if (result.matchesTheory(symbol.parentName, symbol.documentSymbol.name)) {
                         const state = TestStatusCodeLens.parseOutcome(result.outcome);
                         if (state === Utility.codeLensFailed) {
-                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, Utility.codeLensFailed));
+                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, Utility.codeLensFailed));
                             break;
                         } else {
                             // Checks if any input values for this theory fails
                             for (const theoryResult of results.values()) {
                                 if (theoryResult.matchesTheory(symbol.parentName, symbol.documentSymbol.name)) {
                                     if (theoryResult.outcome === Utility.codeLensFailed) {
-                                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, Utility.codeLensFailed));
+                                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, Utility.codeLensFailed));
                                         break;
                                     }
                                 }
                             }
                         }
-                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.range, state));
+                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, state));
                     }
                 }
             }
