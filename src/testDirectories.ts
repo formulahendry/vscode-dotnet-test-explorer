@@ -68,6 +68,11 @@ export class TestDirectories {
         return this.directories;
     }
 
+    public removeTestDirectory(directory: string) {
+        this.directories = this.directories.filter( (dir) => dir !== directory);
+        Logger.LogWarning(`Removed directory ${directory} due to it not containting any tests`);
+    }
+
     private evaluateTestDirectory(testProjectFullPath: string): void {
 
         if (!fs.existsSync(testProjectFullPath)) {

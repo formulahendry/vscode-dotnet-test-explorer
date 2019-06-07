@@ -67,17 +67,28 @@ export class TestCommands implements Disposable {
 
         const runSeqOrAsync = async () => {
 
+            const addToDiscoveredTests = (discoverdTestResult: IDiscoverTestsResult, dir: string) => {
+                if (discoverdTestResult.testNames.length <= 0) {
+                    this.testDirectories.removeTestDirectory(dir);
+                } else {
+                    discoveredTests.push(discoverdTestResult);
+                }
+            };
+
             const discoveredTests = [];
 
             try {
 
                 if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map( async (dir) => discoveredTests.push(await this.discoverTestsInFolder(dir))));
+                    await Promise.all(testDirectories.map( async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
                 } else {
                     for (const dir of testDirectories) {
-                        discoveredTests.push(await this.discoverTestsInFolder(dir));
+                        addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir);
                     }
                 }
+
+                // Number of test directories might have been decreased due to none-test directories being added by the glob / workspace filter
+                this.waitForAllTests.numberOfTestDirectories = this.testDirectories.getTestDirectories().length;
 
                 this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
             } catch (error) {
@@ -159,12 +170,20 @@ export class TestCommands implements Disposable {
 
             this.testResultsFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
             this.testResultsFolderWatcher = chokidar.watch("*.trx", { cwd: this.testResultsFolder}).on("add", (p) => {
+
+                Logger.Log("New test results file");
+
                 me.resultsFile.parseResults(path.join(me.testResultsFolder, p))
                 .then( (testResults) => {
                     me.waitForAllTests.currentNumberOfFiles = me.waitForAllTests.currentNumberOfFiles + 1;
                     me.waitForAllTests.testResults = me.waitForAllTests.testResults.concat(testResults);
 
+                    Logger.Log(`Parsed ${me.waitForAllTests.currentNumberOfFiles}/${me.waitForAllTests.expectedNumberOfFiles} file(s)`);
+
                     if ((me.waitForAllTests.numberOfTestDirectories === 1) || (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles)) {
+
+                        Logger.Log(`Parsed all expected test results, updating tree`);
+
                         me.sendNewTestResults({clearPreviousTestResults: me.waitForAllTests.clearPreviousTestResults, testResults: me.waitForAllTests.testResults});
 
                         this.waitForAllTests.currentNumberOfFiles = 0;
@@ -201,6 +220,8 @@ export class TestCommands implements Disposable {
         } else {
             this.waitForAllTests.expectedNumberOfFiles = 1;
         }
+
+        Logger.Log(`Test run for ${testName}, expecting ${this.waitForAllTests.expectedNumberOfFiles} test results file(s) in total`) ;
 
         for (const {} of testDirectories) {
             const testContext = {testName, isSingleTest};
@@ -274,7 +295,7 @@ export class TestCommands implements Disposable {
                                 reject(new Error("UserAborted"));
                             }
 
-                            Logger.Log(stdout);
+                            Logger.Log(stdout, "Test Explorer (Test runner output)");
 
                             resolve();
                         }, testDirectoryPath, true);
@@ -286,7 +307,7 @@ export class TestCommands implements Disposable {
                                 reject(new Error("UserAborted"));
                             }
 
-                            Logger.Log(stdout);
+                            Logger.Log(stdout, "Test Explorer (Test runner output)");
 
                             resolve();
                         }, testDirectoryPath, true);
