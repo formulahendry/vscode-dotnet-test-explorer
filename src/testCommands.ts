@@ -73,7 +73,7 @@ export class TestCommands implements Disposable {
                 } else {
                     discoveredTests.push(discoverdTestResult);
                 }
-            }
+            };
 
             const discoveredTests = [];
 
