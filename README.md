@@ -11,10 +11,10 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.7
+## New in 0.7.1
 
-* A first implementation of debugging test. You can right click the test and select debug. Consider this one an early beta and please give feedback.
-* We set the cli language to English before executing our commands (requires dotnet sdk version >= 2.2.104).
+* Code lens symbols are displayed on the code lens row itself and not avove
+* To make it easier to see what the extension logs and what the test runner logs the logs for the test runner has been moved to a new output logger called Test explorer (Test runner output)
 
 ## Usage
 
