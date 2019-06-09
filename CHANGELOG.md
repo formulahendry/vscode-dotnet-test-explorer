@@ -1,3 +1,6 @@
+## 0.7.1 ()
+* [#219](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/219): Place code lens icon on lens row
+
 ## 0.7.0 (2019-05-09)
 * [#209](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/209): Set cli language to english before executing our commands 
 * [#208](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/208): Fixes to xunit theories names and go to test 
