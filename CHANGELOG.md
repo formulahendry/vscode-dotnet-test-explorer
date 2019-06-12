@@ -1,4 +1,4 @@
-## 0.7.1 ()
+## 0.7.1 (2019-06-12)
 * [#219](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/219): Place code lens icon on lens row
 
 ## 0.7.0 (2019-05-09)
