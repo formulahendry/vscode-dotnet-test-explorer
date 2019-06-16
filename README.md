@@ -13,7 +13,7 @@
 
 ## New in 0.7.1
 
-* Code lens symbols are displayed on the code lens row itself and not avove
+* Code lens symbols are displayed on the code lens row itself and not above
 * To make it easier to see what the extension logs and what the test runner logs the logs for the test runner has been moved to a new output logger called Test explorer (Test runner output)
 
 ## Usage
