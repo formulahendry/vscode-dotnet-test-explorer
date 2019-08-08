@@ -7,3 +7,4 @@ yarn.*
 [Bb]in/
 [Oo]bj/
 lcov.info
+.vscode-test
