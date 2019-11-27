@@ -6,6 +6,8 @@ import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
 
+import { Utility } from "./utility";
+
 export class Executor {
 
     public static runInTerminal(command: string, cwd?: string, addNewLine: boolean = true, terminal: string = "Test Explorer"): void {
@@ -25,7 +27,15 @@ export class Executor {
         process.env.DOTNET_CLI_UI_LANGUAGE = "en";
         process.env.VSTEST_HOST_DEBUG = "0";
 
-        const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
+        let childProcess: ChildProcess;
+        if (Utility.envFileSet) {
+            const envFile = Utility.envFileContents;
+            const env = {};
+            Object.assign(env, process.env, envFile);
+            childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd, env }, callback);
+        } else {
+            childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
+        }
 
         if (addToProcessList) {
 

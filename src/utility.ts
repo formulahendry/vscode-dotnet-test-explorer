@@ -1,7 +1,10 @@
 "use strict";
+import { parse } from "dotenv";
+import * as fs from "fs";
 import { platform, tmpdir } from "os";
 import * as path from "path";
 import * as vscode from "vscode";
+import { Logger } from "./logger";
 
 export class Utility {
 
@@ -38,6 +41,14 @@ export class Utility {
         return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
     }
 
+    public static envFileSet(): boolean {
+        return Utility.envFilePath !== "";
+    }
+
+    public static get envFileContents() {
+        return Utility.envFileContentsCache;
+    }
+
     public static getConfiguration(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }
@@ -49,7 +60,7 @@ export class Utility {
 
         return testName
             .split(/\.(?![^\(]*\))/g) // Split on all . that are not in paranthesis
-            .map( (n) => {
+            .map((n) => {
                 let name = n;
 
                 const firstParanthesis = name.indexOf("(");
@@ -74,6 +85,37 @@ export class Utility {
         Utility.autoExpandTree = configuration.get<boolean>("autoExpandTree", false);
         Utility.skipBuild = Utility.additionalArgumentsOption.indexOf("--no-build") > -1;
         Utility.runInParallel = configuration.get<boolean>("runInParallel", false);
+
+        if (this.watchedEnvFilePath !== "") {
+            fs.unwatchFile(this.watchedEnvFilePath);
+            this.watchedEnvFilePath = "";
+        }
+        Utility.envFilePath = configuration.get<string>("envFilePath", "");
+
+        if (Utility.envFileSet) {
+            const absoluteFilePath = this.getEnvFilePath(this.envFilePath);
+            Logger.Log(`Loading env file contents from ${absoluteFilePath}`);
+
+            const parseFile = () => {
+                fs.readFile(absoluteFilePath, (err, data) => {
+                    if (err) {
+                        Logger.LogError("Error while loading env file", err);
+                        return;
+                    }
+                    this.envFileContentsCache = parse(data, { debug: true });
+                });
+            };
+
+            fs.watchFile(absoluteFilePath, () => {
+                Logger.Log("EnvFile updated, reloading");
+                parseFile();
+            });
+            this.watchedEnvFilePath = absoluteFilePath;
+
+            parseFile();
+        } else {
+            this.envFileContentsCache = null;
+        }
     }
 
     /**
@@ -95,6 +137,9 @@ export class Utility {
     private static failed: string;
     private static passed: string;
     private static skipped: string;
+    private static envFilePath: string;
+    private static watchedEnvFilePath: string = "";
+    private static envFileContentsCache: { [name: string]: string } | null;
 
     private static getLensText(configuration: vscode.WorkspaceConfiguration, name: string, fallback: string): string {
         // This is an invisible character that indicates the previous character
@@ -103,5 +148,9 @@ export class Utility {
 
         const setting = configuration.get<string>(name);
         return setting ? setting : (fallback + emojiVariation);
+    }
+
+    private static getEnvFilePath(relativePath: string): string {
+        return path.resolve(vscode.workspace.workspaceFolders[0].uri.fsPath, this.envFilePath);
     }
 }
