@@ -242,6 +242,11 @@
           "type": "boolean",
           "default": false,
           "description": "If true, will discover/build and run test in parallel if you have multiple test projects"
+        },
+        "dotnet-test-explorer.envFilePath": {
+          "type": "string",
+          "default": "",
+          "description": "Relative path to a .env from the workspace root directory, to be loaded for each test run"
         }
       }
     },
@@ -285,6 +290,7 @@
   "dependencies": {
     "applicationinsights": "^1.0.5",
     "chokidar": "^2.1.0",
+    "dotenv": "^8.2.0",
     "fkill": "^5.3.0",
     "glob": "^7.1.2",
     "ts-node": "^7.0.1",
