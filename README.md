@@ -83,6 +83,7 @@ Text from the dotnet test output as well as debug info is written to the Output/
 * `dotnet-test-explorer.testArguments`: Additional arguments that are added to the dotnet test command
 * `dotnet-test-explorer.leftClickAction`: What happens when a test in the list is left clicked. (Default is **gotoTest**)
 * `dotnet-test-explorer.runInParallel`: If true, will discover/build and run test in parallel if you have multiple test projects (Default is **false**)
+* `dotnet-test-explorer.envFilePath` : Relative path to a .env from the workspace root directory, to be loaded for each test run
 
 ## Known issues
 ##### Go to test does not work with multiple workspaces
