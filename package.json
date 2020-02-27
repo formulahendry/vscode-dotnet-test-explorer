@@ -99,6 +99,10 @@
       {
         "command": "dotnet-test-explorer.debugTest",
         "title": "Debug Test"
+      },
+      {
+        "command": "dotnet-test-explorer.openPanel",
+        "title": "Open Tests Panel"
       }
     ],
     "menus": {
