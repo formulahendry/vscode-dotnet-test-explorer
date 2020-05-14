@@ -273,6 +273,7 @@
     "tslint": "tslint -t verbose src/**/*.ts"
   },
   "devDependencies": {
+    "@types/glob": "^7.1.1",
     "@types/mocha": "^2.2.32",
     "@types/node": "^8.10.36",
     "@types/sinon": "^4.3.0",
@@ -284,7 +285,6 @@
   },
   "dependencies": {
     "applicationinsights": "^1.0.5",
-    "chokidar": "^2.1.0",
     "fkill": "^5.3.0",
     "glob": "^7.1.2",
     "ts-node": "^7.0.1",
