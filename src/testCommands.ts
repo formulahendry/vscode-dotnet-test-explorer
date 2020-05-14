@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as glob from "glob";
 import * as path from "path";
 import { commands, Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
@@ -10,7 +11,6 @@ import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
-import * as glob from "glob";
 
 export interface ITestRunContext {
     testName: string;
@@ -189,14 +189,14 @@ export class TestCommands implements Disposable {
                     await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
                 }
             }
-            var globPromise = new Promise<string[]>((resolve, reject) =>
+            const globPromise = new Promise<string[]>((resolve, reject) =>
                 glob("*.trx",
                     { cwd: this.testResultsFolder, absolute: true },
                     (err, matches) => err == null ? resolve(matches) : reject()));
-            var files = await globPromise;
-            var allTestResults = []
+            const files = await globPromise;
+            const allTestResults = [];
             for (const file of files) {
-                var testResults = await this.resultsFile.parseResults(file);
+                const testResults = await this.resultsFile.parseResults(file);
                 allTestResults.push(...testResults);
             }
             this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
