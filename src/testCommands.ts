@@ -80,7 +80,7 @@ export class TestCommands implements Disposable {
             try {
 
                 if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map( async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
+                    await Promise.all(testDirectories.map(async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
                 } else {
                     for (const dir of testDirectories) {
                         addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir);
@@ -101,7 +101,7 @@ export class TestCommands implements Disposable {
 
     public async discoverTestsInFolder(dir: string): Promise<IDiscoverTestsResult> {
         const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map( (tn) => ({dir, name: tn})));
+        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
         return testsForDir;
     }
 
@@ -134,7 +134,7 @@ export class TestCommands implements Disposable {
     }
 
     public watchRunningTests(namespace: string): void {
-        const textContext = {testName: namespace, isSingleTest: false};
+        const textContext = { testName: namespace, isSingleTest: false };
         this.sendRunningTest(textContext);
     }
 
@@ -221,10 +221,10 @@ export class TestCommands implements Disposable {
             this.waitForAllTests.expectedNumberOfFiles = 1;
         }
 
-        Logger.Log(`Test run for ${testName}, expecting ${this.waitForAllTests.expectedNumberOfFiles} test results file(s) in total`) ;
+        Logger.Log(`Test run for ${testName}, expecting ${this.waitForAllTests.expectedNumberOfFiles} test results file(s) in total`);
 
-        for (const {} of testDirectories) {
-            const testContext = {testName, isSingleTest};
+        for (const { } of testDirectories) {
+            const testContext = { testName, isSingleTest };
             this.lastRunTestContext = testContext;
             this.sendRunningTest(testContext);
         }
@@ -233,7 +233,7 @@ export class TestCommands implements Disposable {
 
             try {
                 if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map( async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
+                    await Promise.all(testDirectories.map(async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
                 } else {
                     for (let i = 0; i < testDirectories.length; i++) {
                         await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
@@ -248,7 +248,7 @@ export class TestCommands implements Disposable {
         runSeqOrAsync();
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
+    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
         return new Promise((resolve, reject) => {
 
             if (Utility.skipBuild) {
@@ -284,7 +284,7 @@ export class TestCommands implements Disposable {
             }
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
-                .then( () => {
+                .then(() => {
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
                     if (!debug) {
@@ -314,7 +314,7 @@ export class TestCommands implements Disposable {
                     }
 
                 })
-                .catch( (err) => {
+                .catch((err) => {
                     reject(err);
                 });
         });
