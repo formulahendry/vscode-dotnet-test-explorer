@@ -11,6 +11,12 @@ import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
+interface TestNamespace {
+    name: string
+    subNamespaces: Map<string, TestNamespace>
+    tests: string[]
+}
+
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
@@ -18,7 +24,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private discoveredTests: string[];
     private testResults: TestResult[];
-    private allNodes: TestNode[] = [];
+    private testNodes: TestNode[] = [];
 
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile, private statusBar: StatusBar) {
         testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
@@ -83,69 +89,86 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             });
         }
 
-        const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
+        const treeMode = Utility.getConfiguration().get<string>("treeMode");
 
-        if (!useTreeView) {
+        if (treeMode === "flat") {
             return this.discoveredTests.map((name) => {
                 return new TestNode("", name, this.testResults);
             });
         }
 
-        const structuredTests = {};
+        let rootNamespace: TestNamespace = { name: "", subNamespaces: new Map(), tests: [] }
 
-        this.allNodes = [];
+        this.testNodes = [];
 
         this.discoveredTests.forEach((name: string) => {
             try {
                 // Split name on all dots that are not inside parenthesis MyNamespace.MyClass.MyMethod(value: "My.Dot") -> MyNamespace, MyClass, MyMethod(value: "My.Dot")
-                this.addToObject(structuredTests, name.split(/\.(?![^\(]*\))/g));
+                const nameSplitted = name.split(/\.(?![^\(]*\))/g);
+                let currentNamespace = rootNamespace;
+                let namespaceParts = nameSplitted.slice(0, nameSplitted.length - 1);
+                let testName = nameSplitted[nameSplitted.length - 1];
+                for (const part of namespaceParts) {
+                    if (!currentNamespace.subNamespaces.has(part)) {
+                        const newNamespace = { name: part, subNamespaces: new Map(), tests: [] };
+                        currentNamespace.subNamespaces.set(part, newNamespace);
+                        currentNamespace = newNamespace;
+                    }
+                    else
+                        currentNamespace = currentNamespace.subNamespaces.get(part);
+                }
+                currentNamespace.tests.push(testName)
             } catch (err) {
                 Logger.LogError(`Failed to add test with name ${name}`, err);
             }
         });
 
-        const root = this.createTestNode("", structuredTests);
-
-        return root;
-    }
-
-    private addToObject(container: object, parts: string[]): void {
-        const title = parts.splice(0, 1)[0];
-
-        if (parts.length > 1) {
-            if (!container[title]) {
-                container[title] = {};
+        function mergeSingleItemNamespaces(namespace: TestNamespace): TestNamespace {
+            if (namespace.tests.length === 0
+                && namespace.subNamespaces.size === 1) {
+                var [[_, childNamespace]] = namespace.subNamespaces;
+                childNamespace = mergeSingleItemNamespaces(childNamespace);
+                return {
+                    name: namespace.name === "" ? childNamespace.name : `${namespace.name}.${childNamespace.name}`,
+                    subNamespaces: childNamespace.subNamespaces,
+                    tests: childNamespace.tests
+                }
             }
-            this.addToObject(container[title], parts);
-        } else {
-            if (!container[title]) {
-                container[title] = [];
-            }
-
-            if (parts.length === 1) {
-                container[title].push(parts[0]);
+            else {
+                const subNamespaces = new Map<string, TestNamespace>(Array.from(
+                    namespace.subNamespaces.values(),
+                    childNamespace => {
+                        const merged = mergeSingleItemNamespaces(childNamespace);
+                        return <[string, TestNamespace]>[merged.name, merged];
+                    }));
+                return {
+                    name: namespace.name,
+                    subNamespaces,
+                    tests: namespace.tests
+                }
             }
         }
+
+        if (treeMode === "merged")
+            rootNamespace = mergeSingleItemNamespaces(rootNamespace)
+
+        const root = this.createNamespaceNode("", rootNamespace);
+
+        return root.children;
     }
 
-    private createTestNode(parentPath: string, test: object | string): TestNode[] {
-        let testNodes: TestNode[];
-
-        if (Array.isArray(test)) {
-            testNodes = test.map((t) => {
-                return new TestNode(parentPath, t, this.testResults);
-            });
-        } else if (typeof test === "object") {
-            testNodes = Object.keys(test).map((key) => {
-                return new TestNode(parentPath, key, this.testResults, this.createTestNode((parentPath ? `${parentPath}.` : "") + key, test[key]));
-            });
-        } else {
-            testNodes = [new TestNode(parentPath, test, this.testResults)];
+    private createNamespaceNode(parentNamespace: string, namespace: TestNamespace): TestNode {
+        const children = []
+        const fullName = parentNamespace !== "" ? `${parentNamespace}.${namespace.name}` : namespace.name;
+        for (const subNamespace of namespace.subNamespaces.values()) {
+            children.push(this.createNamespaceNode(fullName, subNamespace))
         }
-
-        this.allNodes = this.allNodes.concat(testNodes);
-
-        return testNodes;
+        for (const test of namespace.tests) {
+            const testNode = new TestNode(fullName, test, this.testResults);
+            this.testNodes.push(testNode)
+            children.push(testNode)
+        }
+        return new TestNode(parentNamespace, namespace.name, this.testResults, children);
     }
 
     private updateWithDiscoveringTest() {
@@ -154,8 +177,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
-        this.allNodes = [];
-        this.discoveredTests = [].concat(...results.map( (r) => r.testNames));
+        this.testNodes = [];
+        this.discoveredTests = [].concat(...results.map((r) => r.testNames));
         this.statusBar.discovered(this.discoveredTests.length);
         this._onDidChangeTreeData.fire();
     }
@@ -166,11 +189,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             ((testNode: TestNode) => testNode.fqn === testRunContext.testName)
             : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
 
-        const testRun = this.allNodes.filter( (testNode: TestNode) => !testNode.isFolder && filter(testNode));
+        const testRun = this.testNodes.filter((testNode: TestNode) => !testNode.isFolder && filter(testNode));
 
         this.statusBar.testRunning(testRun.length);
 
-        testRun.forEach( (testNode: TestNode) => {
+        testRun.forEach((testNode: TestNode) => {
             testNode.setAsLoading();
             this._onDidChangeTreeData.fire(testNode);
         });
@@ -178,13 +201,13 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private addTestResults(results: ITestResult) {
 
-        const fullNamesForTestResults = results.testResults.map( (r) => r.fullName);
+        const fullNamesForTestResults = results.testResults.map((r) => r.fullName);
 
         if (results.clearPreviousTestResults) {
             this.discoveredTests = [...fullNamesForTestResults];
             this.testResults = null;
         } else {
-            const newTests = fullNamesForTestResults.filter( (r) => this.discoveredTests.indexOf(r) === -1);
+            const newTests = fullNamesForTestResults.filter((r) => this.discoveredTests.indexOf(r) === -1);
 
             if (newTests.length > 0) {
                 this.discoveredTests.push(...newTests);
@@ -196,8 +219,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.statusBar.discovered(this.discoveredTests.length);
 
         if (this.testResults) {
-            results.testResults.forEach( (newTestResult: TestResult) => {
-                const indexOldTestResult = this.testResults.findIndex( (tr) => tr.fullName === newTestResult.fullName);
+            results.testResults.forEach((newTestResult: TestResult) => {
+                const indexOldTestResult = this.testResults.findIndex((tr) => tr.fullName === newTestResult.fullName);
 
                 if (indexOldTestResult < 0) {
                     this.testResults.push(newTestResult);

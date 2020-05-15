@@ -178,10 +178,20 @@
           "default": "",
           "description": "Glob pattern that points to path of .NET Core test project(s)."
         },
-        "dotnet-test-explorer.useTreeView": {
-          "type": "boolean",
-          "default": true,
-          "description": "If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Only xUnit tests will be listed in a tree view)"
+        "dotnet-test-explorer.treeMode": {
+          "type": "string",
+          "enum": [
+            "full",
+            "merged",
+            "flat"
+          ],
+          "enumDescriptions": [
+            "Display all namespaces as separate nodes in the tree.",
+            "Combine namespaces with a single child to one node.",
+            "Display every test separately."
+          ],
+          "default": "merged",
+          "description": "Determines how the tests should be arranged in the tree."
         },
         "dotnet-test-explorer.showCodeLens": {
           "type": "boolean",
