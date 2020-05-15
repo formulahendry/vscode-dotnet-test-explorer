@@ -83,6 +83,6 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
             this.testResults.set(result.fullName, result);
         }
 
-        this.onDidChangeCodeLensesEmitter.fire();
+        this.onDidChangeCodeLensesEmitter.fire(null);
     }
 }
