@@ -10,7 +10,7 @@ suite("Test discovery", () => {
     const testDirectoryPath = "xyz";
     const dotnetTestOptions = "foo";
 
-    const dotnetTestExecCmd = `dotnet test -t -v=q${dotnetTestOptions}`;
+    const dotnetTestExecCmd = `dotnet test -t -v=q ${dotnetTestOptions}`;
     const assemblyFilePath = "/bin/TestAssembly.dll";
 
     const tmpDir = "/temp";
