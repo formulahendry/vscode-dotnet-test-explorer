@@ -150,14 +150,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private updateWithDiscoveringTest() {
         this.discoveredTests = null;
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire({});
     }
 
     private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
         this.allNodes = [];
         this.discoveredTests = [].concat(...results.map( (r) => r.testNames));
         this.statusBar.discovered(this.discoveredTests.length);
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire({});
     }
 
     private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
@@ -211,6 +211,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         this.statusBar.testRun(results.testResults);
 
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire({});
     }
 }
