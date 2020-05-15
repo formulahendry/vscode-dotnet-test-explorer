@@ -19,4 +19,4 @@ install:
 
 script:
   - npm run tslint
-  - npm test --silent
+  - npm test
