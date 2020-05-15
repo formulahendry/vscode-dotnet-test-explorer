@@ -42,7 +42,7 @@ export class TestCommands implements Disposable {
     }
 
     public discoverTests() {
-        this.onTestDiscoveryStartedEmitter.fire();
+        this.onTestDiscoveryStartedEmitter.fire("");
 
         this.testDirectories.clearTestsForDirectory();
 
