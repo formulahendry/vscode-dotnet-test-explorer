@@ -11,10 +11,10 @@ import { ITestResult, TestResult } from "./testResult";
 import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
-interface TestNamespace {
-    name: string
-    subNamespaces: Map<string, TestNamespace>
-    tests: string[]
+interface ITestNamespace {
+    name: string;
+    subNamespaces: Map<string, ITestNamespace>;
+    tests: string[];
 }
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
@@ -97,7 +97,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             });
         }
 
-        let rootNamespace: TestNamespace = { name: "", subNamespaces: new Map(), tests: [] }
+        let rootNamespace: ITestNamespace = { name: "", subNamespaces: new Map(), tests: [] };
 
         this.testNodes = [];
 
@@ -106,67 +106,67 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 // Split name on all dots that are not inside parenthesis MyNamespace.MyClass.MyMethod(value: "My.Dot") -> MyNamespace, MyClass, MyMethod(value: "My.Dot")
                 const nameSplitted = name.split(/\.(?![^\(]*\))/g);
                 let currentNamespace = rootNamespace;
-                let namespaceParts = nameSplitted.slice(0, nameSplitted.length - 1);
-                let testName = nameSplitted[nameSplitted.length - 1];
+                const namespaceParts = nameSplitted.slice(0, nameSplitted.length - 1);
+                const testName = nameSplitted[nameSplitted.length - 1];
                 for (const part of namespaceParts) {
                     if (!currentNamespace.subNamespaces.has(part)) {
                         const newNamespace = { name: part, subNamespaces: new Map(), tests: [] };
                         currentNamespace.subNamespaces.set(part, newNamespace);
                         currentNamespace = newNamespace;
-                    }
-                    else
+                    } else {
                         currentNamespace = currentNamespace.subNamespaces.get(part);
+                    }
                 }
-                currentNamespace.tests.push(testName)
+                currentNamespace.tests.push(testName);
             } catch (err) {
                 Logger.LogError(`Failed to add test with name ${name}`, err);
             }
         });
 
-        function mergeSingleItemNamespaces(namespace: TestNamespace): TestNamespace {
+        function mergeSingleItemNamespaces(namespace: ITestNamespace): ITestNamespace {
             if (namespace.tests.length === 0
                 && namespace.subNamespaces.size === 1) {
-                var [[_, childNamespace]] = namespace.subNamespaces;
+                let [[, childNamespace]] = namespace.subNamespaces;
                 childNamespace = mergeSingleItemNamespaces(childNamespace);
                 return {
                     name: namespace.name === "" ? childNamespace.name : `${namespace.name}.${childNamespace.name}`,
                     subNamespaces: childNamespace.subNamespaces,
-                    tests: childNamespace.tests
-                }
-            }
-            else {
-                const subNamespaces = new Map<string, TestNamespace>(Array.from(
+                    tests: childNamespace.tests,
+                };
+            } else {
+                const subNamespaces = new Map<string, ITestNamespace>(Array.from(
                     namespace.subNamespaces.values(),
-                    childNamespace => {
+                    (childNamespace) => {
                         const merged = mergeSingleItemNamespaces(childNamespace);
-                        return <[string, TestNamespace]>[merged.name, merged];
+                        return [merged.name, merged] as [string, ITestNamespace];
                     }));
                 return {
                     name: namespace.name,
                     subNamespaces,
-                    tests: namespace.tests
-                }
+                    tests: namespace.tests,
+                };
             }
         }
 
-        if (treeMode === "merged")
-            rootNamespace = mergeSingleItemNamespaces(rootNamespace)
+        if (treeMode === "merged") {
+            rootNamespace = mergeSingleItemNamespaces(rootNamespace);
+        }
 
         const root = this.createNamespaceNode("", rootNamespace);
 
         return root.children;
     }
 
-    private createNamespaceNode(parentNamespace: string, namespace: TestNamespace): TestNode {
-        const children = []
+    private createNamespaceNode(parentNamespace: string, namespace: ITestNamespace): TestNode {
+        const children = [];
         const fullName = parentNamespace !== "" ? `${parentNamespace}.${namespace.name}` : namespace.name;
         for (const subNamespace of namespace.subNamespaces.values()) {
-            children.push(this.createNamespaceNode(fullName, subNamespace))
+            children.push(this.createNamespaceNode(fullName, subNamespace));
         }
         for (const test of namespace.tests) {
             const testNode = new TestNode(fullName, test, this.testResults);
-            this.testNodes.push(testNode)
-            children.push(testNode)
+            this.testNodes.push(testNode);
+            children.push(testNode);
         }
         return new TestNode(parentNamespace, namespace.name, this.testResults, children);
     }
