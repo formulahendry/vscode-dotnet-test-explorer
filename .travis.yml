@@ -18,5 +18,6 @@ install:
   - npm run vscode:prepublish
 
 script:
-  - npm run tslint
+  - npm compile
   - npm test
+  - npm run tslint

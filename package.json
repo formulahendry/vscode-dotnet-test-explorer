@@ -268,7 +268,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node ./out/test/runTest.js",
+    "test": "node ./out/test/runTest.js",
     "tslint": "tslint -t verbose src/**/*.ts"
   },
   "devDependencies": {
