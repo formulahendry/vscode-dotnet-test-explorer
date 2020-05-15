@@ -35,6 +35,10 @@
   ],
   "main": "./out/src/extension",
   "contributes": {
+    "viewsWelcome": [{
+      "view": "dotnetTestExplorer",
+      "contents": "No tests found. \n\nPlease open or set the test project and ensure your project compiles."
+    }],
     "views": {
       "test": [
         {

@@ -76,11 +76,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         if (this.discoveredTests.length === 0) {
-            return ["Please open or set the test project", "and ensure your project compiles."].map((e) => {
-                const node = new TestNode("", e, this.testResults);
-                node.setAsError(e);
-                return node;
-            });
+            // Show the welcome message.
+            return [];
         }
 
         const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
