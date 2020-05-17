@@ -15,11 +15,11 @@ export class Watch {
     constructor(
         private testCommands: TestCommands,
         private testDirectories: TestDirectories) {
-            if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+        if (Utility.getConfiguration().get<boolean>("autoWatch")) {
 
-                this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
-            }
+            this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
         }
+    }
 
     private setupWatcherForAllDirectories(): void {
         const allDirectories = this.testDirectories.getTestDirectories();
@@ -31,7 +31,7 @@ export class Watch {
 
     private setupWatch(testDirectory: string, namespaceForDirectory: string, index: number) {
 
-        if (this.watchedDirectories.some( (wd) => wd === testDirectory)) {
+        if (this.watchedDirectories.some((wd) => wd === testDirectory)) {
             Logger.Log("Skipping adding watch since already watching directory " + testDirectory);
             return;
         }
@@ -61,7 +61,7 @@ export class Watch {
         p.stdout.on("close", (buf: any) => {
             Logger.Log("Stopping watch");
 
-            this.watchedDirectories = this.watchedDirectories.filter( (wd) => wd !== testDirectory);
+            this.watchedDirectories = this.watchedDirectories.filter((wd) => wd !== testDirectory);
         });
     }
 
