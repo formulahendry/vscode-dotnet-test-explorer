@@ -9,7 +9,7 @@ import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
+import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export interface ITestRunContext {
@@ -29,7 +29,6 @@ export class TestCommands implements Disposable {
     private isRunning: boolean;
 
     constructor(
-        private resultsFile: TestResultsFile,
         private testDirectories: TestDirectories) { }
 
     public dispose(): void {
@@ -117,11 +116,6 @@ export class TestCommands implements Disposable {
         this.onTestRunEmitter.fire(testContext);
     }
 
-    public watchRunningTests(namespace: string): void {
-        const textContext = { testName: namespace, isSingleTest: false };
-        this.sendRunningTest(textContext);
-    }
-
     public runAllTests(): void {
         this.runTestCommand("", false);
         AppInsightsClient.sendEvent("runAllTests");
@@ -196,7 +190,7 @@ export class TestCommands implements Disposable {
             const files = await globPromise;
             const allTestResults = [];
             for (const file of files) {
-                const testResults = await this.resultsFile.parseResults(file);
+                const testResults = await parseResults(file);
                 allTestResults.push(...testResults);
             }
             this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });

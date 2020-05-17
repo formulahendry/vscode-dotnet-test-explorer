@@ -14,15 +14,13 @@ import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
 import { TestNode } from "./testNode";
-import { TestResultsFile } from "./testResultsFile";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 import { Watch } from "./watch";
 
 export function activate(context: vscode.ExtensionContext) {
-    const testResults = new TestResultsFile();
     const testDirectories = new TestDirectories();
-    const testCommands = new TestCommands(testResults, testDirectories);
+    const testCommands = new TestCommands(testDirectories);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
@@ -50,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
         Utility.updateCache();
     }));
 
-    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, testResults, statusBar);
+    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, statusBar);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
