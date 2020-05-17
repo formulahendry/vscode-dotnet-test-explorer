@@ -76,11 +76,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         if (this.discoveredTests.length === 0) {
-            return ["Please open or set the test project", "and ensure your project compiles."].map((e) => {
-                const node = new TestNode("", e, this.testResults);
-                node.setAsError(e);
-                return node;
-            });
+            // Show the welcome message.
+            return [];
         }
 
         const useTreeView = Utility.getConfiguration().get<string>("useTreeView");
@@ -150,14 +147,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private updateWithDiscoveringTest() {
         this.discoveredTests = null;
-        this._onDidChangeTreeData.fire({});
+        this._onDidChangeTreeData.fire(null);
     }
 
     private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
         this.allNodes = [];
         this.discoveredTests = [].concat(...results.map( (r) => r.testNames));
         this.statusBar.discovered(this.discoveredTests.length);
-        this._onDidChangeTreeData.fire({});
+        this._onDidChangeTreeData.fire(null);
     }
 
     private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
@@ -211,6 +208,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         this.statusBar.testRun(results.testResults);
 
-        this._onDidChangeTreeData.fire({});
+        this._onDidChangeTreeData.fire(null);
     }
 }
