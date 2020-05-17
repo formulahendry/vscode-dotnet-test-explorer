@@ -46,7 +46,7 @@ export function discoverTests(testDirectoryPath: string, dotnetTestOptions: stri
 
 function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        const command = `dotnet test -t -v=q${dotnetTestOptions}`;
+        const command = `dotnet test -t -v=q ${dotnetTestOptions}`;
 
         Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 

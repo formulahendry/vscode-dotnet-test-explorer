@@ -41,7 +41,7 @@ export class Watch {
         const trxPath = path.join(this.testCommands.testResultFolder, `autoWatch${index}.trx`);
 
         AppInsightsClient.sendEvent("runWatchCommand");
-        const command = `dotnet watch test${Utility.additionalArgumentsOption} --logger "trx;LogFileName=${trxPath}"`;
+        const command = `dotnet watch test ${Utility.additionalArgumentsOption} --logger "trx;LogFileName=${trxPath}"`;
 
         Logger.Log(`Executing ${command} in ${testDirectory}`);
         const p = Executor.exec(command, (err: any, stdout: string) => {
