@@ -61,12 +61,12 @@ export class Watch {
             let lastLineStart = 0;
             for (let i = 0; i < stdout.length; i++) {
                 const c = stdout[i];
-                if (c === '\r' || c === '\n') {
+                if (c === "\r" || c === "\n") {
                     startedLine.push(stdout.substring(lastLineStart, i));
                     const line = startedLine.join("");
-                    startedLine = []
+                    startedLine = [];
                     lines.push(line);
-                    if (c === '\r' && stdout[i + 1] === '\n') {
+                    if (c === "\r" && stdout[i + 1] === "\n") {
                         i++;
                     }
                     lastLineStart = i + 1;
