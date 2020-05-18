@@ -5,7 +5,7 @@ import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
-import { TestResultsFile } from "./testResultsFile";
+import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export class Watch {
@@ -15,11 +15,11 @@ export class Watch {
     constructor(
         private testCommands: TestCommands,
         private testDirectories: TestDirectories) {
-            if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+        if (Utility.getConfiguration().get<boolean>("autoWatch")) {
 
-                this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
-            }
+            this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
         }
+    }
 
     private setupWatcherForAllDirectories(): void {
         const allDirectories = this.testDirectories.getTestDirectories();
@@ -31,7 +31,7 @@ export class Watch {
 
     private setupWatch(testDirectory: string, namespaceForDirectory: string, index: number) {
 
-        if (this.watchedDirectories.some( (wd) => wd === testDirectory)) {
+        if (this.watchedDirectories.some((wd) => wd === testDirectory)) {
             Logger.Log("Skipping adding watch since already watching directory " + testDirectory);
             return;
         }
@@ -41,27 +41,57 @@ export class Watch {
         const trxPath = path.join(this.testCommands.testResultFolder, `autoWatch${index}.trx`);
 
         AppInsightsClient.sendEvent("runWatchCommand");
-        const command = `dotnet watch test${Utility.additionalArgumentsOption} --logger "trx;LogFileName=${trxPath}"`;
+        const command = `dotnet watch test ${Utility.additionalArgumentsOption}`
+            + ` --verbosity:quiet` // be less verbose to avoid false positives when parsing output
+            + ` --logger "trx;LogFileName=${trxPath}"`;
 
         Logger.Log(`Executing ${command} in ${testDirectory}`);
         const p = Executor.exec(command, (err: any, stdout: string) => {
             Logger.Log(stdout);
         }, testDirectory, true);
 
-        p.stdout.on("data", (buf) => {
+        let startedLine = [];
+        p.stdout.on("data", async (buf) => {
             const stdout = String(buf);
-            Logger.Log(stdout);
 
-            // Only notify that test are running when a watch has triggered due to changes
-            if (stdout.indexOf("watch : Started") > -1) {
-                this.testCommands.watchRunningTests(namespaceForDirectory);
+            // The string contained in `buf` may contain less or more
+            // than one line. But we want to parse lines as a whole.
+            // Consequently, we have to join them.
+            const lines = [];
+            let lastLineStart = 0;
+            for (let i = 0; i < stdout.length; i++) {
+                const c = stdout[i];
+                if (c === "\r" || c === "\n") {
+                    startedLine.push(stdout.substring(lastLineStart, i));
+                    const line = startedLine.join("");
+                    startedLine = [];
+                    lines.push(line);
+                    if (c === "\r" && stdout[i + 1] === "\n") {
+                        i++;
+                    }
+                    lastLineStart = i + 1;
+                }
+            }
+            startedLine.push(stdout.substring(lastLineStart, stdout.length));
+
+            // Parse the output.
+            for (const line of lines) {
+                Logger.Log(`dotnet watch: ${line}`);
+
+                if (line === "watch : Started") {
+                    this.testCommands.sendRunningTest({ testName: namespaceForDirectory, isSingleTest: false });
+                } else if (line === `Results File: ${trxPath}`) {
+                    Logger.Log("Results file detected.");
+                    const results = await parseResults(trxPath);
+                    this.testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: results });
+                }
             }
         });
 
         p.stdout.on("close", (buf: any) => {
             Logger.Log("Stopping watch");
 
-            this.watchedDirectories = this.watchedDirectories.filter( (wd) => wd !== testDirectory);
+            this.watchedDirectories = this.watchedDirectories.filter((wd) => wd !== testDirectory);
         });
     }
 
