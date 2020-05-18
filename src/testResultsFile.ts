@@ -51,11 +51,23 @@ function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
 
     for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
         const id = getAttributeValue(nodes[i], "id");
+        const name = getAttributeValue(nodes[i], "name");
         const testMethod = findChildElement(nodes[i], "TestMethod");
         if (testMethod) {
+            const isXUnit = getAttributeValue(testMethod, "adapterTypeName").toLowerCase().includes("xunit");
+            let className = getAttributeValue(testMethod, "className");
+            let method = getAttributeValue(testMethod, "name");
+            const shouldSplitName = isXUnit && !name.startsWith(className);
+            if (shouldSplitName) {
+                const parts = name.split(".");
+                if (parts.length > 0) {
+                    className = parts.slice(0, parts.length - 1).join(".");
+                    method = parts[parts.length - 1];
+                }
+            }
             names.set(id, {
-                className: getAttributeValue(testMethod, "className"),
-                method: getAttributeValue(testMethod, "name"),
+                className,
+                method,
             });
         }
     }

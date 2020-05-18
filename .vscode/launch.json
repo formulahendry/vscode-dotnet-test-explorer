@@ -78,6 +78,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
+                "${workspaceRoot}/test/tested",
                 "${workspaceRoot}/test/xunittests",
                 "${workspaceRoot}/test/nunit",
                 "${workspaceRoot}/test/fsxunittests",

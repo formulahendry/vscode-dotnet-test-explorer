@@ -1,6 +1,9 @@
 {
 	"folders": [
 		{
+			"path": "tested"
+		},
+		{
 			"path": "xunittests"
 		},
 		{

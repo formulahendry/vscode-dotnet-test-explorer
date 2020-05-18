@@ -153,6 +153,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
         this.allNodes = [];
         this.discoveredTests = [].concat(...results.map( (r) => r.testNames));
+        this.discoveredTests = this.discoveredTests.sort();
         this.statusBar.discovered(this.discoveredTests.length);
         this._onDidChangeTreeData.fire(null);
     }

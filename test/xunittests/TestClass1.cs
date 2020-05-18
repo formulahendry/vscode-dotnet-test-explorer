@@ -47,6 +47,12 @@ namespace XunitTests
 
         }
 
+        [Fact(DisplayName="XunitTests.TestClass1.xUnit Test with a different DisplayName")]
+        public void PassWithDisplayName()
+        {
+            (1+1).ShouldBe(2);
+        }
+
         // [Fact]
         // public void Fail()
         // {
