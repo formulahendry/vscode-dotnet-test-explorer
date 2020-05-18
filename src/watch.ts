@@ -58,17 +58,21 @@ export class Watch {
             // than one line. But we want to parse lines as a whole.
             // Consequently, we have to join them.
             const lines = [];
-            const lineSegments = stdout.split("\n");
-            for (let i = 0; i < lineSegments.length; i++) {
-                const lineSegment = lineSegments[i];
-                const hadNewline = i > 0;
-                startedLine.push(lineSegment);
-                if (hadNewline) {
+            let lastLineStart = 0;
+            for (let i = 0; i < stdout.length; i++) {
+                const c = stdout[i];
+                if (c === '\r' || c === '\n') {
+                    startedLine.push(stdout.substring(lastLineStart, i));
                     const line = startedLine.join("");
-                    startedLine = [];
+                    startedLine = []
                     lines.push(line);
+                    if (c === '\r' && stdout[i + 1] === '\n') {
+                        i++;
+                    }
+                    lastLineStart = i + 1;
                 }
             }
+            startedLine.push(stdout.substring(lastLineStart, stdout.length));
 
             // Parse the output.
             for (const line of lines) {
@@ -79,7 +83,7 @@ export class Watch {
                 } else if (line === `Results File: ${trxPath}`) {
                     Logger.Log("Results file detected.");
                     const results = await parseResults(trxPath);
-                    this.testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: results});
+                    this.testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: results });
                 }
             }
         });
