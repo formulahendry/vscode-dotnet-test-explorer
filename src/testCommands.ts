@@ -54,9 +54,7 @@ export class TestCommands implements Disposable {
         const runSeqOrAsync = async () => {
 
             const addToDiscoveredTests = (discoverdTestResult: IDiscoverTestsResult, dir: string) => {
-                if (discoverdTestResult.testNames.length <= 0) {
-                    this.testDirectories.removeTestDirectory(dir);
-                } else {
+                if (discoverdTestResult.testNames.length > 0) {
                     discoveredTests.push(discoverdTestResult);
                 }
             };
