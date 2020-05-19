@@ -17,7 +17,6 @@ export class TestDirectories {
         }
 
         const testDirectoryGlob = Utility.getConfiguration().get<string>("testProjectPath");
-        this.directories = [];
 
         const matchingDirs = [];
 
@@ -34,10 +33,7 @@ export class TestDirectories {
             Logger.Log(`Found ${matchingDirsForWorkspaceFolder.length} matches for pattern in folder ${folder.uri.fsPath}`);
         });
 
-        matchingDirs.forEach( (dir) => {
-            Logger.Log(`Evaluating match ${dir}`);
-            this.evaluateTestDirectory(dir);
-        });
+        this.directories = evaluateTestDirectories(matchingDirs);
     }
 
     public addTestsForDirectory(testsForDirectory) {
@@ -72,8 +68,13 @@ export class TestDirectories {
         this.directories = this.directories.filter((dir) => dir !== directory);
         Logger.LogWarning(`Removed directory ${directory} due to it not containing any tests`);
     }
+}
+function evaluateTestDirectories(testDirectories: string[]): string[] {
+    const directories = [];
+    const directoriesSet = new Set<string>();
 
-    private evaluateTestDirectory(testProjectFullPath: string): void {
+    for (let testProjectFullPath of testDirectories) {
+        Logger.Log(`Evaluating match ${testProjectFullPath}`);
 
         if (!fs.existsSync(testProjectFullPath)) {
             Logger.LogWarning(`Path ${testProjectFullPath} is not valid`);
@@ -85,10 +86,12 @@ export class TestDirectories {
 
             if (glob.sync(`${testProjectFullPath}/+(*.csproj|*.sln|*.fsproj)`).length < 1) {
                 Logger.LogWarning(`Skipping path ${testProjectFullPath} since it does not contain something we can build (.sln, .csproj, .fsproj)`);
-            } else {
+            } else if (!directoriesSet.has(testProjectFullPath)) {
                 Logger.Log(`Adding directory ${testProjectFullPath}`);
-                this.directories.push(testProjectFullPath);
+                directories.push(testProjectFullPath);
+                directoriesSet.add(testProjectFullPath);
             }
         }
     }
+    return directories;
 }
