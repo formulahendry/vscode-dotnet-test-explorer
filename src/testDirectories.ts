@@ -21,7 +21,7 @@ export class TestDirectories {
 
         const matchingDirs = [];
 
-        vscode.workspace.workspaceFolders.forEach( (folder) => {
+        vscode.workspace.workspaceFolders.forEach((folder) => {
 
             const globPattern = folder.uri.fsPath.replace("\\", "/") + "/" + testDirectoryGlob;
 
@@ -51,7 +51,7 @@ export class TestDirectories {
     public getFirstTestForDirectory(directory: string): string {
         return this
             .testsForDirectory
-            .find( (t) => t.dir === directory).name;
+            .find((t) => t.dir === directory).name;
     }
 
     public getTestDirectories(testName?: string): string[] {
@@ -59,8 +59,8 @@ export class TestDirectories {
         if (testName && testName !== "") {
             const dirForTestName = this
                 .testsForDirectory
-                .filter( (t) => t.name.startsWith(testName))
-                .map( (t) => t.dir);
+                .filter((t) => t.name.startsWith(testName))
+                .map((t) => t.dir);
 
             return [...new Set(dirForTestName)];
         }
@@ -69,7 +69,7 @@ export class TestDirectories {
     }
 
     public removeTestDirectory(directory: string) {
-        this.directories = this.directories.filter( (dir) => dir !== directory);
+        this.directories = this.directories.filter((dir) => dir !== directory);
         Logger.LogWarning(`Removed directory ${directory} due to it not containing any tests`);
     }
 
