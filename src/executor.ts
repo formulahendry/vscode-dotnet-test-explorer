@@ -121,8 +121,7 @@ export class Executor {
     public static stop() {
         this.processes.forEach((p) => {
             Logger.Log(`Stop processes requested - ${p.pid} stopped`);
-            p.killed = true;
-            fkill(p.pid, { force: true });
+            p.kill("SIGKILL");
         });
 
         this.processes = [];

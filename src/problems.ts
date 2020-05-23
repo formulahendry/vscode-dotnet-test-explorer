@@ -63,7 +63,7 @@ export class Problems {
 
         const problems = Problems.createProblemsFromResults(results.testResults);
 
-        const newDiagnostics: Array<[vscode.Uri, vscode.Diagnostic[]]> = [];
+        const newDiagnostics: [vscode.Uri, vscode.Diagnostic[]][] = [];
 
         for (const problem in problems) {
             if (problems.hasOwnProperty(problem)) {
