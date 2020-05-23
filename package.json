@@ -291,7 +291,6 @@
   },
   "dependencies": {
     "applicationinsights": "^1.7.5",
-    "fkill": "^7.0.1",
     "glob": "^7.1.6",
     "ts-node": "^8.10.1",
     "xmldom": "^0.3.0"

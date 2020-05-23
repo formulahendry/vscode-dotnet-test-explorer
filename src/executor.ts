@@ -1,6 +1,5 @@
 "use strict";
 import { ChildProcess, exec } from "child_process";
-import * as fkill from "fkill";
 import { platform } from "os";
 import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
