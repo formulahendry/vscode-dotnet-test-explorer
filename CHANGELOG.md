@@ -1,3 +1,8 @@
+## 0.7.2 (2020-05-28)
+* [#256](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/256): Show welcome message when no tests are discovered
+* [#211](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/211): Fix "forever spinning"
+* [#238](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/238): Fix warning message typo
+
 ## 0.7.1 (2019-06-12)
 * [#219](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/219): Place code lens icon on lens row
 

@@ -1,5 +1,5 @@
-import * as chokidar from "chokidar";
 import * as fs from "fs";
+import * as glob from "glob";
 import * as path from "path";
 import { commands, Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
@@ -9,16 +9,8 @@ import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
+import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
-
-export interface IWaitForAllTests {
-    numberOfTestDirectories: number;
-    currentNumberOfFiles: number;
-    expectedNumberOfFiles: number;
-    testResults: TestResult[];
-    clearPreviousTestResults: boolean;
-}
 
 export interface ITestRunContext {
     testName: string;
@@ -33,10 +25,10 @@ export class TestCommands implements Disposable {
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
     private testResultsFolderWatcher: any;
-    private waitForAllTests: IWaitForAllTests;
+
+    private isRunning: boolean;
 
     constructor(
-        private resultsFile: TestResultsFile,
         private testDirectories: TestDirectories) { }
 
     public dispose(): void {
@@ -55,13 +47,7 @@ export class TestCommands implements Disposable {
 
         const testDirectories = this.testDirectories.getTestDirectories();
 
-        this.waitForAllTests = {
-            currentNumberOfFiles: 0,
-            expectedNumberOfFiles: 0,
-            testResults: [],
-            clearPreviousTestResults: false,
-            numberOfTestDirectories: testDirectories.length,
-        };
+        this.isRunning = false;
 
         this.setupTestResultFolder();
 
@@ -80,15 +66,12 @@ export class TestCommands implements Disposable {
             try {
 
                 if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map( async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
+                    await Promise.all(testDirectories.map(async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
                 } else {
                     for (const dir of testDirectories) {
                         addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir);
                     }
                 }
-
-                // Number of test directories might have been decreased due to none-test directories being added by the glob / workspace filter
-                this.waitForAllTests.numberOfTestDirectories = this.testDirectories.getTestDirectories().length;
 
                 this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
             } catch (error) {
@@ -101,7 +84,7 @@ export class TestCommands implements Disposable {
 
     public async discoverTestsInFolder(dir: string): Promise<IDiscoverTestsResult> {
         const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map( (tn) => ({dir, name: tn})));
+        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
         return testsForDir;
     }
 
@@ -133,11 +116,6 @@ export class TestCommands implements Disposable {
         this.onTestRunEmitter.fire(testContext);
     }
 
-    public watchRunningTests(namespace: string): void {
-        const textContext = {testName: namespace, isSingleTest: false};
-        this.sendRunningTest(textContext);
-    }
-
     public runAllTests(): void {
         this.runTestCommand("", false);
         AppInsightsClient.sendEvent("runAllTests");
@@ -166,42 +144,17 @@ export class TestCommands implements Disposable {
 
     private setupTestResultFolder(): void {
         if (!this.testResultsFolder) {
-            const me = this;
-
             this.testResultsFolder = fs.mkdtempSync(path.join(Utility.pathForResultFile, "test-explorer-"));
-            this.testResultsFolderWatcher = chokidar.watch("*.trx", { cwd: this.testResultsFolder}).on("add", (p) => {
-
-                Logger.Log("New test results file");
-
-                me.resultsFile.parseResults(path.join(me.testResultsFolder, p))
-                .then( (testResults) => {
-                    me.waitForAllTests.currentNumberOfFiles = me.waitForAllTests.currentNumberOfFiles + 1;
-                    me.waitForAllTests.testResults = me.waitForAllTests.testResults.concat(testResults);
-
-                    Logger.Log(`Parsed ${me.waitForAllTests.currentNumberOfFiles}/${me.waitForAllTests.expectedNumberOfFiles} file(s)`);
-
-                    if ((me.waitForAllTests.numberOfTestDirectories === 1) || (me.waitForAllTests.currentNumberOfFiles >= me.waitForAllTests.expectedNumberOfFiles)) {
-
-                        Logger.Log(`Parsed all expected test results, updating tree`);
-
-                        me.sendNewTestResults({clearPreviousTestResults: me.waitForAllTests.clearPreviousTestResults, testResults: me.waitForAllTests.testResults});
-
-                        this.waitForAllTests.currentNumberOfFiles = 0;
-                        this.waitForAllTests.expectedNumberOfFiles =  0;
-                        this.waitForAllTests.testResults = [];
-                        this.waitForAllTests.clearPreviousTestResults = false;
-                    }
-                });
-            });
         }
     }
 
-    private runTestCommand(testName: string, isSingleTest: boolean, debug?: boolean): void {
+    private async runTestCommand(testName: string, isSingleTest: boolean, debug?: boolean): Promise<void> {
 
-        if (this.waitForAllTests.expectedNumberOfFiles > 0) {
+        if (this.isRunning) {
             Logger.Log("Tests already running, ignore request to run tests for " + testName);
             return;
         }
+        this.isRunning = true;
 
         commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
 
@@ -214,41 +167,41 @@ export class TestCommands implements Disposable {
             return;
         }
 
-        if (testName === "") {
-            this.waitForAllTests.expectedNumberOfFiles = this.waitForAllTests.numberOfTestDirectories;
-            this.waitForAllTests.clearPreviousTestResults = true;
-        } else {
-            this.waitForAllTests.expectedNumberOfFiles = 1;
-        }
+        Logger.Log(`Test run for ${testName}`);
 
-        Logger.Log(`Test run for ${testName}, expecting ${this.waitForAllTests.expectedNumberOfFiles} test results file(s) in total`) ;
-
-        for (const {} of testDirectories) {
-            const testContext = {testName, isSingleTest};
+        for (const { } of testDirectories) {
+            const testContext = { testName, isSingleTest };
             this.lastRunTestContext = testContext;
             this.sendRunningTest(testContext);
         }
 
-        const runSeqOrAsync = async () => {
-
-            try {
-                if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map( async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
-                } else {
-                    for (let i = 0; i < testDirectories.length; i++) {
-                        await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
-                    }
+        try {
+            if (Utility.runInParallel) {
+                await Promise.all(testDirectories.map(async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
+            } else {
+                for (let i = 0; i < testDirectories.length; i++) {
+                    await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
                 }
-            } catch (err) {
-                Logger.Log(`Error while executing test command: ${err}`);
-                this.discoverTests();
             }
-        };
-
-        runSeqOrAsync();
+            const globPromise = new Promise<string[]>((resolve, reject) =>
+                glob("*.trx",
+                    { cwd: this.testResultsFolder, absolute: true },
+                    (err, matches) => err == null ? resolve(matches) : reject()));
+            const files = await globPromise;
+            const allTestResults = [];
+            for (const file of files) {
+                const testResults = await parseResults(file);
+                allTestResults.push(...testResults);
+            }
+            this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
+        } catch (err) {
+            Logger.Log(`Error while executing test command: ${err}`);
+            this.discoverTests();
+        }
+        this.isRunning = false;
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any>  {
+    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
         return new Promise((resolve, reject) => {
 
             if (Utility.skipBuild) {
@@ -284,7 +237,7 @@ export class TestCommands implements Disposable {
             }
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
-                .then( () => {
+                .then(() => {
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
                     if (!debug) {
@@ -314,7 +267,7 @@ export class TestCommands implements Disposable {
                     }
 
                 })
-                .catch( (err) => {
+                .catch((err) => {
                     reject(err);
                 });
         });

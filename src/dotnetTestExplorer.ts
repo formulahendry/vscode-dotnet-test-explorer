@@ -8,7 +8,6 @@ import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
-import { TestResultsFile } from "./testResultsFile";
 import { Utility } from "./utility";
 
 interface ITestNamespace {
@@ -26,7 +25,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     private testResults: TestResult[];
     private testNodes: TestNode[] = [];
 
-    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private resultsFile: TestResultsFile, private statusBar: StatusBar) {
+    constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private statusBar: StatusBar) {
         testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
         testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
@@ -82,11 +81,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         if (this.discoveredTests.length === 0) {
-            return ["Please open or set the test project", "and ensure your project compiles."].map((e) => {
-                const node = new TestNode("", e, this.testResults);
-                node.setAsError(e);
-                return node;
-            });
+            // Show the welcome message.
+            return [];
         }
 
         const treeMode = Utility.getConfiguration().get<string>("treeMode");
@@ -173,14 +169,14 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private updateWithDiscoveringTest() {
         this.discoveredTests = null;
-        this._onDidChangeTreeData.fire({});
+        this._onDidChangeTreeData.fire(null);
     }
 
     private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
         this.testNodes = [];
         this.discoveredTests = [].concat(...results.map((r) => r.testNames));
         this.statusBar.discovered(this.discoveredTests.length);
-        this._onDidChangeTreeData.fire({});
+        this._onDidChangeTreeData.fire(null);
     }
 
     private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
@@ -234,6 +230,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         this.statusBar.testRun(results.testResults);
 
-        this._onDidChangeTreeData.fire({});
+        this._onDidChangeTreeData.fire(null);
     }
 }

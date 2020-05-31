@@ -67,26 +67,22 @@ function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
         }
     }
 }
+export function parseResults(filePath: string): Promise<TestResult[]> {
+    return new Promise( (resolve, reject) => {
+        let results: TestResult[];
+        fs.readFile(filePath, (err, data) => {
+            if (!err) {
+                const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
+                results = parseUnitTestResults(xdoc.documentElement);
 
-export class TestResultsFile {
+                updateUnitTestDefinitions(xdoc.documentElement, results);
 
-    public parseResults(filePath: string): Promise<TestResult[]> {
-        return new Promise( (resolve, reject) => {
-            let results: TestResult[];
-            fs.readFile(filePath, (err, data) => {
-                if (!err) {
-                    const xdoc = new DOMParser().parseFromString(data.toString(), "application/xml");
-                    results = parseUnitTestResults(xdoc.documentElement);
+                try {
+                    fs.unlinkSync(filePath);
+                } catch {}
 
-                    updateUnitTestDefinitions(xdoc.documentElement, results);
-
-                    try {
-                        fs.unlinkSync(filePath);
-                    } catch {}
-
-                    resolve(results);
-                }
-            });
+                resolve(results);
+            }
         });
-    }
+    });
 }
