@@ -11,6 +11,7 @@ import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
 interface ITestNamespace {
+    fullName: string;
     name: string;
     subNamespaces: Map<string, ITestNamespace>;
     tests: string[];
@@ -93,26 +94,64 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
             });
         }
 
-        let rootNamespace: ITestNamespace = { name: "", subNamespaces: new Map(), tests: [] };
+        let rootNamespace: ITestNamespace = { fullName: "", name: "", subNamespaces: new Map(), tests: [] };
 
         this.testNodes = [];
 
         this.discoveredTests.forEach((name: string) => {
             try {
-                // Split name on all dots that are not inside parenthesis MyNamespace.MyClass.MyMethod(value: "My.Dot") -> MyNamespace, MyClass, MyMethod(value: "My.Dot")
-                const nameSplitted = name.split(/\.(?![^\(]*\))/g);
                 let currentNamespace = rootNamespace;
-                const namespaceParts = nameSplitted.slice(0, nameSplitted.length - 1);
-                const testName = nameSplitted[nameSplitted.length - 1];
-                for (const part of namespaceParts) {
+
+                let lastSegmentStart = 0;
+                function processNameSegment(i: number) {
+                    const part = name.substr(lastSegmentStart, i - lastSegmentStart);
+                    const fullName = name.substr(0, i);
                     if (!currentNamespace.subNamespaces.has(part)) {
-                        const newNamespace = { name: part, subNamespaces: new Map(), tests: [] };
+                        const newNamespace: ITestNamespace = {
+                            fullName,
+                            name: part,
+                            subNamespaces: new Map(),
+                            tests: [],
+                        };
                         currentNamespace.subNamespaces.set(part, newNamespace);
                         currentNamespace = newNamespace;
                     } else {
                         currentNamespace = currentNamespace.subNamespaces.get(part);
                     }
+                    lastSegmentStart = i + 1;
                 }
+                for (let i = 0; i < name.length; i++) {
+                    const c = name[i];
+                    if (c === "." || c === "+") {
+                        processNameSegment(i);
+                    } else if (c === "(") {
+                        // read until the corresponding closing bracket
+                        let openBrackets = 1;
+                        i++;
+                        while (i < name.length) {
+                            if (name[i] === "(") {
+                                openBrackets++;
+                            } else if (name[i] === ")") {
+                                openBrackets--;
+                                if (openBrackets === 0) { break; }
+                            } else if (name[i] === '"') {
+                                i++;
+                                while (i < name.length) {
+                                    if (name[i] === "\\") {
+                                        i += 2;
+                                        continue;
+                                    } else if (name[i] === '"') {
+                                        break;
+                                    } else {
+                                        i++;
+                                    }
+                                }
+                            }
+                            i++;
+                        }
+                    }
+                }
+                const testName = name.substr(lastSegmentStart);
                 currentNamespace.tests.push(testName);
             } catch (err) {
                 Logger.LogError(`Failed to add test with name ${name}`, err);
@@ -125,9 +164,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                 let [[, childNamespace]] = namespace.subNamespaces;
                 childNamespace = mergeSingleItemNamespaces(childNamespace);
                 return {
+                    ...childNamespace,
                     name: namespace.name === "" ? childNamespace.name : `${namespace.name}.${childNamespace.name}`,
-                    subNamespaces: childNamespace.subNamespaces,
-                    tests: childNamespace.tests,
                 };
             } else {
                 const subNamespaces = new Map<string, ITestNamespace>(Array.from(
@@ -136,11 +174,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
                         const merged = mergeSingleItemNamespaces(childNamespace);
                         return [merged.name, merged] as [string, ITestNamespace];
                     }));
-                return {
-                    name: namespace.name,
-                    subNamespaces,
-                    tests: namespace.tests,
-                };
+                return { ...namespace, subNamespaces };
             }
         }
 
@@ -155,12 +189,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
     private createNamespaceNode(parentNamespace: string, namespace: ITestNamespace): TestNode {
         const children = [];
-        const fullName = parentNamespace !== "" ? `${parentNamespace}.${namespace.name}` : namespace.name;
         for (const subNamespace of namespace.subNamespaces.values()) {
-            children.push(this.createNamespaceNode(fullName, subNamespace));
+            children.push(this.createNamespaceNode(namespace.fullName, subNamespace));
         }
         for (const test of namespace.tests) {
-            const testNode = new TestNode(fullName, test, this.testResults);
+            const testNode = new TestNode(namespace.fullName, test, this.testResults);
             this.testNodes.push(testNode);
             children.push(testNode);
         }
