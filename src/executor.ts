@@ -1,6 +1,5 @@
 "use strict";
 import { ChildProcess, exec } from "child_process";
-import * as fkill from "fkill";
 import { platform } from "os";
 import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
@@ -121,8 +120,7 @@ export class Executor {
     public static stop() {
         this.processes.forEach((p) => {
             Logger.Log(`Stop processes requested - ${p.pid} stopped`);
-            p.killed = true;
-            fkill(p.pid, { force: true });
+            p.kill("SIGKILL");
         });
 
         this.processes = [];

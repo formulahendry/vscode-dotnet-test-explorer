@@ -8,7 +8,7 @@ import { Utility } from "./utility";
 export class TestDirectories {
 
     private directories: string[];
-    private testsForDirectory: Array<{ dir: string, name: string }>;
+    private testsForDirectory: { dir: string, name: string }[];
 
     public parseTestDirectories() {
 
@@ -66,11 +66,6 @@ export class TestDirectories {
         }
 
         return this.directories;
-    }
-
-    public removeTestDirectory(directory: string) {
-        this.directories = this.directories.filter( (dir) => dir !== directory);
-        Logger.LogWarning(`Removed directory ${directory} due to it not containing any tests`);
     }
 
     private evaluateTestDirectory(testProjectFullPath: string): void {
