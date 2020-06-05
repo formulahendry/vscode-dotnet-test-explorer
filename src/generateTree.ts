@@ -1,5 +1,9 @@
 import { IParsedName } from "./parseTestName";
 
+/**
+ * This is an "abstract" version of a tree node, containing the logical structure
+ * of the tree, but not anything more concrete like icon, test state, commands etc.
+ */
 export interface ITestTreeNode {
     fullName: string;
     name: string;
