@@ -6,7 +6,7 @@ import { IMessage, MessagesController } from "../src/messages";
 suite("MessagesController - Show warning message", () => {
     // Typescript does not know (and can't be told) which overload of window.showWarningMessage
     // we want to stub, so we'll just cast the arguments to any.
-    const showWarningMessageStub : sinon.SinonStub<any[], any> = sinon.stub(window, "showWarningMessage");
+    const showWarningMessageStub: sinon.SinonStub = sinon.stub(window, "showWarningMessage");
     const getSectionStub = sinon.stub();
     const updateSectionStub = sinon.stub();
 

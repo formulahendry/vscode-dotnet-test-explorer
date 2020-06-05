@@ -27,7 +27,7 @@ suite("Test discovery", () => {
     const fsRmdirSyncStub = sinon.stub(fs, "rmdirSync");
     // Typescript does not know (and can't be told) which overload of window.showWarningMessage
     // we want to stub, so we'll just cast the arguments to any.
-    const fsReadFileStub : sinon.SinonStub<any[], any> = sinon.stub(fs, "readFile");
+    const fsReadFileStub: sinon.SinonStub = sinon.stub(fs, "readFile");
 
     setup(() => {
         execStub.callsArgWithAsync(1, "Executor.exec - Missing setup matching passed arguments.");
