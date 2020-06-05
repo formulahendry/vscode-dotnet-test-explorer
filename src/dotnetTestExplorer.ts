@@ -2,20 +2,15 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
+import { generateTree, ITestTreeNode, mergeSingleItemTrees } from "./generateTree";
 import { Logger } from "./logger";
+import { parseTestName } from "./parseTestName";
 import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
-
-interface ITestNamespace {
-    fullName: string;
-    name: string;
-    subNamespaces: Map<string, ITestNamespace>;
-    tests: string[];
-}
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
@@ -89,115 +84,35 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         const treeMode = Utility.getConfiguration().get<string>("treeMode");
 
         if (treeMode === "flat") {
-            return this.discoveredTests.map((name) => {
+            return this.testNodes = this.discoveredTests.map((name) => {
                 return new TestNode("", name, this.testResults);
             });
         }
 
-        let rootNamespace: ITestNamespace = { fullName: "", name: "", subNamespaces: new Map(), tests: [] };
-
-        this.testNodes = [];
-
-        this.discoveredTests.forEach((name: string) => {
-            try {
-                let currentNamespace = rootNamespace;
-
-                let lastSegmentStart = 0;
-                function processNameSegment(i: number) {
-                    const part = name.substr(lastSegmentStart, i - lastSegmentStart);
-                    const fullName = name.substr(0, i);
-                    if (!currentNamespace.subNamespaces.has(part)) {
-                        const newNamespace: ITestNamespace = {
-                            fullName,
-                            name: part,
-                            subNamespaces: new Map(),
-                            tests: [],
-                        };
-                        currentNamespace.subNamespaces.set(part, newNamespace);
-                        currentNamespace = newNamespace;
-                    } else {
-                        currentNamespace = currentNamespace.subNamespaces.get(part);
-                    }
-                    lastSegmentStart = i + 1;
-                }
-                for (let i = 0; i < name.length; i++) {
-                    const c = name[i];
-                    if (c === "." || c === "+") {
-                        processNameSegment(i);
-                    } else if (c === "(") {
-                        // read until the corresponding closing bracket
-                        let openBrackets = 1;
-                        i++;
-                        while (i < name.length) {
-                            if (name[i] === "(") {
-                                openBrackets++;
-                            } else if (name[i] === ")") {
-                                openBrackets--;
-                                if (openBrackets === 0) { break; }
-                            } else if (name[i] === '"') {
-                                i++;
-                                while (i < name.length) {
-                                    if (name[i] === "\\") {
-                                        i += 2;
-                                        continue;
-                                    } else if (name[i] === '"') {
-                                        break;
-                                    } else {
-                                        i++;
-                                    }
-                                }
-                            }
-                            i++;
-                        }
-                    }
-                }
-                const testName = name.substr(lastSegmentStart);
-                currentNamespace.tests.push(testName);
-            } catch (err) {
-                Logger.LogError(`Failed to add test with name ${name}`, err);
-            }
-        });
-
-        function mergeSingleItemNamespaces(namespace: ITestNamespace): ITestNamespace {
-            if (namespace.tests.length === 0
-                && namespace.subNamespaces.size === 1) {
-                let [[, childNamespace]] = namespace.subNamespaces;
-                childNamespace = mergeSingleItemNamespaces(childNamespace);
-                return {
-                    ...childNamespace,
-                    name: namespace.name === "" ? childNamespace.name : `${namespace.name}.${childNamespace.name}`,
-                };
-            } else {
-                const subNamespaces = new Map<string, ITestNamespace>(Array.from(
-                    namespace.subNamespaces.values(),
-                    (childNamespace) => {
-                        const merged = mergeSingleItemNamespaces(childNamespace);
-                        return [merged.name, merged] as [string, ITestNamespace];
-                    }));
-                return { ...namespace, subNamespaces };
-            }
-        }
+        const parsedTestNames = this.discoveredTests.map(parseTestName);
+        let tree = generateTree(parsedTestNames);
 
         if (treeMode === "merged") {
-            rootNamespace = mergeSingleItemNamespaces(rootNamespace);
+            tree = mergeSingleItemTrees(tree);
         }
 
-        const root = this.createNamespaceNode("", rootNamespace);
+        this.testNodes = [];
+        const concreteRoot = this.createConcreteTree("", tree);
 
-        return root.children;
+        return concreteRoot.children;
     }
 
-    private createNamespaceNode(parentNamespace: string, namespace: ITestNamespace): TestNode {
+    private createConcreteTree(parentNamespace: string, abstractTree: ITestTreeNode): TestNode {
         const children = [];
-        for (const subNamespace of namespace.subNamespaces.values()) {
-            children.push(this.createNamespaceNode(namespace.fullName, subNamespace));
+        for (const subNamespace of abstractTree.subTrees.values()) {
+            children.push(this.createConcreteTree(abstractTree.fullName, subNamespace));
         }
-        for (const test of namespace.tests) {
-            const testNode = new TestNode(namespace.fullName, test, this.testResults);
+        for (const test of abstractTree.tests) {
+            const testNode = new TestNode(abstractTree.fullName, test, this.testResults);
             this.testNodes.push(testNode);
             children.push(testNode);
         }
-        return new TestNode(parentNamespace, namespace.name, this.testResults, children);
+        return new TestNode(parentNamespace, abstractTree.name, this.testResults, children);
     }
 
     private updateWithDiscoveringTest() {
