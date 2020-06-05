@@ -111,3 +111,88 @@ suite("buildTree", () => {
         } as ITestTreeNode);
     });
 });
+
+suite("mergeTree", () => {
+    test("Namespaced are flattened", () => {
+        const tree: ITestTreeNode = {
+            fullName: "Namespace",
+            name: "Namespace",
+            subTrees: new Map([
+                ["Fixture", {
+                    fullName: "Namespace.Fixture",
+                    name: "Fixture",
+                    subTrees: new Map(),
+                    tests: ["Test"],
+                }],
+            ]),
+            tests: [],
+        };
+        const expected: ITestTreeNode = {
+            fullName: "Namespace.Fixture",
+            name: "Namespace.Fixture",
+            subTrees: new Map(),
+            tests: ["Test"],
+        };
+
+        const merged = mergeSingleItemTrees(tree);
+
+        assert.deepEqual(merged, expected);
+    });
+    test("Namespaced are flattened recursively", () => {
+        const tree: ITestTreeNode = {
+            fullName: "Namespace",
+            name: "Namespace",
+            subTrees: new Map([
+                ["SubNamespace", {
+                    fullName: "Namespace.SubNamespace",
+                    name: "SubNamespace",
+                    subTrees: new Map([
+                        ["Fixture", {
+                            fullName: "Namespace.SubNamespace.Fixture",
+                            name: "Fixture",
+                            subTrees: new Map(),
+                            tests: ["Test"],
+                        }],
+                    ]),
+                    tests: [],
+                }],
+            ]),
+            tests: [],
+        };
+        const expected: ITestTreeNode = {
+            fullName: "Namespace.SubNamespace.Fixture",
+            name: "Namespace.SubNamespace.Fixture",
+            subTrees: new Map(),
+            tests: ["Test"],
+        };
+
+        const merged = mergeSingleItemTrees(tree);
+
+        assert.deepEqual(merged, expected);
+    });
+    test("Single tests are not flattened", () => {
+        const tree: ITestTreeNode = {
+            fullName: "Namespace",
+            name: "Namespace",
+            subTrees: new Map([
+                ["Fixture1", {
+                    fullName: "Namespace.Fixture1",
+                    name: "Fixture1",
+                    subTrees: new Map(),
+                    tests: ["Test1"],
+                }],
+                ["Fixture2", {
+                    fullName: "Namespace.Fixture2",
+                    name: "Fixture2",
+                    subTrees: new Map(),
+                    tests: ["Test2"],
+                }],
+            ]),
+            tests: [],
+        };
+
+        const merged = mergeSingleItemTrees(tree);
+
+        assert.deepEqual(merged, tree);
+    });
+});
