@@ -11,7 +11,7 @@ export interface ITestTreeNode {
     tests: string[];
 }
 
-export function generateTree(parsedNames: IParsedName[]): ITestTreeNode {
+export function buildTree(parsedNames: IParsedName[]): ITestTreeNode {
     const root: ITestTreeNode = { fullName: "", name: "", subTrees: new Map(), tests: [] };
     for (const parsedName of parsedNames) {
         let currentNode = root;

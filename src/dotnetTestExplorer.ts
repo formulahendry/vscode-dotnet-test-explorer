@@ -2,7 +2,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { TreeDataProvider, TreeItem } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
-import { generateTree, ITestTreeNode, mergeSingleItemTrees } from "./generateTree";
+import { buildTree, ITestTreeNode, mergeSingleItemTrees } from "./buildTree";
 import { Logger } from "./logger";
 import { parseTestName } from "./parseTestName";
 import { StatusBar } from "./statusBar";
@@ -90,7 +90,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         }
 
         const parsedTestNames = this.discoveredTests.map(parseTestName);
-        let tree = generateTree(parsedTestNames);
+        let tree = buildTree(parsedTestNames);
 
         if (treeMode === "merged") {
             tree = mergeSingleItemTrees(tree);
