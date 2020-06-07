@@ -68,6 +68,10 @@ export function activate(context: vscode.ExtensionContext) {
         Logger.Show();
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.openPanel", () => {
+        vscode.commands.executeCommand("workbench.view.extension.test");
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.stop", () => {
         Executor.stop();
         dotnetTestExplorer.refreshTestExplorer();
