@@ -38,19 +38,23 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(testCommands);
 
     Utility.updateCache();
+
+    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, statusBar);
+    vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
+    AppInsightsClient.sendEvent("loadExtension");
+
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
+        if (!e.affectsConfiguration("dotnet-test-explorer")) { return; }
 
         if (e.affectsConfiguration("dotnet-test-explorer.testProjectPath")) {
             testDirectories.parseTestDirectories();
             testCommands.discoverTests();
         }
 
+        dotnetTestExplorer._onDidChangeTreeData.fire(null);
+
         Utility.updateCache();
     }));
-
-    const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, statusBar);
-    vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
-    AppInsightsClient.sendEvent("loadExtension");
 
     testCommands.discoverTests();
 
@@ -82,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
-        findTestInContext.find(editor.document, editor.selection.start).then( (testRunContext) => {
+        findTestInContext.find(editor.document, editor.selection.start).then((testRunContext) => {
             testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
         });
     }));
