@@ -64,10 +64,6 @@ export class TestDirectories {
         return this.directories;
     }
 
-    public removeTestDirectory(directory: string) {
-        this.directories = this.directories.filter((dir) => dir !== directory);
-        Logger.LogWarning(`Removed directory ${directory} due to it not containing any tests`);
-    }
 }
 function evaluateTestDirectories(testDirectories: string[]): string[] {
     const directories = [];

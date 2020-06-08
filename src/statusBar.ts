@@ -9,6 +9,7 @@ export class StatusBar {
     public constructor(testCommand: TestCommands) {
         this.status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
         testCommand.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
+        this.status.command = "dotnet-test-explorer.openPanel";
         this.discovering();
     }
 

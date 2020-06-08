@@ -7,7 +7,7 @@ export class TestNode {
     private _icon: string;
     private _fqn: string;
 
-    constructor(private _parentPath: string, private _name: string, testResults: TestResult[], private _children?: TestNode[]) {
+    constructor(private _parentNamespace: string, private _name: string, testResults: TestResult[], private _children?: TestNode[]) {
         this.setIcon(testResults);
 
         this._fqn = Utility
@@ -20,7 +20,7 @@ export class TestNode {
     }
 
     public get fullName(): string {
-        return (this._parentPath ? `${this._parentPath}.` : "") + this._name;
+        return (this._parentNamespace ? `${this._parentNamespace}.` : "") + this._name;
     }
 
     public get fqn(): string {
@@ -28,8 +28,8 @@ export class TestNode {
         return this._fqn;
     }
 
-    public get parentPath(): string {
-        return this._parentPath;
+    public get parentNamespace(): string {
+        return this._parentNamespace;
     }
 
     public get isFolder(): boolean {

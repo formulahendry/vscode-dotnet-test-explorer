@@ -11,10 +11,9 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.7.1
+## New in 0.7.2
 
-* Code lens symbols are displayed on the code lens row itself and not above
-* To make it easier to see what the extension logs and what the test runner logs the logs for the test runner has been moved to a new output logger called Test explorer (Test runner output)
+* Reworked how we parse the test files. This should hopefully make the test result spinner spin less and show the actual test results more.
 
 ## Usage
 
@@ -71,7 +70,7 @@ Text from the dotnet test output as well as debug info is written to the Output/
 ## Settings
 
 * `dotnet-test-explorer.testProjectPath`: Glob pattern that points to path of .NET Core test project(s). (Default is **""**)
-* `dotnet-test-explorer.useTreeView`: If false, will list all tests as the full namespace. When set to true a tree will be created based on the namespaces of the tests. (Default is **true**)
+* `dotnet-test-explorer.treeMode`: Determines how the tests should be arranged in the tree. (Default is **"merged"**)
 * `dotnet-test-explorer.showCodeLens`: Determines whether to show the CodeLens test status or not. (Default is **true**)
 * `dotnet-test-explorer.codeLensFailed`: The text to display in the code lens when a test has failed. (Default is **""**)
 * `dotnet-test-explorer.codeLensPassed`: The text to display in the code lens when a test has passed. (Default is **""**)
