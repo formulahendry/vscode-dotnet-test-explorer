@@ -185,8 +185,13 @@
         },
         "dotnet-test-explorer.testProjectPath": {
           "type": "string",
-          "default": "{*.sln,**/*Test.@(cs|fs)proj,**/*Tests.@(cs|fs)proj}",
-          "description": "Glob pattern that points to path of .NET Core test project(s)."
+          "default": "",
+          "description": "Glob pattern that points to path of .NET Core test project(s).",
+          "examples": [
+            "**/*Test.@(csproj|vbproj|fsproj)",
+            "**/*Tests.@(csproj|vbproj|fsproj)",
+            "**/*.sln"
+          ]
         },
         "dotnet-test-explorer.treeMode": {
           "type": "string",
