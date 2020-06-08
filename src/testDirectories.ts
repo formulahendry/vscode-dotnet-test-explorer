@@ -8,7 +8,7 @@ import { Utility } from "./utility";
 export class TestDirectories {
 
     private directories: string[];
-    private testsForDirectory: Array<{ dir: string, name: string }>;
+    private testsForDirectory: { dir: string, name: string }[];
 
     public parseTestDirectories() {
 
