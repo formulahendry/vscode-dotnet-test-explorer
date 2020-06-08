@@ -38,7 +38,7 @@
     "viewsWelcome": [
       {
         "view": "dotnetTestExplorer",
-        "contents": "No tests found. \n\nPlease open or set the test project and ensure your project compiles."
+        "contents": "No tests found. \n\nPlease open the test project and ensure your project compiles. If the directory to execute dotnet test in is not the workspace root, consider setting dotnet-test-explorer.testProjectPath appropriately.\n[Open settings](command:workbench.action.openSettings?%5B%22dotnet-test-explorer.testProjectPath%22%5D)"
       }
     ],
     "views": {
@@ -185,7 +185,7 @@
         },
         "dotnet-test-explorer.testProjectPath": {
           "type": "string",
-          "default": "",
+          "default": "{*.sln,**/*Test.@(cs|fs)proj,**/*Tests.@(cs|fs)proj}",
           "description": "Glob pattern that points to path of .NET Core test project(s)."
         },
         "dotnet-test-explorer.treeMode": {
