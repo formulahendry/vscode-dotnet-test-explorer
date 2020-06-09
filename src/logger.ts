@@ -24,7 +24,7 @@ export class Logger {
         }
     }
 
-    private static defaultOutput = "Test Explorer";
+    private static defaultOutput = ".NET Test Explorer";
 
     private static outputTerminals: { [id: string]: vscode.OutputChannel } = {};
 
