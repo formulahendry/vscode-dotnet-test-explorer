@@ -18,6 +18,8 @@ import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 import { Watch } from "./watch";
 import { createLocalTcpServer, readAllFromSocket, ILocalServer, shutdown } from "./netUtil";
+import { TestResult } from "./testResult";
+import { parseTestName } from "./parseTestName";
 
 let server: ILocalServer;
 
@@ -34,14 +36,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
     Logger.Log("Starting extension");
 
-    server = await createLocalTcpServer(async (socket) => {
-        const data = await readAllFromSocket(socket);
-        socket.end();
-        Logger.Log(data);
-    });
-    Logger.Log(`Opened TCP server on port ${server.port}`);
-    Executor.setServerPort(server.port);
-
     testDirectories.parseTestDirectories();
 
     context.subscriptions.push(problems);
@@ -53,6 +47,23 @@ export async function activate(context: vscode.ExtensionContext) {
     const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, statusBar);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
+
+    server = await createLocalTcpServer(async (socket) => {
+        const data = await readAllFromSocket(socket);
+        socket.end();
+
+        Logger.Log(`Received message: ${data}`);
+        const parsed = JSON.parse(data);
+        const name = parseTestName(parsed.testCaseName);
+        const lastSegment = name.segments[name.segments.length - 1];
+        const className = name.fullName.substring(0, lastSegment.start - 1);
+        const methodName = name.fullName.substring(lastSegment.start, lastSegment.end);
+        const testResult = new TestResult(parsed.testCaseName, parsed.outcome, "", "")
+        testResult.updateName(className, methodName);
+        testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [testResult] })
+    });
+    Logger.Log(`Opened TCP server on port ${server.port}`);
+    Executor.setServerPort(server.port);
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
         if (!e.affectsConfiguration("dotnet-test-explorer")) { return; }
