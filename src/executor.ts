@@ -23,19 +23,7 @@ export class Executor {
             env: this.defaultEnv,
             cwd
         };
-        const childProcess = exec(this.handleWindowsEncoding(command), options, callback);
-
-        Logger.Log(`Process ${childProcess.pid} started`);
-
-        this.processes.add(childProcess);
-        childProcess.on("close", (code: number) => {
-            if (this.processes.has(childProcess)) {
-                this.processes.delete(childProcess);
-                Logger.Log(`Process ${childProcess.pid} finished`);
-            }
-        });
-
-        return childProcess;
+        return this.execInternal(command, options, callback);
     }
 
     public static debug(command: string, callback: (error: ExecException, stdout: string, stderr: string) => void, cwd?: string) {
@@ -47,7 +35,7 @@ export class Executor {
             },
             cwd
         };
-        const childProcess = exec(this.handleWindowsEncoding(command), options, callback);
+        const childProcess = this.execInternal(command, options, callback);
 
         if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
             Logger.Log("Debugger already running");
@@ -55,10 +43,6 @@ export class Executor {
         }
 
         const debug = new Debug();
-
-        Logger.Log(`Process ${childProcess.pid} started`);
-
-        this.processes.add(childProcess);
 
         childProcess.stdout.on("data", (buf) => {
 
@@ -88,19 +72,28 @@ export class Executor {
         });
 
         childProcess.on("close", (code: number) => {
-
             Logger.Log(`Debugger finished`);
-
             this.debugRunnerInfo = null;
-
             vscode.commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
+        });
 
+        return childProcess;
+    }
+
+    private static execInternal(command: string,
+        options: BaseEncodingOptions & ExecOptions,
+        callback: (error: ExecException, stdout: string, stderr: string) => void): ChildProcess {
+        const childProcess = exec(this.handleWindowsEncoding(command), options, callback);
+
+        Logger.Log(`Process ${childProcess.pid} started`);
+
+        this.processes.add(childProcess);
+        childProcess.on("close", (code: number) => {
             if (this.processes.has(childProcess)) {
                 this.processes.delete(childProcess);
                 Logger.Log(`Process ${childProcess.pid} finished`);
             }
         });
-
         return childProcess;
     }
 
