@@ -17,8 +17,11 @@ import { TestNode } from "./testNode";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 import { Watch } from "./watch";
+import { createLocalTcpServer, readAllFromSocket, ILocalServer, shutdown } from "./netUtil";
 
-export function activate(context: vscode.ExtensionContext) {
+let server: ILocalServer;
+
+export async function activate(context: vscode.ExtensionContext) {
     const testDirectories = new TestDirectories();
     const testCommands = new TestCommands(testDirectories);
     const gotoTest = new GotoTest();
@@ -30,6 +33,13 @@ export function activate(context: vscode.ExtensionContext) {
     const appInsights = new AppInsights(testCommands, testDirectories);
 
     Logger.Log("Starting extension");
+
+    server = await createLocalTcpServer(async (socket) => {
+        const data = await readAllFromSocket(socket);
+        socket.end();
+        Logger.Log(data);
+    });
+    Logger.Log(`Opened TCP server on port ${server.port}`);
 
     testDirectories.parseTestDirectories();
 
@@ -111,11 +121,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.leftClickTest", (test: TestNode) => {
         leftClickTest.handle(test);
     }));
-
-    context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
-        Executor.onDidCloseTerminal(closedTerminal);
-    }));
 }
 
 export function deactivate() {
+    Executor.stop();
+    if (server)
+        shutdown(server);
 }
