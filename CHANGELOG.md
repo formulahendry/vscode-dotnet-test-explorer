@@ -1,3 +1,11 @@
+## 0.7.3 ()
+* [#268](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/268): Improve test discovery experience
+* [#261](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/261): Filter duplicate detected test folders
+* [#246](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/246): Add openPanel command to and set Status Bar command to trigger
+* [#257](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/257): Add option to merge tree nodes with only one child
+* [#263](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/263): Upgrade packages
+* [#260](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/260): Don't remove directories without tests
+
 ## 0.7.2 (2020-05-28)
 * [#256](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/256): Show welcome message when no tests are discovered
 * [#211](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/211): Fix "forever spinning"
