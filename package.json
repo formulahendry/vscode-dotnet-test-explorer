@@ -291,7 +291,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "dotnet publish ./datacollector -o out/datacollector && tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "node ./out/test/runTest.js",
     "tslint": "tslint -t verbose src/**/*.ts"
