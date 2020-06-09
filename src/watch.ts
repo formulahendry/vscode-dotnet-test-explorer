@@ -46,9 +46,7 @@ export class Watch {
             + ` --logger "trx;LogFileName=${trxPath}"`;
 
         Logger.Log(`Executing ${command} in ${testDirectory}`);
-        const p = Executor.exec(command, (err: any, stdout: string) => {
-            Logger.Log(stdout);
-        }, testDirectory);
+        const p = Executor.spawn(command, testDirectory);
 
         let startedLine = [];
         p.stdout.on("data", async (buf) => {

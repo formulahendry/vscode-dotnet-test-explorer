@@ -52,7 +52,7 @@ suite("Test discovery", () => {
     test("Fully qualified test names returned when dotnet test outputs FQ test names", () => {
         const testNames = ["Ns1.Class1.Test1", "Ns1.Class1.Test2"];
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWith(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -62,7 +62,7 @@ suite("Test discovery", () => {
     test("Promise rejected when dotnet test failing", () => {
         const error = "error";
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, error);
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -71,7 +71,7 @@ suite("Test discovery", () => {
     });
 
     test("Empty list returned when dotnet test outputs empty list", () => {
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput([], assemblyFilePath), "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -85,10 +85,10 @@ suite("Test discovery", () => {
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, null, fqTestNames.join("\r\n"));
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetVstestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -102,10 +102,10 @@ suite("Test discovery", () => {
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, error);
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetVstestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -117,10 +117,10 @@ suite("Test discovery", () => {
         const error = "vstest error";
         const testNames = ["Test1", "Test2"];
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetVstestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, error, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -132,7 +132,7 @@ suite("Test discovery", () => {
         const dotnetTestOutput = getDotnetTestOutputWithoutTestAssemblyPath();
         const errorMessage = `Couldn't extract assembly paths from dotnet test output: ${dotnetTestOutput}`;
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, dotnetTestOutput, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -148,10 +148,10 @@ suite("Test discovery", () => {
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, null, "");
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetVstestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         fsExistsSyncStub.withArgs(vsTestOutputFilePath).returns(true);
@@ -183,10 +183,10 @@ suite("Test discovery", () => {
         fsReadFileStub.withArgs(vsTestOutputFilePath, "utf8", sinon.match.func)
             .callsArgWithAsync(2, null, fqTestNames.join("\r\n"));
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestSolutionOutput(testNames, testAssemblyFilePaths), "");
 
-        execStub.withArgs(dotnetVstestMultiProjectExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetVstestMultiProjectExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
@@ -196,10 +196,10 @@ suite("Test discovery", () => {
     test("Dotnet test results returned with a warning message when dotnet vstest /ListFullyQualifiedTests switch is not supported", () => {
         const testNames = ["Test1", "Test2"];
 
-        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetTestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput(testNames, assemblyFilePath), "");
 
-        execStub.withArgs(dotnetVstestExecCmd, sinon.match.func, testDirectoryPath)
+        execStub.withArgs(dotnetVstestExecCmd, testDirectoryPath)
             .callsArgWithAsync(1, new Error(), "", getDotnetVstestListFqnFlagMissingErrorOutput());
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)

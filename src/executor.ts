@@ -6,6 +6,12 @@ import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
 import { BaseEncodingOptions } from "fs";
 
+export interface IProcessOutput {
+    error: ExecException;
+    stdout: string;
+    stderr: string;
+}
+
 export class Executor {
     private static defaultOptions: BaseEncodingOptions & ExecOptions = {
         encoding: "utf8",
@@ -19,18 +25,27 @@ export class Executor {
     public static setServerPort(port: number) {
         this.defaultEnv.VSCODE_DOTNET_TEST_EXPLORER_PORT = port.toString();
     }
-    public static exec(command: string,
-        callback: (error: ExecException, stdout: string, stderr: string) => void,
-        cwd?: string) {
+    public static spawn(command: string, cwd?: string): ChildProcess {
         const options = {
             ...this.defaultOptions,
             env: this.defaultEnv,
             cwd
         };
-        return this.execInternal(command, options, callback);
+        return this.execInternal(command, options, () => null);
+    }
+    public static exec(command: string,
+        cwd?: string): Promise<IProcessOutput> {
+        const options = {
+            ...this.defaultOptions,
+            env: this.defaultEnv,
+            cwd
+        };
+        return new Promise<IProcessOutput>((resolve) => {
+            this.execInternal(command, options, (error, stdout, stderr) => resolve({ error, stdout, stderr }))
+        });
     }
 
-    public static debug(command: string, callback: (error: ExecException, stdout: string, stderr: string) => void, cwd?: string) {
+    public static debug(command: string, cwd?: string) {
         const options = {
             ...this.defaultOptions,
             env: {
@@ -39,49 +54,51 @@ export class Executor {
             },
             cwd
         };
-        const childProcess = this.execInternal(command, options, callback);
 
-        if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
-            Logger.Log("Debugger already running");
-            return;
-        }
+        return new Promise<IProcessOutput>((resolve) => {
+            const childProcess = this.execInternal(command, options, (error, stdout, stderr) => resolve({ error, stdout, stderr }))
 
-        const debug = new Debug();
-
-        childProcess.stdout.on("data", (buf) => {
-
-            if (this.debugRunnerInfo && this.debugRunnerInfo.isRunning) {
+            if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
+                Logger.Log("Debugger already running");
                 return;
             }
 
-            Logger.Log(`Waiting for debugger to attach`);
+            const debug = new Debug();
 
-            const stdout = String(buf);
-            this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
+            childProcess.stdout.on("data", (buf) => {
 
-            if (this.debugRunnerInfo.config) {
+                if (this.debugRunnerInfo && this.debugRunnerInfo.isRunning) {
+                    return;
+                }
 
-                Logger.Log(`Debugger process found, attaching`);
+                Logger.Log(`Waiting for debugger to attach`);
 
-                this.debugRunnerInfo.isRunning = true;
+                const stdout = String(buf);
+                this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
 
-                vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then((c) => {
-                    // When we attach to the debugger it seems to be stuck before loading the actual assembly that's running in code
-                    // This is to try to continue past this invisible break point and into the actual code the user wants to debug
-                    setTimeout(() => {
-                        vscode.commands.executeCommand("workbench.action.debug.continue");
-                    }, 1000);
-                });
-            }
+                if (this.debugRunnerInfo.config) {
+
+                    Logger.Log(`Debugger process found, attaching`);
+
+                    this.debugRunnerInfo.isRunning = true;
+
+                    vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then((c) => {
+                        // When we attach to the debugger it seems to be stuck before loading the actual assembly that's running in code
+                        // This is to try to continue past this invisible break point and into the actual code the user wants to debug
+                        setTimeout(() => {
+                            vscode.commands.executeCommand("workbench.action.debug.continue");
+                        }, 1000);
+                    });
+                }
+            });
+
+            childProcess.on("close", (code: number) => {
+                Logger.Log(`Debugger finished`);
+                this.debugRunnerInfo = null;
+                vscode.commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
+            });
         });
 
-        childProcess.on("close", (code: number) => {
-            Logger.Log(`Debugger finished`);
-            this.debugRunnerInfo = null;
-            vscode.commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
-        });
-
-        return childProcess;
     }
 
     private static execInternal(command: string,

@@ -44,23 +44,19 @@ export function discoverTests(testDirectoryPath: string, dotnetTestOptions: stri
         });
 }
 
-function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const command = `dotnet test -t -v=q${dotnetTestOptions}`;
+async function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string): Promise<string> {
+    const command = `dotnet test -t -v=q${dotnetTestOptions}`;
 
-        Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+    Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
-        Executor.exec(command, (err: Error, stdout: string, stderr: string) => {
-            if (err) {
-                Logger.LogError(`Error while executing ${command}`, stdout);
+    const result = await Executor.exec(command, testDirectoryPath);
+    if (result.error) {
+        Logger.LogError(`Error while executing ${command}`, result.stdout);
 
-                reject(err);
-                return;
-            }
+        throw result.error;
+    }
 
-            resolve(stdout);
-        }, testDirectoryPath);
-    });
+    return result.stdout;
 }
 
 function extractTestNames(testCommandStdout: string): string[] {
@@ -142,32 +138,25 @@ function cleanTestOutput(testOutputFilePath: string) {
     fs.rmdirSync(path.dirname(testOutputFilePath));
 }
 
-function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string, testDirectoryPath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const testAssembliesParam = assemblyPaths.map((f) => `"${f}"`).join(" ");
-        const command = `dotnet vstest ${testAssembliesParam} /ListFullyQualifiedTests /ListTestsTargetPath:"${listTestsTargetPath}"`;
+async function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string, testDirectoryPath: string): Promise<string> {
+    const testAssembliesParam = assemblyPaths.map((f) => `"${f}"`).join(" ");
+    const command = `dotnet vstest ${testAssembliesParam} /ListFullyQualifiedTests /ListTestsTargetPath:"${listTestsTargetPath}"`;
 
-        Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+    Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
-        Executor.exec(
-            command,
-            (err: Error, stdout: string, stderr: string) => {
-                if (err) {
-                    Logger.LogError(`Error while executing ${command}.`, err);
+    const result = await Executor.exec(command, testDirectoryPath);
+    if (result.error) {
+        Logger.LogError(`Error while executing ${command}.`, result.error);
 
-                    const flagNotRecognizedRegex = /\/ListFullyQualifiedTests/m;
-                    if (flagNotRecognizedRegex.test(stderr)) {
-                        reject(new ListFqnNotSupportedError());
-                    } else {
-                        reject(err);
-                    }
+        const flagNotRecognizedRegex = /\/ListFullyQualifiedTests/m;
+        if (flagNotRecognizedRegex.test(result.stderr)) {
+            throw new ListFqnNotSupportedError();
+        } else {
+            throw result.error;
+        }
+    }
 
-                    return;
-                }
-
-                resolve(stdout);
-            }, testDirectoryPath);
-    });
+    return result.stdout;
 }
 
 class ListFqnNotSupportedError extends Error {

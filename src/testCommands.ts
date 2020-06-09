@@ -200,79 +200,54 @@ export class TestCommands implements Disposable {
         this.isRunning = false;
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-
-            if (Utility.skipBuild) {
-                Logger.Log(`User has passed --no-build, skipping build`);
-                resolve();
-            } else {
-                Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
-
-                Executor.exec("dotnet build", (err: any, stdout: string) => {
-                    if (err) {
-                        reject(new Error("Build command failed"));
-                    }
-                    resolve();
-                }, testDirectoryPath);
+    private async runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<void> {
+        if (Utility.skipBuild) {
+            Logger.Log(`User has passed --no-build, skipping build`);
+        } else {
+            Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
+            const result = await Executor.exec("dotnet build", testDirectoryPath);
+            if (result.error) {
+                throw new Error("Build command failed");
             }
-        });
+        }
     }
 
-    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean): Promise<any[]> {
+    private async runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean)
+        : Promise<void> {
 
         const trxTestName = index + ".trx";
 
-        return new Promise((resolve, reject) => {
-            const testResultFile = path.join(this.testResultsFolder, trxTestName);
-            let command = `dotnet test ${Utility.additionalArgumentsOption} `
-                + `--no-build `
-                + `--logger "trx;LogFileName=${testResultFile}" `
-                + `--test-adapter-path "${this.dataCollectorPath}" `
-                + `--collect VscodeDataCollector `;
+        const testResultFile = path.join(this.testResultsFolder, trxTestName);
+        let command = `dotnet test ${Utility.additionalArgumentsOption} `
+            + `--no-build `
+            + `--logger "trx;LogFileName=${testResultFile}" `
+            + `--test-adapter-path "${this.dataCollectorPath}" `
+            + `--collect VscodeDataCollector `;
 
-            if (testName && testName.length) {
-                if (isSingleTest) {
-                    command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
-                } else {
-                    command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
-                }
+        if (testName && testName.length) {
+            if (isSingleTest) {
+                command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
+            } else {
+                command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
             }
+        }
 
-            this.runBuildCommandForSpecificDirectory(testDirectoryPath)
-                .then(() => {
-                    Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+        await this.runBuildCommandForSpecificDirectory(testDirectoryPath);
 
-                    if (!debug) {
-                        Executor.exec(command, (err, stdout: string) => {
+        Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
-                            if (err && err.killed) {
-                                Logger.Log("User has probably cancelled test run");
-                                reject(new Error("UserAborted"));
-                            }
+        let result;
+        if (!debug) {
+            result = await Executor.exec(command, testDirectoryPath);
+        } else {
+            result = await Executor.debug(command, testDirectoryPath);
+        }
+        if (result.err && result.err.killed) {
+            Logger.Log("User has probably cancelled test run");
+            throw new Error("UserAborted");
+        }
 
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
-
-                            resolve();
-                        }, testDirectoryPath);
-                    } else {
-                        Executor.debug(command, (err, stdout: string) => {
-
-                            if (err && err.killed) {
-                                Logger.Log("User has probably cancelled test run");
-                                reject(new Error("UserAborted"));
-                            }
-
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
-
-                            resolve();
-                        }, testDirectoryPath);
-                    }
-
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
+        Logger.Log(result.stdout, ".NET Test Explorer (Test runner output)");
+        Logger.Log(result.stderr, ".NET Test Explorer (Test runner output)");
     }
 }
