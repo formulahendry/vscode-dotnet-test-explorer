@@ -29,7 +29,8 @@ export class TestCommands implements Disposable {
     private isRunning: boolean;
 
     constructor(
-        private testDirectories: TestDirectories) { }
+        private testDirectories: TestDirectories,
+        private dataCollectorPath: string) { }
 
     public dispose(): void {
         try {
@@ -224,7 +225,11 @@ export class TestCommands implements Disposable {
 
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(this.testResultsFolder, trxTestName);
-            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
+            let command = `dotnet test ${Utility.additionalArgumentsOption} `
+                + `--no-build `
+                + `--logger "trx;LogFileName=${testResultFile}" `
+                + `--test-adapter-path "${this.dataCollectorPath}" `
+                + `--collect VscodeDataCollector `;
 
             if (testName && testName.length) {
                 if (isSingleTest) {

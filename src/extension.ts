@@ -23,7 +23,7 @@ let server: ILocalServer;
 
 export async function activate(context: vscode.ExtensionContext) {
     const testDirectories = new TestDirectories();
-    const testCommands = new TestCommands(testDirectories);
+    const testCommands = new TestCommands(testDirectories, `${context.extensionPath}/out/datacollector/`);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
