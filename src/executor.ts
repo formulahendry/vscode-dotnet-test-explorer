@@ -15,6 +15,9 @@ export class Executor {
         DOTNET_CLI_UI_LANGUAGE: "en",
         VSTEST_HOST_DEBUG: "0"
     };
+    public static setServerPort(port: number) {
+        this.defaultEnv.VSCODE_DOTNET_TEST_EXPLORER_PORT = port.toString();
+    }
     public static exec(command: string,
         callback: (error: ExecException, stdout: string, stderr: string) => void,
         cwd?: string) {

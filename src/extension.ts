@@ -40,6 +40,7 @@ export async function activate(context: vscode.ExtensionContext) {
         Logger.Log(data);
     });
     Logger.Log(`Opened TCP server on port ${server.port}`);
+    Executor.setServerPort(server.port);
 
     testDirectories.parseTestDirectories();
 
