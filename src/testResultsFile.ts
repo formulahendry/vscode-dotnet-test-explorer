@@ -50,12 +50,13 @@ function updateUnitTestDefinitions(xml: Element, results: TestResult[]): void {
     const names = new Map<string, any>();
 
     for (let i = 0; i < nodes.length; i++) { // tslint:disable-line
-        const id = getAttributeValue(nodes[i], "id");
-        const testMethod = findChildElement(nodes[i], "TestMethod");
+        const node = nodes[i];
+        const id = getAttributeValue(node, "id");
+        const testMethod = findChildElement(node, "TestMethod");
         if (testMethod) {
             names.set(id, {
                 className: getAttributeValue(testMethod, "className"),
-                method: getAttributeValue(testMethod, "name"),
+                method: getAttributeValue(node, "name"),
             });
         }
     }
