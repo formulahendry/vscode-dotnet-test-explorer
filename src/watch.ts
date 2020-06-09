@@ -48,7 +48,7 @@ export class Watch {
         Logger.Log(`Executing ${command} in ${testDirectory}`);
         const p = Executor.exec(command, (err: any, stdout: string) => {
             Logger.Log(stdout);
-        }, testDirectory, true);
+        }, testDirectory);
 
         let startedLine = [];
         p.stdout.on("data", async (buf) => {

@@ -239,7 +239,7 @@ export class TestCommands implements Disposable {
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
                     if (!debug) {
-                        return Executor.exec(command, (err, stdout: string) => {
+                        Executor.exec(command, (err, stdout: string) => {
 
                             if (err && err.killed) {
                                 Logger.Log("User has probably cancelled test run");
@@ -249,9 +249,9 @@ export class TestCommands implements Disposable {
                             Logger.Log(stdout, "Test Explorer (Test runner output)");
 
                             resolve();
-                        }, testDirectoryPath, true);
+                        }, testDirectoryPath);
                     } else {
-                        return Executor.debug(command, (err, stdout: string) => {
+                        Executor.debug(command, (err, stdout: string) => {
 
                             if (err && err.killed) {
                                 Logger.Log("User has probably cancelled test run");
@@ -261,7 +261,7 @@ export class TestCommands implements Disposable {
                             Logger.Log(stdout, "Test Explorer (Test runner output)");
 
                             resolve();
-                        }, testDirectoryPath, true);
+                        }, testDirectoryPath);
                     }
 
                 })
