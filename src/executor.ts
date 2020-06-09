@@ -13,7 +13,8 @@ export class Executor {
     };
     private static defaultEnv: NodeJS.ProcessEnv = {
         DOTNET_CLI_UI_LANGUAGE: "en",
-        VSTEST_HOST_DEBUG: "0"
+        VSTEST_HOST_DEBUG: "0",
+        ...process.env
     };
     public static setServerPort(port: number) {
         this.defaultEnv.VSCODE_DOTNET_TEST_EXPLORER_PORT = port.toString();
