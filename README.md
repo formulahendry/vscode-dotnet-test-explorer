@@ -11,9 +11,22 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.7.2
+## New in 0.7.3
 
-* Reworked how we parse the test files. This should hopefully make the test result spinner spin less and show the actual test results more.
+* Clicking the test status bar now takes you to the test pane
+* Various improvements to make discovering your tests easier especially for new users. More details are available [here](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/268)
+* New options for how to display the test tree. In addition to the previous choices of flat representation or a fully expanded representation we have added a third option called "merged" which tries to conserve vertical space where it can. This is now the default behavior.
+
+##### Full
+![image](https://user-images.githubusercontent.com/358570/84163391-bd2b9d80-aa71-11ea-9db7-aa612367ae3e.png)
+
+##### Flat
+![image](https://user-images.githubusercontent.com/358570/84163430-c7e63280-aa71-11ea-9f24-864f06b0559e.png)
+
+##### Merged
+![image](https://user-images.githubusercontent.com/358570/84163476-d46a8b00-aa71-11ea-9a4a-1aa2ac0b1f53.png)
+
+Many thanks to @GeorchW and @hjdarnel for their contributions to this release!
 
 ## Usage
 
