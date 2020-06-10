@@ -22,9 +22,6 @@ export class Executor {
         VSTEST_HOST_DEBUG: "0",
         ...process.env
     };
-    public static setServerPort(port: number) {
-        this.defaultEnv.VSCODE_DOTNET_TEST_EXPLORER_PORT = port.toString();
-    }
     public static spawn(command: string, cwd?: string): ChildProcess {
         const options = {
             ...this.defaultOptions,

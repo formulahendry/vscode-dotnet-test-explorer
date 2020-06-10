@@ -7,4 +7,4 @@ yarn.*
 [Bb]in/
 [Oo]bj/
 lcov.info
-datacollector/publish/
+logger/publish/

@@ -63,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
         testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [testResult] })
     });
     Logger.Log(`Opened TCP server on port ${server.port}`);
-    Executor.setServerPort(server.port);
+    testCommands.setLoggerPort(server.port);
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
         if (!e.affectsConfiguration("dotnet-test-explorer")) { return; }

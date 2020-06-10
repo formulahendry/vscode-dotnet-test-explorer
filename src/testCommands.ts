@@ -28,9 +28,14 @@ export class TestCommands implements Disposable {
 
     private isRunning: boolean;
 
+
+    private loggerPort: number;
+
+    public setLoggerPort(port: number) { this.loggerPort = port; }
+
     constructor(
         private testDirectories: TestDirectories,
-        private dataCollectorPath: string) { }
+        private loggerPath: string) { }
 
     public dispose(): void {
         try {
@@ -220,8 +225,8 @@ export class TestCommands implements Disposable {
         const testResultFile = path.join(this.testResultsFolder, trxTestName);
         let command = `dotnet test ${Utility.additionalArgumentsOption} `
             + `--no-build `
-            + `--logger "trx;LogFileName=${testResultFile}" `
-            + `--test-adapter-path "${this.dataCollectorPath}" `
+            + `--test-adapter-path "${this.loggerPath}" `
+            + `--logger "VsCodeLogger;port=${this.loggerPort}" `
             + `--collect VscodeDataCollector `;
 
         if (testName && testName.length) {
