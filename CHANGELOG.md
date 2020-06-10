@@ -1,4 +1,4 @@
-## 0.7.3 ()
+## 0.7.3 (2020-06-10)
 * [#268](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/268): Improve test discovery experience
 * [#261](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/261): Filter duplicate detected test folders
 * [#246](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/246): Add openPanel command to and set Status Bar command to trigger
