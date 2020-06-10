@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { TestCommands } from "./testCommands";
-import { TestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 
 export class StatusBar {
     private status: vscode.StatusBarItem;
@@ -28,12 +28,12 @@ export class StatusBar {
         this.status.text = `${this.baseStatusText} ($(sync~spin) Running ${numberOfTestRun} tests)`;
     }
 
-    public testRun(results: TestResult[]) {
-        const failed = results.filter( (r: TestResult) => r.outcome === "Failed").length;
-        const notExecuted = results.filter( (r: TestResult) => r.outcome === "NotExecuted").length;
-        const passed = results.filter( (r: TestResult) => r.outcome === "Passed").length;
+    public testRun(results: ITestResult[]) {
+        const failed = results.filter( (r: ITestResult) => r.outcome === "Failed").length;
+        const skipped = results.filter( (r: ITestResult) => r.outcome === "Skipped").length;
+        const passed = results.filter( (r: ITestResult) => r.outcome === "Passed").length;
 
-        this.status.text = `${this.baseStatusText} ($(check) ${passed} | $(x) ${failed}) | $(question) ${notExecuted})`;
+        this.status.text = `${this.baseStatusText} ($(check) ${passed} | $(x) ${failed}) | $(question) ${skipped})`;
     }
 
     public dispose() {

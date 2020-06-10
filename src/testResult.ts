@@ -1,13 +1,18 @@
 export interface ITestResults {
     clearPreviousTestResults: boolean;
-    testResults: TestResult[];
+    testResults: ITestResult[];
 }
 
-export class TestResult {
-    public constructor(
-        public readonly fullName: string,
-        public readonly outcome: string,
-        public readonly message: string,
-        public readonly stackTrace: string) {
-    }
+export type Outcome =
+    "None"
+    | "Passed"
+    | "Failed"
+    | "Skipped"
+    | "NotFound";
+
+export interface ITestResult {
+    readonly fullName: string;
+    readonly outcome: Outcome;
+    readonly message: string;
+    readonly stackTrace: string;
 }

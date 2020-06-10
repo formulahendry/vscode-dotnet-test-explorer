@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { TestCommands } from "./testCommands";
-import { ITestResults, TestResult } from "./testResult";
+import { ITestResults, ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export interface IDebugRunnerInfo {

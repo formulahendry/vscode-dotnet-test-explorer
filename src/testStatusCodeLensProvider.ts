@@ -2,7 +2,7 @@
 import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument } from "vscode";
 import { ITestSymbol, Symbols } from "./symbols";
 import { TestCommands } from "./testCommands";
-import { ITestResults, TestResult } from "./testResult";
+import { ITestResults, ITestResult } from "./testResult";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
 import { Utility } from "./utility";
 
@@ -14,7 +14,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
     // scenario where a single test is ran. If the test no longer exists in
     // code it will never be mapped to the symbol, so no harm (though there is
     // a memory impact)
-    private testResults = new Map<string, TestResult>();
+    private testResults = new Map<string, ITestResult>();
 
     public constructor(testCommands: TestCommands) {
         this.disposables.push(

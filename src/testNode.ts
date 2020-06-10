@@ -1,4 +1,4 @@
-import { TestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class TestNode {
@@ -7,7 +7,7 @@ export class TestNode {
     private _icon: string;
     private _fqn: string;
 
-    constructor(private _parentNamespace: string, private _name: string, testResults: TestResult[], private _children?: TestNode[]) {
+    constructor(private _parentNamespace: string, private _name: string, testResults: ITestResult[], private _children?: TestNode[]) {
         this.setIcon(testResults);
 
         this._fqn = Utility
@@ -57,7 +57,7 @@ export class TestNode {
         this._isLoading = true;
     }
 
-    public setIcon(testResults: TestResult[]) {
+    public setIcon(testResults: ITestResult[]) {
         this._isLoading = false;
 
         if (!testResults) {
@@ -69,7 +69,7 @@ export class TestNode {
 
                 if (testsForFolder.some((tr) => tr.outcome === "Failed")) {
                     this._icon = "namespaceFailed.png";
-                } else if (testsForFolder.some((tr) => tr.outcome === "NotExecuted")) {
+                } else if (testsForFolder.some((tr) => tr.outcome === "Skipped")) {
                     this._icon = "namespaceNotExecuted.png";
                 } else if (testsForFolder.some((tr) => tr.outcome === "Passed")) {
                     this._icon = "namespacePassed.png";

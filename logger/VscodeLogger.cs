@@ -35,7 +35,7 @@ namespace VscodeTestExplorer.DataCollector
             events.TestResult += (sender, e) => SendJson(new
             {
                 type = "result",
-                test = e.Result.TestCase.DisplayName,
+                fullName = e.Result.TestCase.DisplayName,
                 outcome = e.Result.Outcome.ToString(),
                 message = e.Result.ErrorMessage,
                 stackTrace = e.Result.ErrorStackTrace,

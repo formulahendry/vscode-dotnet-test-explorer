@@ -9,7 +9,7 @@ import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResults, TestResult } from "./testResult";
+import { ITestResults, ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
@@ -18,7 +18,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
     private discoveredTests: string[];
-    private testResults: TestResult[];
+    private testResults: ITestResult[];
     private testNodes: TestNode[] = [];
 
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private statusBar: StatusBar) {
@@ -163,7 +163,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.statusBar.discovered(this.discoveredTests.length);
 
         if (this.testResults) {
-            results.testResults.forEach((newTestResult: TestResult) => {
+            results.testResults.forEach((newTestResult: ITestResult) => {
                 const indexOldTestResult = this.testResults.findIndex((tr) => tr.fullName === newTestResult.fullName);
 
                 if (indexOldTestResult < 0) {

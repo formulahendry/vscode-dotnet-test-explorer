@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
 import {TestNode} from "../src/testNode";
-import { TestResult } from "../src/testResult";
+import { ITestResult, Outcome } from "../src/testResult";
 
 suite("Icon tests", () => {
 
@@ -20,9 +20,9 @@ suite("Icon tests", () => {
 
     test("Folder with one failed test result", () => {
         const testResult = [
-            GetTestResult("1", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1"),
-            GetTestResult("2", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test2"),
-            GetTestResult("3", "Failed", "NameSpace.MyClass", "NameSpace.MyClass.Test3"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test2"),
+            GetTestResult("Failed", "NameSpace.MyClass", "NameSpace.MyClass.Test3"),
         ];
         const node = new TestNode("NameSpace", "MyClass", testResult, [new TestNode("parent", "child", null)]);
 
@@ -31,9 +31,9 @@ suite("Icon tests", () => {
 
     test("Folder with one not executed test result", () => {
         const testResult = [
-            GetTestResult("1", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1"),
-            GetTestResult("2", "NotExecuted", "NameSpace.MyClass", "NameSpace.MyClass.Test2"),
-            GetTestResult("3", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test3"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1"),
+            GetTestResult("Skipped", "NameSpace.MyClass", "NameSpace.MyClass.Test2"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test3"),
         ];
         const node = new TestNode("NameSpace", "MyClass", testResult, [new TestNode("parent", "child", null)]);
 
@@ -42,9 +42,9 @@ suite("Icon tests", () => {
 
     test("Folder with all passed test result", () => {
         const testResult = [
-            GetTestResult("1", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1"),
-            GetTestResult("2", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test2"),
-            GetTestResult("3", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test3"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test2"),
+            GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test3"),
         ];
         const node = new TestNode("NameSpace", "MyClass", testResult, [new TestNode("parent", "child", null)]);
 
@@ -54,9 +54,9 @@ suite("Icon tests", () => {
     test("Folder with all passed test result (none xunit result file)", () => {
         // mstest and nunit present only the method name whereas xunit includes the full namespace and class name
         const testResult = [
-            GetTestResult("1", "Passed", "NameSpace.MyClass", "Test1"),
-            GetTestResult("2", "Passed", "NameSpace.MyClass", "Test2"),
-            GetTestResult("3", "Passed", "NameSpace.MyClass", "Test3"),
+            GetTestResult("Passed", "NameSpace.MyClass", "Test1"),
+            GetTestResult("Passed", "NameSpace.MyClass", "Test2"),
+            GetTestResult("Passed", "NameSpace.MyClass", "Test3"),
         ];
         const node = new TestNode("NameSpace", "MyClass", testResult, [new TestNode("parent", "child", null)]);
 
@@ -70,27 +70,28 @@ suite("Icon tests", () => {
     });
 
     test("Test with passed test result", () => {
-        const testResult = [GetTestResult("1", "Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
+        const testResult = [GetTestResult("Passed", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
         const node = new TestNode("NameSpace.MyClass", "Test1", testResult);
 
         assert.equal(node.icon, "testPassed.png");
     });
 
     test("Test with failed test result", () => {
-        const testResult = [GetTestResult("1", "Failed", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
+        const testResult = [GetTestResult("Failed", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
         const node = new TestNode("NameSpace.MyClass", "Test1", testResult);
 
         assert.equal(node.icon, "testFailed.png");
     });
 
     test("Test with not executed test result", () => {
-        const testResult = [GetTestResult("1", "NotExecuted", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
+        const testResult = [GetTestResult("Skipped", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
         const node = new TestNode("NameSpace.MyClass", "Test1", testResult);
 
         assert.equal(node.icon, "testNotExecuted.png");
     });
 });
 
-function GetTestResult(id: string, outcome: string, className: string, method: string) {
-    return new TestResult(`${className}.${method}`, outcome, "", "");
+function GetTestResult(outcome: Outcome, fullName: string, dummy: string): ITestResult {
+    throw new Error("Not implemented");
+    return {fullName, outcome, message: "", stackTrace: ""}
 }

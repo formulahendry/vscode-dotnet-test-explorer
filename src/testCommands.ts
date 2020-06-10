@@ -8,7 +8,7 @@ import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResults, TestResult } from "./testResult";
+import { ITestResults, ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export interface ITestRunContext {

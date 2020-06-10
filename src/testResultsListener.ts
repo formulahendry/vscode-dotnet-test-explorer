@@ -1,20 +1,17 @@
 import * as netUtil from "./netUtil";
 import * as vscode from "vscode";
 import { Logger } from "./logger";
+import { ITestResult } from "./testResult";
 
-interface IDiscoveryMessage {
+export interface IDiscoveryMessage {
     type: "discovery",
     discovered: string[]
 }
-interface IResultMessage {
-    type: "result",
-    test: string,
-    outcome: "Passed" | "Failed" | "Skipped",
-    message: string,
-    stackTrace: string
+export interface IResultMessage extends ITestResult {
+    type: "result"
 }
 
-type LoggerMessage = IDiscoveryMessage | IResultMessage;
+export type LoggerMessage = IDiscoveryMessage | IResultMessage;
 
 export class TestResultsListener implements vscode.Disposable {
     private _onMessage: vscode.EventEmitter<LoggerMessage> = new vscode.EventEmitter<LoggerMessage>();

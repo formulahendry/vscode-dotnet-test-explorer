@@ -18,8 +18,6 @@ import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 import { Watch } from "./watch";
 import { createLocalTcpServer, readAllFromSocket, ILocalServer, shutdown } from "./netUtil";
-import { TestResult } from "./testResult";
-import { parseTestName } from "./parseTestName";
 import { TestResultsListener } from "./testResultsListener";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -54,8 +52,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // TODO
         }
         else if (parsed.type === "result") {
-            const testResult = new TestResult(parsed.test, parsed.outcome, parsed.message, parsed.stackTrace);
-            testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [testResult] })
+            testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [parsed] })
         }
         else {
             throw new Error("Not implemented");
