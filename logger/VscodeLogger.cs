@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace VscodeTestExplorer.DataCollector
 {
-    [FriendlyName("VscodeLogger")]
+    [FriendlyName("VsCodeLogger")]
     [ExtensionUri("this://is/a/random/path/that/vstest/apparently/expects/whatever/VscodeLogger")]
     public class TestBla : ITestLoggerWithParameters
     {
@@ -29,13 +29,13 @@ namespace VscodeTestExplorer.DataCollector
                 => SendJson(new
                 {
                     type = "discovery",
-                    discovered = e.DiscoveredTestCases.Select(x => x.FullyQualifiedName).ToArray()
+                    discovered = e.DiscoveredTestCases.Select(x => x.DisplayName).ToArray()
                 });
 
             events.TestResult += (sender, e) => SendJson(new
             {
                 type = "result",
-                test = e.Result.TestCase.FullyQualifiedName,
+                test = e.Result.TestCase.DisplayName,
                 outcome = e.Result.Outcome.ToString(),
                 message = e.Result.ErrorMessage,
                 stackTrace = e.Result.ErrorStackTrace,

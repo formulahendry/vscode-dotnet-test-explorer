@@ -226,8 +226,7 @@ export class TestCommands implements Disposable {
         let command = `dotnet test ${Utility.additionalArgumentsOption} `
             + `--no-build `
             + `--test-adapter-path "${this.loggerPath}" `
-            + `--logger "VsCodeLogger;port=${this.loggerPort}" `
-            + `--collect VscodeDataCollector `;
+            + `--logger "VsCodeLogger;port=${this.loggerPort}" `;
 
         if (testName && testName.length) {
             if (isSingleTest) {
