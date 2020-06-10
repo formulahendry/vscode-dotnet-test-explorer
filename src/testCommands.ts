@@ -177,23 +177,12 @@ export class TestCommands implements Disposable {
 
         try {
             if (Utility.runInParallel) {
-                await Promise.all(testDirectories.map(async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
+                await Promise.all(testDirectories.map(async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, debug)));
             } else {
-                for (let i = 0; i < testDirectories.length; i++) {
-                    await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
+                for (const testDirectory of testDirectories) {
+                    await this.runTestCommandForSpecificDirectory(testDirectory, testName, isSingleTest, debug);
                 }
             }
-            const globPromise = new Promise<string[]>((resolve, reject) =>
-                glob("*.trx",
-                    { cwd: this.testResultsFolder, absolute: true },
-                    (err, matches) => err == null ? resolve(matches) : reject()));
-            const files = await globPromise;
-            const allTestResults = [];
-            for (const file of files) {
-                const testResults = await parseResults(file);
-                allTestResults.push(...testResults);
-            }
-            this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
             this.discoverTests();
@@ -213,12 +202,8 @@ export class TestCommands implements Disposable {
         }
     }
 
-    private async runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean)
+    private async runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, debug?: boolean)
         : Promise<void> {
-
-        const trxTestName = index + ".trx";
-
-        const testResultFile = path.join(this.testResultsFolder, trxTestName);
         let command = `dotnet test ${Utility.additionalArgumentsOption} `
             + `--no-build `
             + `--test-adapter-path "${this.loggerPath}" `
