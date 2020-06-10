@@ -5,96 +5,40 @@ import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
-import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
+import { ChildProcess } from "child_process";
 
 export class Watch {
-
-    private watchedDirectories: string[] = [];
+    private processes = new Map<string, ChildProcess>();
 
     constructor(
         private testCommands: TestCommands,
         private testDirectories: TestDirectories) {
         if (Utility.getConfiguration().get<boolean>("autoWatch")) {
 
-            this.testCommands.onTestDiscoveryFinished(this.setupWatcherForAllDirectories, this);
+            this.testCommands.onTestDiscoveryFinished(this.startWatch, this);
         }
     }
 
-    private setupWatcherForAllDirectories(): void {
-        const allDirectories = this.testDirectories.getTestDirectories();
+    private async startWatch() {
+        for (const testDirectory of this.testDirectories.getTestDirectories()) {
+            Logger.Log("Starting watch for " + testDirectory);
 
-        for (let i = 0; i < allDirectories.length; i++) {
-            this.setupWatch(allDirectories[i], this.getNamespaceForTestDirectory(allDirectories[i]), i);
-        }
-    }
-
-    private setupWatch(testDirectory: string, namespaceForDirectory: string, index: number) {
-
-        if (this.watchedDirectories.some((wd) => wd === testDirectory)) {
-            Logger.Log("Skipping adding watch since already watching directory " + testDirectory);
-            return;
-        }
-
-        Logger.Log("Starting watch for " + testDirectory);
-
-        const trxPath = path.join(this.testCommands.testResultFolder, `autoWatch${index}.trx`);
-
-        AppInsightsClient.sendEvent("runWatchCommand");
-        const command = `dotnet watch test ${Utility.additionalArgumentsOption}`
-            + ` --verbosity:quiet` // be less verbose to avoid false positives when parsing output
-            + ` --logger "trx;LogFileName=${trxPath}"`;
-
-        Logger.Log(`Executing ${command} in ${testDirectory}`);
-        const p = Executor.spawn(command, testDirectory);
-
-        let startedLine = [];
-        p.stdout.on("data", async (buf) => {
-            const stdout = String(buf);
-
-            // The string contained in `buf` may contain less or more
-            // than one line. But we want to parse lines as a whole.
-            // Consequently, we have to join them.
-            const lines = [];
-            let lastLineStart = 0;
-            for (let i = 0; i < stdout.length; i++) {
-                const c = stdout[i];
-                if (c === "\r" || c === "\n") {
-                    startedLine.push(stdout.substring(lastLineStart, i));
-                    const line = startedLine.join("");
-                    startedLine = [];
-                    lines.push(line);
-                    if (c === "\r" && stdout[i + 1] === "\n") {
-                        i++;
-                    }
-                    lastLineStart = i + 1;
-                }
+            const existingProcess = this.processes.get(testDirectory);
+            if (existingProcess !== undefined && existingProcess.exitCode === null) {
+                Logger.Log(`It seems like a process for ${testDirectory} is already running - it will be killed.`);
+                existingProcess.kill("SIGKILL");
             }
-            startedLine.push(stdout.substring(lastLineStart, stdout.length));
 
-            // Parse the output.
-            for (const line of lines) {
-                Logger.Log(`dotnet watch: ${line}`);
+            AppInsightsClient.sendEvent("runWatchCommand");
+            const command = `dotnet watch test ${Utility.additionalArgumentsOption} `
+                + `--verbosity:quiet `
+                + `--test-adapter-path "${this.testCommands.loggerPath}" `
+                + `--logger "VsCodeLogger;port=${this.testCommands.loggerPort}" `;
 
-                if (line === "watch : Started") {
-                    this.testCommands.sendRunningTest({ testName: namespaceForDirectory, isSingleTest: false });
-                } else if (line === `Results File: ${trxPath}`) {
-                    Logger.Log("Results file detected.");
-                    const results = await parseResults(trxPath);
-                    this.testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: results });
-                }
-            }
-        });
-
-        p.stdout.on("close", (buf: any) => {
-            Logger.Log("Stopping watch");
-
-            this.watchedDirectories = this.watchedDirectories.filter((wd) => wd !== testDirectory);
-        });
-    }
-
-    private getNamespaceForTestDirectory(testDirectory: string) {
-        const firstTestForDirectory = this.testDirectories.getFirstTestForDirectory(testDirectory);
-        return firstTestForDirectory.substring(0, firstTestForDirectory.indexOf(".") - 1);
+            Logger.Log(`Executing ${command} in ${testDirectory}`);
+            const watcher = Executor.spawn(command, testDirectory);
+            this.processes.set(testDirectory, watcher);
+        }
     }
 }

@@ -9,7 +9,6 @@ import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResults, TestResult } from "./testResult";
-import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
 
 export interface ITestRunContext {
@@ -30,8 +29,8 @@ export class TestCommands implements Disposable {
 
     constructor(
         private testDirectories: TestDirectories,
-        private loggerPath: string,
-        private loggerPort: number) { }
+        public readonly loggerPath: string,
+        public readonly loggerPort: number) { }
 
     public dispose(): void {
         try {
