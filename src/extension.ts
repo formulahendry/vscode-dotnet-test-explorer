@@ -54,12 +54,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // TODO
         }
         else if (parsed.type === "result") {
-            const name = parseTestName(parsed.test);
-            const lastSegment = name.segments[name.segments.length - 1];
-            const className = name.fullName.substring(0, lastSegment.start - 1);
-            const methodName = name.fullName.substring(lastSegment.start, lastSegment.end);
             const testResult = new TestResult(parsed.test, parsed.outcome, parsed.message, parsed.stackTrace);
-            testResult.updateName(className, methodName);
             testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [testResult] })
         }
         else {

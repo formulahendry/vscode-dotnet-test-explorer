@@ -41,31 +41,14 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
         return Symbols.getSymbols(document.uri, true)
         .then((symbols: ITestSymbol[]) => {
             const mapped: CodeLens[] = [];
-            for (const symbol of symbols.filter((x) => x.documentSymbol.kind === SymbolKind.Method)) {
+            for (const symbol of symbols.filter((x) => x.documentSymbol.kind === SymbolKind.Function || x.documentSymbol.kind === SymbolKind.Method)) {
                 for (const result of results.values()) {
-                    if (result.matches(symbol.parentName, symbol.documentSymbol.name)) {
+                    if (result.fullName.startsWith(symbol.fullName)) {
                         const state = TestStatusCodeLens.parseOutcome(result.outcome);
                         if (state) {
                             mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, state));
                             break;
                         }
-                    } else if (result.matchesTheory(symbol.parentName, symbol.documentSymbol.name)) {
-                        const state = TestStatusCodeLens.parseOutcome(result.outcome);
-                        if (state === Utility.codeLensFailed) {
-                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, Utility.codeLensFailed));
-                            break;
-                        } else {
-                            // Checks if any input values for this theory fails
-                            for (const theoryResult of results.values()) {
-                                if (theoryResult.matchesTheory(symbol.parentName, symbol.documentSymbol.name)) {
-                                    if (theoryResult.outcome === Utility.codeLensFailed) {
-                                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, Utility.codeLensFailed));
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, state));
                     }
                 }
             }
