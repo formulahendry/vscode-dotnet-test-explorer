@@ -28,14 +28,10 @@ export class TestCommands implements Disposable {
 
     private isRunning: boolean;
 
-
-    private loggerPort: number;
-
-    public setLoggerPort(port: number) { this.loggerPort = port; }
-
     constructor(
         private testDirectories: TestDirectories,
-        private loggerPath: string) { }
+        private loggerPath: string,
+        private loggerPort: number) { }
 
     public dispose(): void {
         try {

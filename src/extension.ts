@@ -20,12 +20,12 @@ import { Watch } from "./watch";
 import { createLocalTcpServer, readAllFromSocket, ILocalServer, shutdown } from "./netUtil";
 import { TestResult } from "./testResult";
 import { parseTestName } from "./parseTestName";
-
-let server: ILocalServer;
+import { TestResultsListener } from "./testResultsListener";
 
 export async function activate(context: vscode.ExtensionContext) {
     const testDirectories = new TestDirectories();
-    const testCommands = new TestCommands(testDirectories, `${context.extensionPath}/out/datacollector/`);
+    const listener = await TestResultsListener.create();
+    const testCommands = new TestCommands(testDirectories, `${context.extensionPath}/out/logger/`, listener.port);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
@@ -41,6 +41,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(problems);
     context.subscriptions.push(statusBar);
     context.subscriptions.push(testCommands);
+    context.subscriptions.push(listener);
 
     Utility.updateCache();
 
@@ -48,22 +49,23 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
-    server = await createLocalTcpServer(async (socket) => {
-        const data = await readAllFromSocket(socket);
-        socket.end();
-
-        Logger.Log(`Received message: ${data}`);
-        const parsed = JSON.parse(data);
-        const name = parseTestName(parsed.testCaseName);
-        const lastSegment = name.segments[name.segments.length - 1];
-        const className = name.fullName.substring(0, lastSegment.start - 1);
-        const methodName = name.fullName.substring(lastSegment.start, lastSegment.end);
-        const testResult = new TestResult(parsed.testCaseName, parsed.outcome, "", "")
-        testResult.updateName(className, methodName);
-        testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [testResult] })
+    listener.onMessage.event((parsed) => {
+        if (parsed.type === "discovery") {
+            // TODO
+        }
+        else if (parsed.type === "result") {
+            const name = parseTestName(parsed.test);
+            const lastSegment = name.segments[name.segments.length - 1];
+            const className = name.fullName.substring(0, lastSegment.start - 1);
+            const methodName = name.fullName.substring(lastSegment.start, lastSegment.end);
+            const testResult = new TestResult(parsed.test, parsed.outcome, parsed.message, parsed.stackTrace);
+            testResult.updateName(className, methodName);
+            testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [testResult] })
+        }
+        else {
+            throw new Error("Not implemented");
+        }
     });
-    Logger.Log(`Opened TCP server on port ${server.port}`);
-    testCommands.setLoggerPort(server.port);
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
         if (!e.affectsConfiguration("dotnet-test-explorer")) { return; }
@@ -137,6 +139,4 @@ export async function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
     Executor.stop();
-    if (server)
-        shutdown(server);
 }
