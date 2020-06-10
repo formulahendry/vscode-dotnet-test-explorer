@@ -2,7 +2,7 @@
 import { CancellationToken, CodeLens, CodeLensProvider, commands, Disposable, Event, EventEmitter, Range, SymbolInformation, SymbolKind, TextDocument } from "vscode";
 import { ITestSymbol, Symbols } from "./symbols";
 import { TestCommands } from "./testCommands";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResults, TestResult } from "./testResult";
 import { TestStatusCodeLens } from "./testStatusCodeLens";
 import { Utility } from "./utility";
 
@@ -78,7 +78,7 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
         return codeLens;
     }
 
-    private addTestResults(results: ITestResult) {
+    private addTestResults(results: ITestResults) {
         for (const result of results.testResults) {
             this.testResults.set(result.fullName, result);
         }

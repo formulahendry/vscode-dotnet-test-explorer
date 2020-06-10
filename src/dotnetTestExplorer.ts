@@ -9,7 +9,7 @@ import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResults, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
@@ -143,7 +143,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         });
     }
 
-    private addTestResults(results: ITestResult) {
+    private addTestResults(results: ITestResults) {
 
         const fullNamesForTestResults = results.testResults.map((r) => r.fullName);
 

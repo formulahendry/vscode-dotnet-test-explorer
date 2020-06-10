@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { TestCommands } from "./testCommands";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResults, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class Problems {
@@ -57,7 +57,7 @@ export class Problems {
         }
     }
 
-    private addTestResults(results: ITestResult) {
+    private addTestResults(results: ITestResults) {
 
         this._diagnosticCollection.clear();
 

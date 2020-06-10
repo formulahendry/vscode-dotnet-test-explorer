@@ -8,7 +8,7 @@ import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResults, TestResult } from "./testResult";
 import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
 
@@ -21,7 +21,7 @@ export class TestCommands implements Disposable {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
     private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
-    private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
+    private onNewTestResultsEmitter = new EventEmitter<ITestResults>();
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
     private testResultsFolderWatcher: any;
@@ -104,11 +104,11 @@ export class TestCommands implements Disposable {
         return this.onTestRunEmitter.event;
     }
 
-    public get onNewTestResults(): Event<ITestResult> {
+    public get onNewTestResults(): Event<ITestResults> {
         return this.onNewTestResultsEmitter.event;
     }
 
-    public sendNewTestResults(testResults: ITestResult) {
+    public sendNewTestResults(testResults: ITestResults) {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 

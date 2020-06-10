@@ -1,4 +1,4 @@
-export interface ITestResult {
+export interface ITestResults {
     clearPreviousTestResults: boolean;
     testResults: TestResult[];
 }
