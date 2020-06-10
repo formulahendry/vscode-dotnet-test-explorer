@@ -49,7 +49,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
 
-    listener.onMessage.event((parsed) => {
+    listener.onMessage((parsed) => {
         if (parsed.type === "discovery") {
             // TODO
         }

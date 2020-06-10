@@ -17,7 +17,8 @@ interface IResultMessage {
 type LoggerMessage = IDiscoveryMessage | IResultMessage;
 
 export class TestResultsListener implements vscode.Disposable {
-    public onMessage: vscode.EventEmitter<LoggerMessage> = new vscode.EventEmitter<LoggerMessage>();
+    private _onMessage: vscode.EventEmitter<LoggerMessage> = new vscode.EventEmitter<LoggerMessage>();
+    public onMessage = this._onMessage.event;
 
     private server: netUtil.ILocalServer;
     public get port() { return this.server.port; }
@@ -30,7 +31,7 @@ export class TestResultsListener implements vscode.Disposable {
 
             Logger.Log(`Received message: ${data}`);
             const parsed = JSON.parse(data) as LoggerMessage;
-            result.onMessage.fire(parsed);
+            result._onMessage.fire(parsed);
         })
         Logger.Log(`Opened TCP server on port ${result.server.port}`);
         return result;
