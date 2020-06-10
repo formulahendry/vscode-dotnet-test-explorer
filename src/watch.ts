@@ -34,7 +34,7 @@ export class Watch {
             const command = `dotnet watch test ${Utility.additionalArgumentsOption} `
                 + `--verbosity:quiet `
                 + `--test-adapter-path "${this.testCommands.loggerPath}" `
-                + `--logger "VsCodeLogger;port=${this.testCommands.loggerPort}" `;
+                + `--logger "VsCodeLogger;port=${this.testCommands.loggerServer.port}" `;
 
             Logger.Log(`Executing ${command} in ${testDirectory}`);
             const watcher = Executor.spawn(command, testDirectory);

@@ -23,7 +23,7 @@ import { TestResultsListener } from "./testResultsListener";
 export async function activate(context: vscode.ExtensionContext) {
     const testDirectories = new TestDirectories();
     const listener = await TestResultsListener.create();
-    const testCommands = new TestCommands(testDirectories, `${context.extensionPath}/out/logger/`, listener.port);
+    const testCommands = new TestCommands(testDirectories, `${context.extensionPath}/out/logger/`, listener);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);

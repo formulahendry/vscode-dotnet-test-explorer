@@ -7,7 +7,6 @@ import { Logger } from "./logger";
 import { parseTestName } from "./parseTestName";
 import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
-import { IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResults, ITestResult } from "./testResult";
 import { Utility } from "./utility";
@@ -120,9 +119,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this._onDidChangeTreeData.fire(null);
     }
 
-    private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
+    private updateWithDiscoveredTests(results: string[]) {
         this.testNodes = [];
-        this.discoveredTests = [].concat(...results.map((r) => r.testNames));
+        this.discoveredTests = results;
         this.statusBar.discovered(this.discoveredTests.length);
         this._onDidChangeTreeData.fire(null);
     }

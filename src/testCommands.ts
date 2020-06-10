@@ -6,10 +6,10 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
-import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
 import { ITestResults, ITestResult } from "./testResult";
 import { Utility } from "./utility";
+import { TestResultsListener } from "./testResultsListener";
 
 export interface ITestRunContext {
     testName: string;
@@ -18,7 +18,7 @@ export interface ITestRunContext {
 
 export class TestCommands implements Disposable {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
-    private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
+    private onTestDiscoveryFinishedEmitter = new EventEmitter<string[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
     private onNewTestResultsEmitter = new EventEmitter<ITestResults>();
     private lastRunTestContext: ITestRunContext = null;
@@ -30,7 +30,7 @@ export class TestCommands implements Disposable {
     constructor(
         private testDirectories: TestDirectories,
         public readonly loggerPath: string,
-        public readonly loggerPort: number) { }
+        public readonly loggerServer: TestResultsListener) { }
 
     public dispose(): void {
         try {
@@ -41,7 +41,7 @@ export class TestCommands implements Disposable {
         }
     }
 
-    public discoverTests() {
+    public async discoverTests(): Promise<void> {
         this.onTestDiscoveryStartedEmitter.fire("");
 
         this.testDirectories.clearTestsForDirectory();
@@ -52,50 +52,56 @@ export class TestCommands implements Disposable {
 
         this.setupTestResultFolder();
 
-        const runSeqOrAsync = async () => {
+        const discoveredTests = [];
 
-            const addToDiscoveredTests = (discoverdTestResult: IDiscoverTestsResult, dir: string) => {
-                if (discoverdTestResult.testNames.length > 0) {
-                    discoveredTests.push(discoverdTestResult);
-                }
-            };
-
-            const discoveredTests = [];
-
-            try {
-
-                if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map(async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
-                } else {
-                    for (const dir of testDirectories) {
-                        addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir);
-                    }
-                }
-
-                this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
-            } catch (error) {
-                this.onTestDiscoveryFinishedEmitter.fire([]);
-            }
+        const discoverAndAdd = async (dir: string) => {
+            const tests = await this.discoverTestsInFolder(dir);
+            discoveredTests.push(...tests);
         };
 
-        runSeqOrAsync();
+
+        try {
+            if (Utility.runInParallel) {
+                await Promise.all(testDirectories.map(async (dir) => await discoverAndAdd(dir)));
+            } else {
+                for (const dir of testDirectories) {
+                    await discoverAndAdd(dir);
+                }
+            }
+
+            this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
+        } catch (error) {
+            this.onTestDiscoveryFinishedEmitter.fire([]);
+        }
     }
 
-    public async discoverTestsInFolder(dir: string): Promise<IDiscoverTestsResult> {
-        const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
-        return testsForDir;
-    }
-
-    public get testResultFolder(): string {
-        return this.testResultsFolder;
+    public async discoverTestsInFolder(dir: string): Promise<string[]> {
+        const discoveredTests: string[] = []
+        const subscription = this.loggerServer.onMessage((message) => {
+            if (message.type === "discovery") {
+                discoveredTests.push(...message.discovered);
+            }
+        })
+        try {
+            const command = `dotnet test `
+                + `${Utility.additionalArgumentsOption} `
+                + `--list-tests `
+                + `--verbosity=quiet `
+                + `--test-adapter-path "${this.loggerPath}" `
+                + `--logger "VsCodeLogger;port=${this.loggerServer.port}" `;
+            await Executor.exec(command, dir);
+        }
+        finally {
+            subscription.dispose();
+        }
+        return discoveredTests;
     }
 
     public get onTestDiscoveryStarted(): Event<string> {
         return this.onTestDiscoveryStartedEmitter.event;
     }
 
-    public get onTestDiscoveryFinished(): Event<IDiscoverTestsResult[]> {
+    public get onTestDiscoveryFinished(): Event<string[]> {
         return this.onTestDiscoveryFinishedEmitter.event;
     }
 
@@ -206,7 +212,7 @@ export class TestCommands implements Disposable {
         let command = `dotnet test ${Utility.additionalArgumentsOption} `
             + `--no-build `
             + `--test-adapter-path "${this.loggerPath}" `
-            + `--logger "VsCodeLogger;port=${this.loggerPort}" `;
+            + `--logger "VsCodeLogger;port=${this.loggerServer.port}" `;
 
         if (testName && testName.length) {
             if (isSingleTest) {
