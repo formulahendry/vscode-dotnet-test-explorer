@@ -72,8 +72,8 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
                 collapsibleState: Utility.defaultCollapsibleState,
                 iconPath: this.getIcon(
                     element.state === "Running" ? "spinner.svg" :
-                    element.state === "NotRun" ? "namespace.png" :
-                        `namespace${element.state}.png`),
+                        element.state === "NotRun" ? "namespace.png" :
+                            `namespace${element.state}.png`),
                 contextValue: "folder"
             }
         } else if (element instanceof LoadingTreeNode) {
@@ -132,16 +132,20 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
 
     private createConcreteTree(parentNamespace: string, abstractTree: ITestTreeNode): FolderNode {
         const result = new FolderNode(abstractTree.fullName, abstractTree.name);
-        this.registerNode(result);
         for (const subNamespace of abstractTree.subTrees.values()) {
             result.addFolderNode(this.createConcreteTree(abstractTree.fullName, subNamespace));
         }
         for (const test of abstractTree.tests) {
             const fullName = `${abstractTree.fullName}.${test}`;
             const testNode = new TestNode(fullName, test);
+            const outcome = this.testResults.get(fullName)?.outcome;
+            if (outcome && outcome !== "None" && outcome !== "NotFound") {
+                testNode.state = outcome;
+            }
             this.registerNode(testNode);
             result.addTestNode(testNode);
         }
+        this.registerNode(result);
         return result;
     }
 
