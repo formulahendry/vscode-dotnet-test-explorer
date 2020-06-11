@@ -204,7 +204,6 @@ export class TestCommands implements Disposable {
         if (Utility.skipBuild) {
             Logger.Log(`User has passed --no-build, skipping build`);
         } else {
-            Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
             const result = await Executor.exec("dotnet build", testDirectoryPath);
             if (result.error) {
                 throw new Error("Build command failed");
@@ -228,8 +227,6 @@ export class TestCommands implements Disposable {
         }
 
         await this.runBuildCommandForSpecificDirectory(testDirectoryPath);
-
-        Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
         let result;
         if (!debug) {

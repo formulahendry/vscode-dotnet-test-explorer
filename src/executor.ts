@@ -101,6 +101,7 @@ export class Executor {
     private static execInternal(command: string,
         options: BaseEncodingOptions & ExecOptions,
         callback: (error: ExecException, stdout: string, stderr: string) => void): ChildProcess {
+        Logger.Log(`Executing ${command} in ${options.cwd}`);
         const childProcess = exec(this.handleWindowsEncoding(command), options, callback);
 
         Logger.Log(`Process ${childProcess.pid} started`);

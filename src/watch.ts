@@ -45,7 +45,6 @@ export class Watch {
                 }
             });
 
-            Logger.Log(`Executing ${command} in ${testDirectory}`);
             const watcher = Executor.spawn(command, testDirectory);
             watcher.on("exit", () => listener.dispose());
             this.processes.set(testDirectory, watcher);
