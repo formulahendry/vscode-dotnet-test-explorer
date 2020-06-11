@@ -25,6 +25,9 @@ namespace VscodeTestExplorer.DataCollector
             port = int.Parse(parameters["port"]);
             Console.WriteLine($"Data collector initialized; writing to port {port}.");
 
+            events.TestRunStart += (sender, e)  => SendJson(new{ type = "testRunStarted" });
+            events.TestRunComplete += (sender, e) => SendJson(new{ type = "testRunComplete" });
+
             events.DiscoveredTests += (sender, e)
                 => SendJson(new
                 {

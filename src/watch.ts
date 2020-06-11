@@ -36,8 +36,18 @@ export class Watch {
                 + `--test-adapter-path "${this.testCommands.loggerPath}" `
                 + `--logger "VsCodeLogger;port=${this.testCommands.loggerServer.port}" `;
 
+            const listener = this.testCommands.loggerServer.onMessage((message) => {
+                if (message.type === "testRunStarted") {
+                    this.testCommands.sendRunningTest({ isSingleTest: false, testName: "" });
+                }
+                else if (message.type === "testRunComplete") {
+                    Logger.Log("Test run complete.")
+                }
+            });
+
             Logger.Log(`Executing ${command} in ${testDirectory}`);
             const watcher = Executor.spawn(command, testDirectory);
+            watcher.on("exit", () => listener.dispose());
             this.processes.set(testDirectory, watcher);
         }
     }

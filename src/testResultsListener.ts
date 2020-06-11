@@ -11,7 +11,13 @@ export interface IResultMessage extends ITestResult {
     type: "result"
 }
 
-export type LoggerMessage = IDiscoveryMessage | IResultMessage;
+type EmptyMessage<T extends string> = { type: T }
+
+export type LoggerMessage =
+    IDiscoveryMessage
+    | IResultMessage
+    | EmptyMessage<"testRunStarted">
+    | EmptyMessage<"testRunComplete">;
 
 export class TestResultsListener implements vscode.Disposable {
     private _onMessage: vscode.EventEmitter<LoggerMessage> = new vscode.EventEmitter<LoggerMessage>();

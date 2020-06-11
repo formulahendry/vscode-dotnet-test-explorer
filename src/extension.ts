@@ -48,14 +48,8 @@ export async function activate(context: vscode.ExtensionContext) {
     AppInsightsClient.sendEvent("loadExtension");
 
     listener.onMessage((parsed) => {
-        if (parsed.type === "discovery") {
-            // TODO
-        }
-        else if (parsed.type === "result") {
-            testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: [parsed] })
-        }
-        else {
-            throw new Error("Not implemented");
+        if (parsed.type === "result") {
+            testCommands.sendNewTestResults([parsed])
         }
     });
 
