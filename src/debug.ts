@@ -1,7 +1,4 @@
 import * as vscode from "vscode";
-import { TestCommands } from "./testCommands";
-import { ITestResults, ITestResult } from "./testResult";
-import { Utility } from "./utility";
 
 export interface IDebugRunnerInfo {
     config?: vscode.DebugConfiguration;
