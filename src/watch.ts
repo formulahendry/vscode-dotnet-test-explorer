@@ -7,47 +7,55 @@ import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
 import { Utility } from "./utility";
 import { ChildProcess } from "child_process";
+import { ITestResult } from "./testResult";
+import { TestResultsListener } from "./testResultsListener";
 
 export class Watch {
     private processes = new Map<string, ChildProcess>();
 
-    constructor(
-        private testCommands: TestCommands,
-        private testDirectories: TestDirectories) {
-        if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+    constructor(private testDirectories: TestDirectories) { }
 
-            this.testCommands.onTestDiscoveryFinished(this.startWatch, this);
-        }
-    }
-
-    private async startWatch() {
+    public async startWatch(
+        onStart: () => void,
+        onEnd: () => void,
+        onResult: (results: ITestResult[]) => void) {
         for (const testDirectory of this.testDirectories.getTestDirectories()) {
             Logger.Log("Starting watch for " + testDirectory);
 
             const existingProcess = this.processes.get(testDirectory);
             if (existingProcess !== undefined && existingProcess.exitCode === null) {
-                Logger.Log(`It seems like a process for ${testDirectory} is already running - it will be killed.`);
-                existingProcess.kill("SIGKILL");
+                Logger.Log(`It seems like a process for ${testDirectory} is already running - it will be terminated.`);
+                await Executor.terminate(existingProcess);
             }
 
             AppInsightsClient.sendEvent("runWatchCommand");
-            const command = `dotnet watch test ${Utility.additionalArgumentsOption} `
-                + `--verbosity:quiet `
-                + `--test-adapter-path "${this.testCommands.loggerPath}" `
-                + `--logger "VsCodeLogger;port=${this.testCommands.loggerServer.port}" `;
 
-            const listener = this.testCommands.loggerServer.onMessage((message) => {
+            const server = await TestResultsListener.create();
+            server.onMessage((message) => {
                 if (message.type === "testRunStarted") {
-                    this.testCommands.sendRunningTest({ isSingleTest: false, testName: "" });
+                    onStart();
                 }
                 else if (message.type === "testRunComplete") {
-                    Logger.Log("Test run complete.")
+                    onEnd();
+                }
+                else if (message.type === "result") {
+                    onResult([message]);
                 }
             });
 
+            const command = `dotnet watch test ${Utility.additionalArgumentsOption} `
+                + `--verbosity:quiet `
+                + `--test-adapter-path "${Utility.loggerPath}" `
+                + `--logger "VsCodeLogger;port=${server.port}" `;
             const watcher = Executor.spawn(command, testDirectory);
-            watcher.on("exit", () => listener.dispose());
+            watcher.on("exit", () => server.dispose());
             this.processes.set(testDirectory, watcher);
         }
+    }
+
+    public async stopWatch() {
+        const processes = [...this.processes.values()];
+        this.processes.clear();
+        await Promise.all(processes.map(p => Executor.terminate(p)));
     }
 }

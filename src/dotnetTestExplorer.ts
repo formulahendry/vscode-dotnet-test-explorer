@@ -19,7 +19,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
     private _onDidChangeTreeData: vscode.EventEmitter<TreeNode | void> = new vscode.EventEmitter<TreeNode | void>();
     public readonly onDidChangeTreeData: vscode.Event<TreeNode | void> = this._onDidChangeTreeData.event;
 
-    private discoveredTests: string[] = [];
+    private discoveredTests = new Set<string>();
     private testResults = new Map<string, ITestResult>();
     private rootNodes: TreeNode[] = [];
     private testNodes = new Map<string, TestNode>();
@@ -30,6 +30,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
         testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
         testCommands.onNewTestResults(this.addTestResults, this);
+        testCommands.onTestRunFinished(this.removeRunningTests, this);
     }
 
     /**
@@ -95,30 +96,28 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
 
     public rebuildTree() {
         this.testNodes.clear();
-        this.discoveredTests = this.discoveredTests.sort();
 
         const treeMode = Utility.getConfiguration().get<string>("treeMode");
 
+        const discoveredTests = [...this.discoveredTests].sort();
+        let tree: ITestTreeNode;
         if (treeMode === "flat") {
-            return this.rootNodes = this.discoveredTests.map((fullName) => {
-                const result = new TestNode(fullName, fullName);
-                this.registerNode(result);
-                return result;
-            });
+            tree = { name: "", fullName: "", subTrees: new Map(), tests: discoveredTests };
         }
+        else {
+            const parsedTestNames = discoveredTests.map(parseTestName);
+            tree = buildTree(parsedTestNames);
 
-        const parsedTestNames = this.discoveredTests.map(parseTestName);
-        let tree = buildTree(parsedTestNames);
-
-        if (treeMode === "merged") {
-            tree = mergeSingleItemTrees(tree);
+            if (treeMode === "merged") {
+                tree = mergeSingleItemTrees(tree);
+            }
         }
 
         const concreteRoot = this.createConcreteTree("", tree);
 
         this.rootNodes = [...concreteRoot.children];
 
-        this.statusBar.discovered(this.discoveredTests.length);
+        this.statusBar.discovered(this.discoveredTests.size);
         this._onDidChangeTreeData.fire(null);
     }
 
@@ -151,11 +150,11 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
 
     private updateWithDiscoveringTest() {
         this.isDiscovering = true;
-        this._onDidChangeTreeData.fire(null);
+        this._onDidChangeTreeData.fire();
     }
 
-    private updateWithDiscoveredTests(discoveredTests: string[]) {
-        this.discoveredTests = discoveredTests;
+    private updateWithDiscoveredTests(discoveredTests: Iterable<string>) {
+        this.discoveredTests = new Set(discoveredTests);
         this.isDiscovering = false;
         this.rebuildTree();
         this.addTestResults(this.testResults.values());
@@ -196,7 +195,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
         const newTests = fullNamesForTestResults.filter((r) => !discoveredTests.has(r));
 
         if (newTests.length > 0) {
-            this.discoveredTests.push(...newTests);
+            for (const newTest of newTests) {
+                this.discoveredTests.add(newTest);
+            }
             this.rebuildTree();
         }
 
@@ -211,5 +212,17 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
         this.statusBar.testRun([...results]);
 
         this._onDidChangeTreeData.fire(null);
+    }
+
+    /** When a test run finishes, no tests should be spinning any more.
+     *  Any test that is still running was not found, and as such should be removed from the list.
+     */
+    public removeRunningTests() {
+        for (const node of [...this.testNodes.values()]) {
+            if (node.state === "Running") {
+                this.discoveredTests.delete(node.fullName);
+                Logger.Log(`Test ${node.fullName} was not found - removing...`)
+            }
+        }
     }
 }

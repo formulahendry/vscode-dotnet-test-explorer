@@ -116,13 +116,11 @@ export class Executor {
         return childProcess;
     }
 
-    public static stop() {
-        for (const process of this.processes) {
-            Logger.Log(`Stop processes requested - ${process.pid} stopped`);
-            process.kill("SIGKILL");
-        }
-        this.processes.clear();
+    public static async stop() {
         this.debugRunnerInfo = null;
+        const processes = [...this.processes];
+        this.processes.clear();
+        await Promise.all(processes.map(p => this.terminate(p)));
     }
 
     private static debugRunnerInfo: IDebugRunnerInfo;
@@ -133,5 +131,22 @@ export class Executor {
 
     private static handleWindowsEncoding(command: string): string {
         return this.isWindows ? `chcp 65001 | ${command}` : command;
+    }
+
+    /** Tries to gracefully terminate a process. If it's not done after a timeout, kill it instead. */
+    public static async terminate(process: ChildProcess, killTimeout: number = 3000) {
+        return new Promise((resolve) => {
+            process.on("exit", () => resolve());
+            Logger.Log(`Trying to terminate process ${process.pid}...`)
+            process.kill("SIGTERM");
+            setTimeout(() => {
+                if (typeof process.exitCode !== "number") {
+                    Logger.LogWarning(`Process ${process.pid} does not react. Killing...`)
+                    process.kill("SIGKILL");
+                }
+            }, 3000);
+            if (typeof process.exitCode === "number")
+                resolve();
+        });
     }
 }

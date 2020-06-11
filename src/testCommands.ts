@@ -12,6 +12,7 @@ import { TestResultsListener } from "./testResultsListener";
 import { TestNode } from "./treeNodes/testNode";
 import { FolderNode } from "./treeNodes/folderNode";
 import { TreeNode } from "./treeNodes/treeNode";
+import { Watch } from "./watch";
 
 export interface ITestRunContext {
     testName: string;
@@ -22,26 +23,41 @@ export class TestCommands implements Disposable {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
     private onTestDiscoveryFinishedEmitter = new EventEmitter<string[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
+    private onTestRunFinishedEmitter = new EventEmitter<void>();
     private onNewTestResultsEmitter = new EventEmitter<ITestResult[]>();
+    public onTestDiscoveryStarted = this.onTestDiscoveryStartedEmitter.event;
+    public onTestDiscoveryFinished = this.onTestDiscoveryFinishedEmitter.event;
+    public onTestRun = this.onTestRunEmitter.event;
+    public onTestRunFinished = this.onTestRunFinishedEmitter.event;
+    public onNewTestResults = this.onNewTestResultsEmitter.event;
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
-    private testResultsFolderWatcher: any;
 
     private isRunning: boolean;
 
+    private watch: Watch;
+
     constructor(
         private testDirectories: TestDirectories,
-        public readonly loggerPath: string,
-        public readonly loggerServer: TestResultsListener) { }
+        public readonly loggerServer: TestResultsListener) {
 
-    public dispose(): void {
-        try {
-            if (this.testResultsFolderWatcher) {
-                this.testResultsFolderWatcher.close();
-            }
-        } catch (err) {
+        this.watch = new Watch(testDirectories);
+        this.onTestDiscoveryFinished(this.updateWatch, this);
+    }
+
+    public updateWatch() {
+        if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+            this.watch.startWatch(
+                () => this.onTestRunEmitter.fire({ isSingleTest: false, testName: "" }),
+                () => this.onTestRunFinishedEmitter.fire(),
+                (results) => this.onNewTestResultsEmitter.fire(results)
+            );
+        } else {
+            this.watch.stopWatch();
         }
     }
+
+    public dispose(): void { }
 
     public async discoverTests(): Promise<void> {
         this.onTestDiscoveryStartedEmitter.fire("");
@@ -89,7 +105,7 @@ export class TestCommands implements Disposable {
                 + `${Utility.additionalArgumentsOption} `
                 + `--list-tests `
                 + `--verbosity=quiet `
-                + `--test-adapter-path "${this.loggerPath}" `
+                + `--test-adapter-path "${Utility.loggerPath}" `
                 + `--logger "VsCodeLogger;port=${this.loggerServer.port}" `;
             await Executor.exec(command, dir);
         }
@@ -97,22 +113,6 @@ export class TestCommands implements Disposable {
             subscription.dispose();
         }
         return discoveredTests;
-    }
-
-    public get onTestDiscoveryStarted(): Event<string> {
-        return this.onTestDiscoveryStartedEmitter.event;
-    }
-
-    public get onTestDiscoveryFinished(): Event<string[]> {
-        return this.onTestDiscoveryFinishedEmitter.event;
-    }
-
-    public get onTestRun(): Event<ITestRunContext> {
-        return this.onTestRunEmitter.event;
-    }
-
-    public get onNewTestResults(): Event<ITestResult[]> {
-        return this.onNewTestResultsEmitter.event;
     }
 
     public sendNewTestResults(testResults: ITestResult[]) {
@@ -179,11 +179,9 @@ export class TestCommands implements Disposable {
 
         Logger.Log(`Test run for ${testName}`);
 
-        for (const { } of testDirectories) {
-            const testContext = { testName, isSingleTest };
-            this.lastRunTestContext = testContext;
-            this.sendRunningTest(testContext);
-        }
+        const testContext = { testName, isSingleTest };
+        this.lastRunTestContext = testContext;
+        this.sendRunningTest(testContext);
 
         try {
             if (Utility.runInParallel) {
@@ -193,6 +191,7 @@ export class TestCommands implements Disposable {
                     await this.runTestCommandForSpecificDirectory(testDirectory, testName, isSingleTest, debug);
                 }
             }
+            this.onTestRunFinishedEmitter.fire();
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
             this.discoverTests();
@@ -215,7 +214,7 @@ export class TestCommands implements Disposable {
         : Promise<void> {
         let command = `dotnet test ${Utility.additionalArgumentsOption} `
             + `--no-build `
-            + `--test-adapter-path "${this.loggerPath}" `
+            + `--test-adapter-path "${Utility.loggerPath}" `
             + `--logger "VsCodeLogger;port=${this.loggerServer.port}" `;
 
         if (testName && testName.length) {

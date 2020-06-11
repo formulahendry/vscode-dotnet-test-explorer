@@ -22,14 +22,15 @@ import { TestNode } from "./treeNodes/testNode";
 import { TreeNode } from "./treeNodes/treeNode";
 
 export async function activate(context: vscode.ExtensionContext) {
+    Utility.loggerPath = `${context.extensionPath}/out/logger/`;
+
     const testDirectories = new TestDirectories();
     const listener = await TestResultsListener.create();
-    const testCommands = new TestCommands(testDirectories, `${context.extensionPath}/out/logger/`, listener);
+    const testCommands = new TestCommands(testDirectories, listener);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
     const statusBar = new StatusBar(testCommands);
-    const watch = new Watch(testCommands, testDirectories);
     const leftClickTest = new LeftClickTest();
     const appInsights = new AppInsights(testCommands, testDirectories);
 
@@ -60,6 +61,10 @@ export async function activate(context: vscode.ExtensionContext) {
         if (e.affectsConfiguration("dotnet-test-explorer.testProjectPath")) {
             testDirectories.parseTestDirectories();
             testCommands.discoverTests();
+        }
+
+        if (e.affectsConfiguration("dotnet-test-explorer.autoWatch")) {
+            testCommands.updateWatch();
         }
 
         dotnetTestExplorer.rebuildTree();
