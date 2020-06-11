@@ -25,25 +25,30 @@ namespace VscodeTestExplorer.DataCollector
             port = int.Parse(parameters["port"]);
             Console.WriteLine($"Data collector initialized; writing to port {port}.");
 
-            events.TestRunStart += (sender, e)  => SendJson(new{ type = "testRunStarted" });
-            events.TestRunComplete += (sender, e) => SendJson(new{ type = "testRunComplete" });
+            events.TestRunStart += (sender, e) => SendJson(new { type = "testRunStarted" });
+            events.TestRunComplete += (sender, e) => SendJson(new { type = "testRunComplete" });
 
             events.DiscoveredTests += (sender, e)
                 => SendJson(new
                 {
                     type = "discovery",
-                    discovered = e.DiscoveredTestCases.Select(x => x.DisplayName).ToArray()
+                    discovered = e.DiscoveredTestCases.Select(GetFullName).ToArray()
                 });
 
             events.TestResult += (sender, e) => SendJson(new
             {
                 type = "result",
-                fullName = e.Result.TestCase.DisplayName,
+                fullName = GetFullName(e.Result.TestCase),
                 outcome = e.Result.Outcome.ToString(),
                 message = e.Result.ErrorMessage,
                 stackTrace = e.Result.ErrorStackTrace,
             });
         }
+
+        static string GetFullName(TestCase testCase)
+            => testCase.GetProperties().Any(kvp => kvp.Key.Id == "XunitTestCase") ?
+                testCase.DisplayName : testCase.FullyQualifiedName;
+
         void SendString(string str)
         {
             Console.WriteLine("Sending: " + str);
