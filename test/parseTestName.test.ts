@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { parseTestName } from "../src/parseTestName";
+import { parseTestName, getSegmentString } from "../src/parseTestName";
 
 suite("parseTestName - test names are parsed correctly", () => {
     function testParsing(input, expected) {
@@ -7,7 +7,7 @@ suite("parseTestName - test names are parsed correctly", () => {
             const result = parseTestName(input);
             assert.equal(result.fullName, input);
             const segmentsAsStrings = result.segments.map(
-                (segment) => input.substr(segment.start, segment.end - segment.start));
+                (segment) => getSegmentString(input, segment));
             assert.deepEqual(segmentsAsStrings, expected);
         });
     }

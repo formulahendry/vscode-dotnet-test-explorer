@@ -1,4 +1,4 @@
-import { IParsedName } from "./parseTestName";
+import { IParsedName, getSegmentString, getSegmentEnd } from "./parseTestName";
 
 /**
  * This is an "abstract" version of a tree node, containing the logical structure
@@ -19,8 +19,8 @@ export function buildTree(parsedNames: IParsedName[]): ITestTreeNode {
         for (let i = 0; i < parsedName.segments.length - 1; i++) {
             const segment = parsedName.segments[i];
 
-            const part = parsedName.fullName.substr(segment.start, segment.end - segment.start);
-            const fullName = parsedName.fullName.substr(0, segment.end);
+            const part = getSegmentString(parsedName.fullName, segment);
+            const fullName = parsedName.fullName.substring(0, getSegmentEnd(segment));
             if (!currentNode.subTrees.has(part)) {
                 const newTree: ITestTreeNode = {
                     fullName,
@@ -36,7 +36,7 @@ export function buildTree(parsedNames: IParsedName[]): ITestTreeNode {
         }
 
         const lastSegment = parsedName.segments[parsedName.segments.length - 1];
-        const testName = parsedName.fullName.substr(lastSegment.start, lastSegment.end - lastSegment.start);
+        const testName = getSegmentString(parsedName.fullName, lastSegment);
         currentNode.tests.push(testName);
     }
     return root;

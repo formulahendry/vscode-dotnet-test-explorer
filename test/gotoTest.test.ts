@@ -141,7 +141,7 @@ suite("Get test method name", () => {
     test("Test name without namespace", () => {
 
         const gotoTest = new GotoTest();
-        const result = gotoTest.getTestMethodFqn("Test");
+        const result = gotoTest.getTestMethodName("Test");
 
         assert.equal(result, "Test");
     });
@@ -149,7 +149,7 @@ suite("Get test method name", () => {
     test("XUnit theory name without namespace", () => {
 
         const gotoTest = new GotoTest();
-        const result = gotoTest.getTestMethodFqn("Test(param: value)");
+        const result = gotoTest.getTestMethodName("Test(param: value)");
 
         assert.equal(result, "Test");
     });
