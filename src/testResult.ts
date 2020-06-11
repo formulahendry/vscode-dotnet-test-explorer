@@ -1,8 +1,3 @@
-export interface ITestResults {
-    clearPreviousTestResults: boolean;
-    testResults: ITestResult[];
-}
-
 export type Outcome =
     "None"
     | "Passed"

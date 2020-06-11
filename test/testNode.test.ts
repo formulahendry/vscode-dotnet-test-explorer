@@ -1,6 +1,6 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import {TestNode} from "../src/testNode";
+const TestNode : any = undefined; // TODO: Migrate the tests
 import { ITestResult, Outcome } from "../src/testResult";
 
 suite("Icon tests", () => {
@@ -37,7 +37,7 @@ suite("Icon tests", () => {
         ];
         const node = new TestNode("NameSpace", "MyClass", testResult, [new TestNode("parent", "child", null)]);
 
-        assert.equal(node.icon, "namespaceNotExecuted.png");
+        assert.equal(node.icon, "namespaceSkipped.png");
     });
 
     test("Folder with all passed test result", () => {
@@ -87,7 +87,7 @@ suite("Icon tests", () => {
         const testResult = [GetTestResult("Skipped", "NameSpace.MyClass", "NameSpace.MyClass.Test1")];
         const node = new TestNode("NameSpace.MyClass", "Test1", testResult);
 
-        assert.equal(node.icon, "testNotExecuted.png");
+        assert.equal(node.icon, "testSkipped.png");
     });
 });
 

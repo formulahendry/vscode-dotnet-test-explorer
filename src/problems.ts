@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { TestCommands } from "./testCommands";
-import { ITestResults, ITestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class Problems {
@@ -57,11 +57,11 @@ export class Problems {
         }
     }
 
-    private addTestResults(results: ITestResults) {
+    private addTestResults(results: ITestResult[]) {
 
         this._diagnosticCollection.clear();
 
-        const problems = Problems.createProblemsFromResults(results.testResults);
+        const problems = Problems.createProblemsFromResults(results);
 
         const newDiagnostics: [vscode.Uri, vscode.Diagnostic[]][] = [];
 

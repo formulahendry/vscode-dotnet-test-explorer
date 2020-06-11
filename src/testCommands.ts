@@ -6,10 +6,12 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
-import { TestNode } from "./testNode";
-import { ITestResults, ITestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 import { Utility } from "./utility";
 import { TestResultsListener } from "./testResultsListener";
+import { TestNode } from "./treeNodes/testNode";
+import { FolderNode } from "./treeNodes/folderNode";
+import { TreeNode } from "./treeNodes/treeNode";
 
 export interface ITestRunContext {
     testName: string;
@@ -20,7 +22,7 @@ export class TestCommands implements Disposable {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
     private onTestDiscoveryFinishedEmitter = new EventEmitter<string[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
-    private onNewTestResultsEmitter = new EventEmitter<ITestResults>();
+    private onNewTestResultsEmitter = new EventEmitter<ITestResult[]>();
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
     private testResultsFolderWatcher: any;
@@ -109,11 +111,11 @@ export class TestCommands implements Disposable {
         return this.onTestRunEmitter.event;
     }
 
-    public get onNewTestResults(): Event<ITestResults> {
+    public get onNewTestResults(): Event<ITestResult[]> {
         return this.onNewTestResultsEmitter.event;
     }
 
-    public sendNewTestResults(testResults: ITestResults) {
+    public sendNewTestResults(testResults: ITestResult[]) {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 
@@ -126,8 +128,11 @@ export class TestCommands implements Disposable {
         AppInsightsClient.sendEvent("runAllTests");
     }
 
-    public runTest(test: TestNode): void {
-        this.runTestByName(test.fqn, !test.isFolder);
+    public runTest(test: TreeNode): void {
+        if (test instanceof TestNode)
+            this.runTestByName(test.fullName, true);
+        if (test instanceof FolderNode)
+            this.runTestByName(test.fullName, false);
     }
 
     public runTestByName(testName: string, isSingleTest: boolean): void {

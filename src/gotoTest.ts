@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Logger } from "./logger";
-import { TestNode } from "./testNode";
 import { Utility } from "./utility";
+import { TestNode } from "./treeNodes/testNode";
 
 export class GotoTest {
 
@@ -12,7 +12,7 @@ export class GotoTest {
 
         const symbolInformation = vscode.commands.executeCommand<vscode.SymbolInformation[]>(
             "vscode.executeWorkspaceSymbolProvider",
-            test.fqn,
+            test.fullName,
         ).then((symbols) => {
 
             let symbol: vscode.SymbolInformation;
@@ -43,7 +43,7 @@ export class GotoTest {
             throw new Error("Could not find test (no symbols found)");
         }
 
-        const testFqn = testNode.fqn;
+        const testFqn = testNode.fullName;
 
         symbols = symbols.filter((s) => this.isSymbolATestCandidate(s) && testFqn.endsWith(this.getTestMethodFqn(s.name)));
 
