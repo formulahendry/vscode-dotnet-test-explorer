@@ -32,7 +32,7 @@ export class TestResultsListener implements vscode.Disposable {
             const data = await netUtil.readAllFromSocket(socket);
             socket.end();
 
-            Logger.Log(`Received message: ${data}`);
+            // Logger.Log(`Received message: ${data}`);
             const parsed = JSON.parse(data) as LoggerMessage;
             result._onMessage.fire(parsed);
         })
