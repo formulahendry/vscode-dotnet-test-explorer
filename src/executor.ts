@@ -113,6 +113,8 @@ export class Executor {
                 Logger.Log(`Process ${childProcess.pid} finished`);
             }
         });
+        childProcess.stdout.on("data", chunk => Logger.Log(chunk));
+        childProcess.stderr.on("data", chunk => Logger.Log(chunk));
         return childProcess;
     }
 
