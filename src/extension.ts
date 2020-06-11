@@ -106,10 +106,9 @@ export async function activate(context: vscode.ExtensionContext) {
         testCommands.runTest(test);
     }));
 
-    context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
-        findTestInContext.find(editor.document, editor.selection.start).then((testRunContext) => {
-            testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
-        });
+    context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", async (editor: vscode.TextEditor) => {
+        const testRunContext = await findTestInContext.find(editor.document, editor.selection.start);
+        testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.gotoTest", (test: TestNode) => {

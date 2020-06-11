@@ -31,30 +31,29 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
         return this.onDidChangeCodeLensesEmitter.event;
     }
 
-    public provideCodeLenses(document: TextDocument, token: CancellationToken): CodeLens[] | Thenable<CodeLens[]> {
+    public async provideCodeLenses(document: TextDocument, token: CancellationToken): Promise<CodeLens[]> {
         if (!Utility.codeLensEnabled) {
             return [];
         }
 
         const results = this.testResults;
 
-        return Symbols.getSymbols(document.uri, true)
-        .then((symbols: ITestSymbol[]) => {
-            const mapped: CodeLens[] = [];
-            for (const symbol of symbols.filter((x) => x.documentSymbol.kind === SymbolKind.Function || x.documentSymbol.kind === SymbolKind.Method)) {
-                for (const result of results.values()) {
-                    if (result.fullName.startsWith(symbol.fullName)) {
-                        const state = TestStatusCodeLens.parseOutcome(result.outcome);
-                        if (state) {
-                            mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, state));
-                            break;
-                        }
+        const symbols = await Symbols.getSymbols(document.uri, true);
+
+        const mapped: CodeLens[] = [];
+        for (const symbol of symbols.filter((x) => x.documentSymbol.kind === SymbolKind.Function || x.documentSymbol.kind === SymbolKind.Method)) {
+            for (const result of results.values()) {
+                if (result.fullName.startsWith(symbol.fullName)) {
+                    const state = TestStatusCodeLens.parseOutcome(result.outcome);
+                    if (state) {
+                        mapped.push(new TestStatusCodeLens(symbol.documentSymbol.selectionRange, state));
+                        break;
                     }
                 }
             }
+        }
 
-            return mapped;
-        });
+        return mapped;
     }
 
     public resolveCodeLens(codeLens: CodeLens, token: CancellationToken): CodeLens {
