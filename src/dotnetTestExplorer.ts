@@ -218,11 +218,16 @@ export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
      *  Any test that is still running was not found, and as such should be removed from the list.
      */
     public removeRunningTests() {
+        let requiresRebuild = false;
         for (const node of [...this.testNodes.values()]) {
             if (node.state === "Running") {
+                Logger.Log(`Test ${node.fullName} was not found - removing...`);
                 this.discoveredTests.delete(node.fullName);
-                Logger.Log(`Test ${node.fullName} was not found - removing...`)
+                requiresRebuild = true;
             }
+        }
+        if (requiresRebuild) {
+            this.rebuildTree();
         }
     }
 }
