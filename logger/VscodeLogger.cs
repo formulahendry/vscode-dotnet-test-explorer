@@ -3,6 +3,7 @@ using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -25,17 +26,22 @@ namespace VscodeTestExplorer.DataCollector
             port = int.Parse(parameters["port"]);
             Console.WriteLine($"Data collector initialized; writing to port {port}.");
 
-            events.TestRunStart += (sender, e) => SendJson(new { type = "testRunStarted" });
-            events.TestRunComplete += (sender, e) => SendJson(new { type = "testRunComplete" });
+            events.TestRunStart += (sender, e) => StartSendJson(new { type = "testRunStarted" });
+            events.TestRunComplete += (sender, e) =>
+            {
+                StartSendJson(new { type = "testRunComplete" });
+                Flush();
+            };
 
             events.DiscoveredTests += (sender, e)
-                => SendJson(new
+                => StartSendJson(new
                 {
                     type = "discovery",
                     discovered = e.DiscoveredTestCases.Select(GetFullName).ToArray()
                 });
+            events.DiscoveryComplete += (sender, e) => Flush();
 
-            events.TestResult += (sender, e) => SendJson(new
+            events.TestResult += (sender, e) => StartSendJson(new
             {
                 type = "result",
                 fullName = GetFullName(e.Result.TestCase),
@@ -49,13 +55,34 @@ namespace VscodeTestExplorer.DataCollector
             => testCase.GetProperties().Any(kvp => kvp.Key.Id == "XunitTestCase") ?
                 testCase.DisplayName : testCase.FullyQualifiedName;
 
-        void SendString(string str)
+        async Task SendString(string str)
         {
-            Console.WriteLine("Sending: " + str);
+            // Console.WriteLine("Sending: " + str);
 
-            using TcpClient client = new TcpClient("localhost", port);
-            client.GetStream().Write(Encoding.UTF8.GetBytes(str));
+            using TcpClient client = new TcpClient();
+            await client.ConnectAsync("localhost", port);
+            await client.GetStream().WriteAsync(Encoding.UTF8.GetBytes(str));
         }
-        void SendJson<T>(T obj) => SendString(JsonSerializer.Serialize(obj));
+
+        List<Task> tasks = new List<Task>();
+        void StartSendJson<T>(T obj)
+        {
+            var task = SendString(JsonSerializer.Serialize(obj));
+            lock (tasks)
+            {
+                tasks.Add(task);
+            }
+        }
+
+        void Flush()
+        {
+            Task[] _tasks;
+            lock (tasks)
+            {
+                _tasks = tasks.ToArray();
+                tasks.Clear();
+            }
+            Task.WaitAll(_tasks);
+        }
     }
 }
