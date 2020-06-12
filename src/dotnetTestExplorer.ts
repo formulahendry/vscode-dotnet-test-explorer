@@ -7,25 +7,30 @@ import { Logger } from "./logger";
 import { parseTestName } from "./parseTestName";
 import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
-import { IDiscoverTestsResult } from "./testDiscovery";
-import { TestNode } from "./testNode";
-import { ITestResult, TestResult } from "./testResult";
+import { LoadingNode as LoadingTreeNode } from "./treeNodes/loadingNode";
+import { TestNode } from "./treeNodes/testNode";
+import { FolderNode } from "./treeNodes/folderNode";
+import { TreeNode } from "./treeNodes/treeNode";
+import { ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
-export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
+export class DotnetTestExplorer implements TreeDataProvider<TreeNode> {
 
-    public _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-    public readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: vscode.EventEmitter<TreeNode | void> = new vscode.EventEmitter<TreeNode | void>();
+    public readonly onDidChangeTreeData: vscode.Event<TreeNode | void> = this._onDidChangeTreeData.event;
 
-    private discoveredTests: string[];
-    private testResults: TestResult[];
-    private testNodes: TestNode[] = [];
+    private discoveredTests = new Set<string>();
+    private testResults = new Map<string, ITestResult>();
+    private rootNodes: TreeNode[] = [];
+    private testNodes = new Map<string, TestNode>();
+    private isDiscovering = false;
 
     constructor(private context: vscode.ExtensionContext, private testCommands: TestCommands, private statusBar: StatusBar) {
         testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
         testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
         testCommands.onNewTestResults(this.addTestResults, this);
+        testCommands.onTestRunFinished(this.removeRunningTests, this);
     }
 
     /**
@@ -43,141 +48,186 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         AppInsightsClient.sendEvent("refreshTestExplorer");
     }
 
-    public getTreeItem(element: TestNode): TreeItem {
-        if (element.isError) {
-            return new TreeItem(element.name);
-        }
-
+    private getIcon(iconPath: string) {
         return {
-            label: element.name,
-            collapsibleState: element.isFolder ? Utility.defaultCollapsibleState : void 0,
-            iconPath: element.icon ? {
-                dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
-                light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
-            } : void 0,
-            contextValue: element.isFolder ? "folder" : "test",
-            command: element.isFolder ? null : {
-                command: "dotnet-test-explorer.leftClickTest",
-                title: "",
-                arguments: [element],
-            },
-        };
+            dark: this.context.asAbsolutePath(path.join("resources", "dark", iconPath)),
+            light: this.context.asAbsolutePath(path.join("resources", "light", iconPath)),
+        }
     }
 
-    public getChildren(element?: TestNode): TestNode[] | Thenable<TestNode[]> {
+    public getTreeItem(element: TreeNode): TreeItem {
+        if (element instanceof TestNode) {
+            return {
+                label: element.label,
+                iconPath: this.getIcon(element.state === "Running" ? "spinner.svg" : `test${element.state}.png`),
+                contextValue: "test",
+                command: {
+                    command: "dotnet-test-explorer.leftClickTest",
+                    title: "",
+                    arguments: [element],
+                }
+            }
+        } else if (element instanceof FolderNode) {
+            return {
+                label: element.label,
+                collapsibleState: Utility.defaultCollapsibleState,
+                iconPath: this.getIcon(
+                    element.state === "Running" ? "spinner.svg" :
+                        element.state === "NotRun" ? "namespace.png" :
+                            `namespace${element.state}.png`),
+                contextValue: "folder"
+            }
+        } else if (element instanceof LoadingTreeNode) {
+            return { label: element.label, iconPath: this.getIcon("spinner.svg") }
+        } else {
+            return { label: element.label + " (internal warning: unknown node)" }
+        }
+    }
 
+    public getChildren(element?: TreeNode): TreeNode[] | Thenable<TreeNode[]> {
         if (element) {
-            return element.children;
+            return [...element.children];
         }
+        if (this.isDiscovering) {
+            return [new LoadingTreeNode()];
+        }
+        return this.rootNodes;
+    }
 
-        if (!this.discoveredTests) {
-            const loadingNode = new TestNode("", "Discovering tests", this.testResults);
-            loadingNode.setAsLoading();
-            return [loadingNode];
-        }
-
-        if (this.discoveredTests.length === 0) {
-            // Show the welcome message.
-            return [];
-        }
+    public rebuildTree() {
+        this.testNodes.clear();
 
         const treeMode = Utility.getConfiguration().get<string>("treeMode");
 
+        const discoveredTests = [...this.discoveredTests].sort();
+        let tree: ITestTreeNode;
         if (treeMode === "flat") {
-            return this.testNodes = this.discoveredTests.map((name) => {
-                return new TestNode("", name, this.testResults);
-            });
+            tree = { name: "", fullName: "", subTrees: new Map(), tests: discoveredTests };
         }
+        else {
+            const parsedTestNames = discoveredTests.map(parseTestName);
+            tree = buildTree(parsedTestNames);
 
-        const parsedTestNames = this.discoveredTests.map(parseTestName);
-        let tree = buildTree(parsedTestNames);
-
-        if (treeMode === "merged") {
-            tree = mergeSingleItemTrees(tree);
-        }
-
-        this.testNodes = [];
-        const concreteRoot = this.createConcreteTree("", tree);
-
-        return concreteRoot.children;
-    }
-
-    private createConcreteTree(parentNamespace: string, abstractTree: ITestTreeNode): TestNode {
-        const children = [];
-        for (const subNamespace of abstractTree.subTrees.values()) {
-            children.push(this.createConcreteTree(abstractTree.fullName, subNamespace));
-        }
-        for (const test of abstractTree.tests) {
-            const testNode = new TestNode(abstractTree.fullName, test, this.testResults);
-            this.testNodes.push(testNode);
-            children.push(testNode);
-        }
-        return new TestNode(parentNamespace, abstractTree.name, this.testResults, children);
-    }
-
-    private updateWithDiscoveringTest() {
-        this.discoveredTests = null;
-        this._onDidChangeTreeData.fire(null);
-    }
-
-    private updateWithDiscoveredTests(results: IDiscoverTestsResult[]) {
-        this.testNodes = [];
-        this.discoveredTests = [].concat(...results.map((r) => r.testNames));
-        this.statusBar.discovered(this.discoveredTests.length);
-        this._onDidChangeTreeData.fire(null);
-    }
-
-    private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
-
-        const filter = testRunContext.isSingleTest ?
-            ((testNode: TestNode) => testNode.fqn === testRunContext.testName)
-            : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
-
-        const testRun = this.testNodes.filter((testNode: TestNode) => !testNode.isFolder && filter(testNode));
-
-        this.statusBar.testRunning(testRun.length);
-
-        testRun.forEach((testNode: TestNode) => {
-            testNode.setAsLoading();
-            this._onDidChangeTreeData.fire(testNode);
-        });
-    }
-
-    private addTestResults(results: ITestResult) {
-
-        const fullNamesForTestResults = results.testResults.map((r) => r.fullName);
-
-        if (results.clearPreviousTestResults) {
-            this.discoveredTests = [...fullNamesForTestResults];
-            this.testResults = null;
-        } else {
-            const newTests = fullNamesForTestResults.filter((r) => this.discoveredTests.indexOf(r) === -1);
-
-            if (newTests.length > 0) {
-                this.discoveredTests.push(...newTests);
+            if (treeMode === "merged") {
+                tree = mergeSingleItemTrees(tree);
             }
         }
 
-        this.discoveredTests = this.discoveredTests.sort();
+        const concreteRoot = this.createConcreteTree("", tree);
 
-        this.statusBar.discovered(this.discoveredTests.length);
+        this.rootNodes = [...concreteRoot.children];
 
-        if (this.testResults) {
-            results.testResults.forEach((newTestResult: TestResult) => {
-                const indexOldTestResult = this.testResults.findIndex((tr) => tr.fullName === newTestResult.fullName);
+        this.statusBar.discovered(this.discoveredTests.size);
+        this._onDidChangeTreeData.fire(null);
+    }
 
-                if (indexOldTestResult < 0) {
-                    this.testResults.push(newTestResult);
-                } else {
-                    this.testResults[indexOldTestResult] = newTestResult;
+    private registerNode<T extends TreeNode>(testNode: T) {
+        if (testNode instanceof TestNode) {
+            this.testNodes.set(testNode.fullName, testNode);
+        }
+        testNode.nodeChanged(() => this._onDidChangeTreeData.fire(testNode));
+        return testNode;
+    }
+
+    private createConcreteTree(parentNamespace: string, abstractTree: ITestTreeNode): FolderNode {
+        const result = new FolderNode(abstractTree.fullName, abstractTree.name);
+        for (const subNamespace of abstractTree.subTrees.values()) {
+            result.addFolderNode(this.createConcreteTree(abstractTree.fullName, subNamespace));
+        }
+        for (const test of abstractTree.tests) {
+            const fullName = `${abstractTree.fullName}.${test}`;
+            const testNode = new TestNode(fullName, test);
+            const outcome = this.testResults.get(fullName)?.outcome;
+            if (outcome && outcome !== "None" && outcome !== "NotFound") {
+                testNode.state = outcome;
+            }
+            this.registerNode(testNode);
+            result.addTestNode(testNode);
+        }
+        this.registerNode(result);
+        return result;
+    }
+
+    private updateWithDiscoveringTest() {
+        this.isDiscovering = true;
+        this._onDidChangeTreeData.fire();
+    }
+
+    private updateWithDiscoveredTests(discoveredTests: Iterable<string>) {
+        this.discoveredTests = new Set(discoveredTests);
+        this.isDiscovering = false;
+        this.rebuildTree();
+        this.addTestResults(this.testResults.values());
+    }
+
+    private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
+        let numRunning = 0;
+        function setRunning(nodes: Iterable<TreeNode>, prefix: string) {
+            for (const node of nodes) {
+                if (node instanceof FolderNode
+                    && node.fullName.startsWith(prefix)) {
+                    setRunning(node.children, prefix);
                 }
-            });
-        } else {
-            this.testResults = results.testResults;
+                else if (node instanceof TestNode) {
+                    if (node.fullName.startsWith(prefix)) {
+                        node.state = "Running";
+                        numRunning++;
+                    }
+                }
+            }
         }
 
-        this.statusBar.testRun(results.testResults);
+        if (testRunContext.isSingleTest) {
+            this.testNodes.get(testRunContext.testName).state = "Running";
+            numRunning = 1;
+        }
+        else {
+            setRunning(this.rootNodes, testRunContext.testName);
+        }
+
+        this.statusBar.testRunning(numRunning);
+    }
+
+    private addTestResults(results: Iterable<ITestResult>) {
+        const fullNamesForTestResults = [...results].map((r) => r.fullName);
+
+        const discoveredTests = new Set(this.discoveredTests);
+        const newTests = fullNamesForTestResults.filter((r) => !discoveredTests.has(r));
+
+        if (newTests.length > 0) {
+            for (const newTest of newTests) {
+                this.discoveredTests.add(newTest);
+            }
+            this.rebuildTree();
+        }
+
+        for (const result of results) {
+            if (result.outcome === "NotFound" || result.outcome === "None")
+                continue;
+
+            this.testResults.set(result.fullName, result);
+            this.testNodes.get(result.fullName).state = result.outcome;
+        }
+
+        this.statusBar.testRun([...results]);
 
         this._onDidChangeTreeData.fire(null);
+    }
+
+    /** When a test run finishes, no tests should be spinning any more.
+     *  Any test that is still running was not found, and as such should be removed from the list.
+     */
+    public removeRunningTests() {
+        let requiresRebuild = false;
+        for (const node of [...this.testNodes.values()]) {
+            if (node.state === "Running") {
+                Logger.Log(`Test ${node.fullName} was not found - removing...`);
+                this.discoveredTests.delete(node.fullName);
+                requiresRebuild = true;
+            }
+        }
+        if (requiresRebuild) {
+            this.rebuildTree();
+        }
     }
 }

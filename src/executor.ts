@@ -1,70 +1,66 @@
 "use strict";
-import { ChildProcess, exec } from "child_process";
+import { ChildProcess, exec, ExecException, ExecOptions } from "child_process";
 import { platform } from "os";
 import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
+import { BaseEncodingOptions } from "fs";
+
+export interface IProcessOutput {
+    error: ExecException;
+    stdout: string;
+    stderr: string;
+}
 
 export class Executor {
-
-    public static runInTerminal(command: string, cwd?: string, addNewLine: boolean = true, terminal: string = ".NET Test Explorer"): void {
-        if (this.terminals[terminal] === undefined) {
-            this.terminals[terminal] = vscode.window.createTerminal(terminal);
-        }
-        this.terminals[terminal].show();
-        if (cwd) {
-            this.terminals[terminal].sendText(`cd "${cwd}"`);
-        }
-        this.terminals[terminal].sendText(command, addNewLine);
+    private static defaultOptions: BaseEncodingOptions & ExecOptions = {
+        encoding: "utf8",
+        maxBuffer: 512000
+    };
+    private static defaultEnv: NodeJS.ProcessEnv = {
+        DOTNET_CLI_UI_LANGUAGE: "en",
+        VSTEST_HOST_DEBUG: "0",
+        ...process.env
+    };
+    public static spawn(command: string, cwd?: string): ChildProcess {
+        const options = {
+            ...this.defaultOptions,
+            env: this.defaultEnv,
+            cwd
+        };
+        return this.execInternal(command, options, () => null);
+    }
+    public static exec(command: string,
+        cwd?: string): Promise<IProcessOutput> {
+        const options = {
+            ...this.defaultOptions,
+            env: this.defaultEnv,
+            cwd
+        };
+        return new Promise<IProcessOutput>((resolve) => {
+            this.execInternal(command, options, (error, stdout, stderr) => resolve({ error, stdout, stderr }))
+        });
     }
 
-    public static exec(command: string, callback, cwd?: string, addToProcessList?: boolean) {
-        // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
-        // function so we set the variable here instead
-        process.env.DOTNET_CLI_UI_LANGUAGE = "en";
-        process.env.VSTEST_HOST_DEBUG = "0";
+    public static debug(command: string, cwd?: string) {
+        const options = {
+            ...this.defaultOptions,
+            env: {
+                ...this.defaultEnv,
+                VSTEST_HOST_DEBUG: "1"
+            },
+            cwd
+        };
 
-        const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
+        return new Promise<IProcessOutput>((resolve) => {
+            const childProcess = this.execInternal(command, options, (error, stdout, stderr) => resolve({ error, stdout, stderr }))
 
-        if (addToProcessList) {
+            if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
+                Logger.Log("Debugger already running");
+                return;
+            }
 
-            Logger.Log(`Process ${childProcess.pid} started`);
-
-            this.processes.push(childProcess);
-
-            childProcess.on("close", (code: number) => {
-
-                const index = this.processes.map((p) => p.pid).indexOf(childProcess.pid);
-                if (index > -1) {
-                    this.processes.splice(index, 1);
-                    Logger.Log(`Process ${childProcess.pid} finished`);
-                }
-            });
-        }
-
-        return childProcess;
-    }
-
-    public static debug(command: string, callback, cwd?: string, addToProcessList?: boolean) {
-        // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
-        // function so we set the variable here instead
-        process.env.DOTNET_CLI_UI_LANGUAGE = "en";
-        process.env.VSTEST_HOST_DEBUG = "1";
-
-        const childProcess = exec(this.handleWindowsEncoding(command), { encoding: "utf8", maxBuffer: 5120000, cwd }, callback);
-
-        if (this.debugRunnerInfo && this.debugRunnerInfo.isSettingUp) {
-            Logger.Log("Debugger already running");
-            return;
-        }
-
-        const debug = new Debug();
-
-        if (addToProcessList) {
-
-            Logger.Log(`Process ${childProcess.pid} started`);
-
-            this.processes.push(childProcess);
+            const debug = new Debug();
 
             childProcess.stdout.on("data", (buf) => {
 
@@ -75,7 +71,6 @@ export class Executor {
                 Logger.Log(`Waiting for debugger to attach`);
 
                 const stdout = String(buf);
-
                 this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
 
                 if (this.debugRunnerInfo.config) {
@@ -84,7 +79,7 @@ export class Executor {
 
                     this.debugRunnerInfo.isRunning = true;
 
-                    vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then( (c) => {
+                    vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then((c) => {
                         // When we attach to the debugger it seems to be stuck before loading the actual assembly that's running in code
                         // This is to try to continue past this invisible break point and into the actual code the user wants to debug
                         setTimeout(() => {
@@ -95,47 +90,65 @@ export class Executor {
             });
 
             childProcess.on("close", (code: number) => {
-
                 Logger.Log(`Debugger finished`);
-
                 this.debugRunnerInfo = null;
-
                 vscode.commands.executeCommand("workbench.view.extension.test", "workbench.view.extension.test");
-
-                const index = this.processes.map((p) => p.pid).indexOf(childProcess.pid);
-                if (index > -1) {
-                    this.processes.splice(index, 1);
-                    Logger.Log(`Process ${childProcess.pid} finished`);
-                }
             });
-        }
+        });
 
+    }
+
+    private static execInternal(command: string,
+        options: BaseEncodingOptions & ExecOptions,
+        callback: (error: ExecException, stdout: string, stderr: string) => void): ChildProcess {
+        Logger.Log(`Executing ${command} in ${options.cwd}`);
+        const childProcess = exec(this.handleWindowsEncoding(command), options, callback);
+
+        Logger.Log(`Process ${childProcess.pid} started`);
+
+        this.processes.add(childProcess);
+        childProcess.on("close", (code: number) => {
+            if (this.processes.has(childProcess)) {
+                this.processes.delete(childProcess);
+                Logger.Log(`Process ${childProcess.pid} finished`);
+            }
+        });
+        childProcess.stdout.on("data", chunk => Logger.Log(chunk));
+        childProcess.stderr.on("data", chunk => Logger.Log(chunk));
         return childProcess;
     }
 
-    public static onDidCloseTerminal(closedTerminal: vscode.Terminal): void {
-        delete this.terminals[closedTerminal.name];
-    }
-
-    public static stop() {
-        this.processes.forEach((p) => {
-            Logger.Log(`Stop processes requested - ${p.pid} stopped`);
-            p.kill("SIGKILL");
-        });
-
-        this.processes = [];
+    public static async stop() {
         this.debugRunnerInfo = null;
+        const processes = [...this.processes];
+        this.processes.clear();
+        await Promise.all(processes.map(p => this.terminate(p)));
     }
 
     private static debugRunnerInfo: IDebugRunnerInfo;
 
-    private static terminals: { [id: string]: vscode.Terminal } = {};
-
     private static isWindows: boolean = platform() === "win32";
 
-    private static processes: ChildProcess[] = [];
+    private static processes = new Set<ChildProcess>();
 
     private static handleWindowsEncoding(command: string): string {
         return this.isWindows ? `chcp 65001 | ${command}` : command;
+    }
+
+    /** Tries to gracefully terminate a process. If it's not done after a timeout, kill it instead. */
+    public static async terminate(process: ChildProcess, killTimeout: number = 3000) {
+        return new Promise((resolve) => {
+            process.on("exit", () => resolve());
+            Logger.Log(`Trying to terminate process ${process.pid}...`)
+            process.kill("SIGTERM");
+            setTimeout(() => {
+                if (typeof process.exitCode !== "number") {
+                    Logger.LogWarning(`Process ${process.pid} does not react. Killing...`)
+                    process.kill("SIGKILL");
+                }
+            }, 3000);
+            if (typeof process.exitCode === "number")
+                resolve();
+        });
     }
 }

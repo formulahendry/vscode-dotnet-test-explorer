@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
 import { TestCommands } from "./testCommands";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class Problems {
 
-    public static createProblemsFromResults(results: TestResult[]) {
+    public static createProblemsFromResults(results: ITestResult[]) {
         const resultsWithStackTrace = results
             .filter( (tr) => tr.stackTrace);
 
@@ -57,11 +57,11 @@ export class Problems {
         }
     }
 
-    private addTestResults(results: ITestResult) {
+    private addTestResults(results: ITestResult[]) {
 
         this._diagnosticCollection.clear();
 
-        const problems = Problems.createProblemsFromResults(results.testResults);
+        const problems = Problems.createProblemsFromResults(results);
 
         const newDiagnostics: [vscode.Uri, vscode.Diagnostic[]][] = [];
 

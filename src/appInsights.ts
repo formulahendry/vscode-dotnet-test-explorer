@@ -6,7 +6,6 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { Logger } from "./logger";
 import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
-import { IDiscoverTestsResult } from "./testDiscovery";
 
 export class AppInsights {
 
@@ -20,12 +19,12 @@ export class AppInsights {
             }
         }
 
-    private telemetryDiscoveredTests(results: IDiscoverTestsResult[]) {
+    private telemetryDiscoveredTests(results: string[]) {
 
         // Dispose to unsubscribe, we only try to report these metrics first time tests are discovered
         this.testDiscoveryFinishedEvent.dispose();
 
-        const numberOfTests = [].concat(...results.map( (r) => r.testNames)).length;
+        const numberOfTests = results.length;
 
         if (numberOfTests < 1) {
             return;

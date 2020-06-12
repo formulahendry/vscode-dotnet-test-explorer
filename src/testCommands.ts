@@ -6,11 +6,13 @@ import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
 import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
-import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
-import { TestNode } from "./testNode";
-import { ITestResult, TestResult } from "./testResult";
-import { parseResults } from "./testResultsFile";
+import { ITestResult } from "./testResult";
 import { Utility } from "./utility";
+import { TestResultsListener } from "./testResultsListener";
+import { TestNode } from "./treeNodes/testNode";
+import { FolderNode } from "./treeNodes/folderNode";
+import { TreeNode } from "./treeNodes/treeNode";
+import { Watch } from "./watch";
 
 export interface ITestRunContext {
     testName: string;
@@ -19,28 +21,45 @@ export interface ITestRunContext {
 
 export class TestCommands implements Disposable {
     private onTestDiscoveryStartedEmitter = new EventEmitter<string>();
-    private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
+    private onTestDiscoveryFinishedEmitter = new EventEmitter<string[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
-    private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
+    private onTestRunFinishedEmitter = new EventEmitter<void>();
+    private onNewTestResultsEmitter = new EventEmitter<ITestResult[]>();
+    public onTestDiscoveryStarted = this.onTestDiscoveryStartedEmitter.event;
+    public onTestDiscoveryFinished = this.onTestDiscoveryFinishedEmitter.event;
+    public onTestRun = this.onTestRunEmitter.event;
+    public onTestRunFinished = this.onTestRunFinishedEmitter.event;
+    public onNewTestResults = this.onNewTestResultsEmitter.event;
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
-    private testResultsFolderWatcher: any;
 
     private isRunning: boolean;
 
-    constructor(
-        private testDirectories: TestDirectories) { }
+    private watch: Watch;
 
-    public dispose(): void {
-        try {
-            if (this.testResultsFolderWatcher) {
-                this.testResultsFolderWatcher.close();
-            }
-        } catch (err) {
+    constructor(
+        private testDirectories: TestDirectories,
+        public readonly loggerServer: TestResultsListener) {
+
+        this.watch = new Watch(testDirectories);
+        this.onTestDiscoveryFinished(this.updateWatch, this);
+    }
+
+    public updateWatch() {
+        if (Utility.getConfiguration().get<boolean>("autoWatch")) {
+            this.watch.startWatch(
+                () => this.onTestRunEmitter.fire({ isSingleTest: false, testName: "" }),
+                () => this.onTestRunFinishedEmitter.fire(),
+                (results) => this.onNewTestResultsEmitter.fire(results)
+            );
+        } else {
+            this.watch.stopWatch();
         }
     }
 
-    public discoverTests() {
+    public dispose(): void { }
+
+    public async discoverTests(): Promise<void> {
         this.onTestDiscoveryStartedEmitter.fire("");
 
         this.testDirectories.clearTestsForDirectory();
@@ -51,62 +70,52 @@ export class TestCommands implements Disposable {
 
         this.setupTestResultFolder();
 
-        const runSeqOrAsync = async () => {
+        const discoveredTests = [];
 
-            const addToDiscoveredTests = (discoverdTestResult: IDiscoverTestsResult, dir: string) => {
-                if (discoverdTestResult.testNames.length > 0) {
-                    discoveredTests.push(discoverdTestResult);
-                }
-            };
-
-            const discoveredTests = [];
-
-            try {
-
-                if (Utility.runInParallel) {
-                    await Promise.all(testDirectories.map(async (dir) => await addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir)));
-                } else {
-                    for (const dir of testDirectories) {
-                        addToDiscoveredTests(await this.discoverTestsInFolder(dir), dir);
-                    }
-                }
-
-                this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
-            } catch (error) {
-                this.onTestDiscoveryFinishedEmitter.fire([]);
-            }
+        const discoverAndAdd = async (dir: string) => {
+            const tests = await this.discoverTestsInFolder(dir);
+            discoveredTests.push(...tests);
         };
 
-        runSeqOrAsync();
+
+        try {
+            if (Utility.runInParallel) {
+                await Promise.all(testDirectories.map(async (dir) => await discoverAndAdd(dir)));
+            } else {
+                for (const dir of testDirectories) {
+                    await discoverAndAdd(dir);
+                }
+            }
+
+            this.onTestDiscoveryFinishedEmitter.fire(discoveredTests);
+        } catch (error) {
+            this.onTestDiscoveryFinishedEmitter.fire([]);
+        }
     }
 
-    public async discoverTestsInFolder(dir: string): Promise<IDiscoverTestsResult> {
-        const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
-        return testsForDir;
+    public async discoverTestsInFolder(dir: string): Promise<string[]> {
+        const discoveredTests: string[] = []
+        const subscription = this.loggerServer.onMessage((message) => {
+            if (message.type === "discovery") {
+                discoveredTests.push(...message.discovered);
+            }
+        })
+        try {
+            const command = `dotnet test `
+                + `${Utility.additionalArgumentsOption} `
+                + `--list-tests `
+                + `--verbosity=quiet `
+                + `--test-adapter-path "${Utility.loggerPath}" `
+                + `--logger "VsCodeLogger;port=${this.loggerServer.port}" `;
+            await Executor.exec(command, dir);
+        }
+        finally {
+            subscription.dispose();
+        }
+        return discoveredTests;
     }
 
-    public get testResultFolder(): string {
-        return this.testResultsFolder;
-    }
-
-    public get onTestDiscoveryStarted(): Event<string> {
-        return this.onTestDiscoveryStartedEmitter.event;
-    }
-
-    public get onTestDiscoveryFinished(): Event<IDiscoverTestsResult[]> {
-        return this.onTestDiscoveryFinishedEmitter.event;
-    }
-
-    public get onTestRun(): Event<ITestRunContext> {
-        return this.onTestRunEmitter.event;
-    }
-
-    public get onNewTestResults(): Event<ITestResult> {
-        return this.onNewTestResultsEmitter.event;
-    }
-
-    public sendNewTestResults(testResults: ITestResult) {
+    public sendNewTestResults(testResults: ITestResult[]) {
         this.onNewTestResultsEmitter.fire(testResults);
     }
 
@@ -119,8 +128,11 @@ export class TestCommands implements Disposable {
         AppInsightsClient.sendEvent("runAllTests");
     }
 
-    public runTest(test: TestNode): void {
-        this.runTestByName(test.fqn, !test.isFolder);
+    public runTest(test: TreeNode): void {
+        if (test instanceof TestNode)
+            this.runTestByName(test.fullName, true);
+        if (test instanceof FolderNode)
+            this.runTestByName(test.fullName, false);
     }
 
     public runTestByName(testName: string, isSingleTest: boolean): void {
@@ -167,31 +179,19 @@ export class TestCommands implements Disposable {
 
         Logger.Log(`Test run for ${testName}`);
 
-        for (const { } of testDirectories) {
-            const testContext = { testName, isSingleTest };
-            this.lastRunTestContext = testContext;
-            this.sendRunningTest(testContext);
-        }
+        const testContext = { testName, isSingleTest };
+        this.lastRunTestContext = testContext;
+        this.sendRunningTest(testContext);
 
         try {
             if (Utility.runInParallel) {
-                await Promise.all(testDirectories.map(async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, i, debug)));
+                await Promise.all(testDirectories.map(async (dir, i) => this.runTestCommandForSpecificDirectory(dir, testName, isSingleTest, debug)));
             } else {
-                for (let i = 0; i < testDirectories.length; i++) {
-                    await this.runTestCommandForSpecificDirectory(testDirectories[i], testName, isSingleTest, i, debug);
+                for (const testDirectory of testDirectories) {
+                    await this.runTestCommandForSpecificDirectory(testDirectory, testName, isSingleTest, debug);
                 }
             }
-            const globPromise = new Promise<string[]>((resolve, reject) =>
-                glob("*.trx",
-                    { cwd: this.testResultsFolder, absolute: true },
-                    (err, matches) => err == null ? resolve(matches) : reject()));
-            const files = await globPromise;
-            const allTestResults = [];
-            for (const file of files) {
-                const testResults = await parseResults(file);
-                allTestResults.push(...testResults);
-            }
-            this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
+            this.onTestRunFinishedEmitter.fire();
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
             this.discoverTests();
@@ -199,75 +199,46 @@ export class TestCommands implements Disposable {
         this.isRunning = false;
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
-        return new Promise((resolve, reject) => {
-
-            if (Utility.skipBuild) {
-                Logger.Log(`User has passed --no-build, skipping build`);
-                resolve();
-            } else {
-                Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
-
-                Executor.exec("dotnet build", (err: any, stdout: string) => {
-                    if (err) {
-                        reject(new Error("Build command failed"));
-                    }
-                    resolve();
-                }, testDirectoryPath);
+    private async runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<void> {
+        if (Utility.skipBuild) {
+            Logger.Log(`User has passed --no-build, skipping build`);
+        } else {
+            const result = await Executor.exec("dotnet build", testDirectoryPath);
+            if (result.error) {
+                throw new Error("Build command failed");
             }
-        });
+        }
     }
 
-    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean): Promise<any[]> {
+    private async runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, debug?: boolean)
+        : Promise<void> {
+        let command = `dotnet test ${Utility.additionalArgumentsOption} `
+            + `--no-build `
+            + `--test-adapter-path "${Utility.loggerPath}" `
+            + `--logger "VsCodeLogger;port=${this.loggerServer.port}" `;
 
-        const trxTestName = index + ".trx";
-
-        return new Promise((resolve, reject) => {
-            const testResultFile = path.join(this.testResultsFolder, trxTestName);
-            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
-
-            if (testName && testName.length) {
-                if (isSingleTest) {
-                    command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
-                } else {
-                    command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
-                }
+        if (testName && testName.length) {
+            if (isSingleTest) {
+                command = command + ` --filter "FullyQualifiedName=${testName.replace(/\(.*\)/g, "")}"`;
+            } else {
+                command = command + ` --filter "FullyQualifiedName~${testName.replace(/\(.*\)/g, "")}"`;
             }
+        }
 
-            this.runBuildCommandForSpecificDirectory(testDirectoryPath)
-                .then(() => {
-                    Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
+        await this.runBuildCommandForSpecificDirectory(testDirectoryPath);
 
-                    if (!debug) {
-                        return Executor.exec(command, (err, stdout: string) => {
+        let result;
+        if (!debug) {
+            result = await Executor.exec(command, testDirectoryPath);
+        } else {
+            result = await Executor.debug(command, testDirectoryPath);
+        }
+        if (result.err && result.err.killed) {
+            Logger.Log("User has probably cancelled test run");
+            throw new Error("UserAborted");
+        }
 
-                            if (err && err.killed) {
-                                Logger.Log("User has probably cancelled test run");
-                                reject(new Error("UserAborted"));
-                            }
-
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
-
-                            resolve();
-                        }, testDirectoryPath, true);
-                    } else {
-                        return Executor.debug(command, (err, stdout: string) => {
-
-                            if (err && err.killed) {
-                                Logger.Log("User has probably cancelled test run");
-                                reject(new Error("UserAborted"));
-                            }
-
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
-
-                            resolve();
-                        }, testDirectoryPath, true);
-                    }
-
-                })
-                .catch((err) => {
-                    reject(err);
-                });
-        });
+        Logger.Log(result.stdout, ".NET Test Explorer (Test runner output)");
+        Logger.Log(result.stderr, ".NET Test Explorer (Test runner output)");
     }
 }

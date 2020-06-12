@@ -13,19 +13,24 @@ import { Problems } from "./problems";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
 import { TestDirectories } from "./testDirectories";
-import { TestNode } from "./testNode";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 import { Watch } from "./watch";
+import { createLocalTcpServer, readAllFromSocket, ILocalServer, shutdown } from "./netUtil";
+import { TestResultsListener } from "./testResultsListener";
+import { TestNode } from "./treeNodes/testNode";
+import { TreeNode } from "./treeNodes/treeNode";
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+    Utility.loggerPath = `${context.extensionPath}/out/logger/`;
+
     const testDirectories = new TestDirectories();
-    const testCommands = new TestCommands(testDirectories);
+    const listener = await TestResultsListener.create();
+    const testCommands = new TestCommands(testDirectories, listener);
     const gotoTest = new GotoTest();
     const findTestInContext = new FindTestInContext();
     const problems = new Problems(testCommands);
     const statusBar = new StatusBar(testCommands);
-    const watch = new Watch(testCommands, testDirectories);
     const leftClickTest = new LeftClickTest();
     const appInsights = new AppInsights(testCommands, testDirectories);
 
@@ -36,12 +41,19 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(problems);
     context.subscriptions.push(statusBar);
     context.subscriptions.push(testCommands);
+    context.subscriptions.push(listener);
 
     Utility.updateCache();
 
     const dotnetTestExplorer = new DotnetTestExplorer(context, testCommands, statusBar);
     vscode.window.registerTreeDataProvider("dotnetTestExplorer", dotnetTestExplorer);
     AppInsightsClient.sendEvent("loadExtension");
+
+    listener.onMessage((parsed) => {
+        if (parsed.type === "result") {
+            testCommands.sendNewTestResults([parsed])
+        }
+    });
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e: vscode.ConfigurationChangeEvent) => {
         if (!e.affectsConfiguration("dotnet-test-explorer")) { return; }
@@ -51,7 +63,11 @@ export function activate(context: vscode.ExtensionContext) {
             testCommands.discoverTests();
         }
 
-        dotnetTestExplorer._onDidChangeTreeData.fire(null);
+        if (e.affectsConfiguration("dotnet-test-explorer.autoWatch")) {
+            testCommands.updateWatch();
+        }
+
+        dotnetTestExplorer.rebuildTree();
 
         Utility.updateCache();
     }));
@@ -86,14 +102,13 @@ export function activate(context: vscode.ExtensionContext) {
         testCommands.runAllTests();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TestNode) => {
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.runTest", (test: TreeNode) => {
         testCommands.runTest(test);
     }));
 
-    context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", (editor: vscode.TextEditor) => {
-        findTestInContext.find(editor.document, editor.selection.start).then((testRunContext) => {
-            testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
-        });
+    context.subscriptions.push(vscode.commands.registerTextEditorCommand("dotnet-test-explorer.runTestInContext", async (editor: vscode.TextEditor) => {
+        const testRunContext = await findTestInContext.find(editor.document, editor.selection.start);
+        testCommands.runTestByName(testRunContext.testName, testRunContext.isSingleTest);
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.gotoTest", (test: TestNode) => {
@@ -101,21 +116,18 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.debugTest", (test: TestNode) => {
-        testCommands.debugTestByName(test.fqn, true);
+        testCommands.debugTestByName(test.fullName, true);
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.rerunLastCommand", (test: TestNode) => {
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.rerunLastCommand", () => {
         testCommands.rerunLastCommand();
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.leftClickTest", (test: TestNode) => {
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.leftClickTest", (test: TreeNode) => {
         leftClickTest.handle(test);
-    }));
-
-    context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
-        Executor.onDidCloseTerminal(closedTerminal);
     }));
 }
 
 export function deactivate() {
+    Executor.stop();
 }

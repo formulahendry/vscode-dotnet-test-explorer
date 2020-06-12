@@ -20,17 +20,15 @@ export class MessagesController implements IMessagesController {
      * @description
      * Displays the warning message that can be suppressed by the user.
      */
-    public showWarningMessage(message: IMessage) {
+    public async showWarningMessage(message: IMessage) {
         if (this.isSuppressed(message.type)) {
             return;
         }
 
-        return vscode.window.showWarningMessage(message.text, suppressMessageItem)
-            .then((item) => {
-                if (item === suppressMessageItem) {
-                    this.setSuppressed(message.type);
-                }
-            });
+        const item = await vscode.window.showWarningMessage(message.text, suppressMessageItem);
+        if (item === suppressMessageItem) {
+            this.setSuppressed(message.type);
+        }
     }
 
     private isSuppressed(messageType: string) {
@@ -38,17 +36,19 @@ export class MessagesController implements IMessagesController {
         return suppressedMessages && suppressedMessages.indexOf(messageType) > -1;
     }
 
-    private setSuppressed(messageType: string) {
+    private async setSuppressed(messageType: string) {
         const suppressedMessages =
             this.globalState.get<string[]>(suppressedMessagesStateKey) || [];
 
         if (suppressedMessages.indexOf(messageType) === -1) {
             suppressedMessages.push(messageType);
 
-            this.globalState.update(suppressedMessagesStateKey, suppressedMessages)
-                .then(() => { }, (reason) => {
-                    Logger.LogError("Error while updating global state value", reason);
-                });
+            try {
+                await this.globalState.update(suppressedMessagesStateKey, suppressedMessages)
+            }
+            catch (error) {
+                Logger.LogError("Error while updating global state value", error);
+            }
         }
     }
 }

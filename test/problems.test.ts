@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
 import { Problems } from "../src/problems";
-import {TestResult} from "../src/testResult";
+import { ITestResult, Outcome } from "../src/testResult";
 
 suite("Problems tests", () => {
 
@@ -63,6 +63,6 @@ suite("Problems tests", () => {
     });
 });
 
-function GetTestResult(id: string, outcome: string, message: string, stackTrace: string) {
-    return new TestResult(id, outcome, message, stackTrace);
+function GetTestResult(fullName: string, outcome: Outcome, message: string, stackTrace: string) {
+    return { fullName, outcome, message, stackTrace };
 }

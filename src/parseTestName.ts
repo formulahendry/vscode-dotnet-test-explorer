@@ -1,31 +1,54 @@
-export interface INameSegment {
+export interface IStringView {
     start: number;
     end: number;
 }
 
+export interface ISegment {
+    prefix?: IStringView,
+    name: IStringView,
+    brackets?: IStringView,
+}
+
 export interface IParsedName {
     fullName: string;
-    segments: INameSegment[];
+    segments: ISegment[];
 }
 
 export function parseTestName(name: string): IParsedName {
     let i = 0;
-    const segments = [];
+    const segments: ISegment[] = [];
     while (i < name.length) {
         segments.push(parseSegment());
     }
     return { fullName: name, segments };
 
-    function parseSegment(): INameSegment {
+    function parseSegment(): ISegment {
+        const prefix = parsePrefix();
+        const _name = parseName();
+        const brackets = parseBrackets();
+        return { prefix, name: _name, brackets };
+    }
+
+    function parsePrefix(): IStringView | undefined {
+        if (name[i] === "." || name[i] === "+") {
+            const result = { start: i, end: i + 1 };
+            i++;
+            return result;
+        }
+    }
+    function parseName(): IStringView {
         const start = i;
         while (i < name.length) {
-            if (tryParseBrackets()) { continue; }
-            if (name[i] === "." || name[i] === "+") { break; }
+            if (name[i] === "(" || name[i] === "+" || name[i] === ".") {
+                break;
+            }
             i++;
         }
-        const end = i;
-        i++;
-        return { start, end };
+        return { start, end: i };
+    }
+    function parseBrackets(): IStringView | undefined {
+        const start = i;
+        if (tryParseBrackets()) { return { start, end: i }; }
     }
 
     function tryParseBrackets(): boolean {
@@ -61,4 +84,19 @@ export function parseTestName(name: string): IParsedName {
         }
         return true;
     }
+}
+
+export function getSegmentString(fullName: string, segment: ISegment) {
+    return fullName.substring(segment.name.start, getSegmentEnd(segment));
+}
+
+export function getSegmentStart(segment: ISegment) {
+    return segment.prefix?.start ?? segment.name.start;
+}
+
+export function getSegmentEnd(segment: ISegment) {
+    return segment.brackets?.end ?? segment.name.end;
+}
+export function viewToString(fullName: string, view: IStringView) {
+    return fullName.substring(view.start, view.end);
 }

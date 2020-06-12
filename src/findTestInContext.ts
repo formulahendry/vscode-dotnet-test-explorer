@@ -10,23 +10,22 @@ export class FindTestInContext {
 
         AppInsightsClient.sendEvent("findTestInContext");
 
-        return Symbols.getSymbols(doc.uri, true).then( (documentSymbols: ITestSymbol[]) => {
+        const documentSymbols = await Symbols.getSymbols(doc.uri, true)
 
-            const symbolsInRange = documentSymbols.filter( (ds) => ds.documentSymbol.range.contains(position));
+        const symbolsInRange = documentSymbols.filter((ds) => ds.documentSymbol.range.contains(position));
 
-            let symbolCandidate: ITestSymbol;
+        let symbolCandidate: ITestSymbol;
 
-            symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Method);
+        symbolCandidate = symbolsInRange.find((s) => s.documentSymbol.kind === vscode.SymbolKind.Method);
 
-            if (symbolCandidate) {
-                return {testName: (symbolCandidate.fullName), isSingleTest: true};
-            }
+        if (symbolCandidate) {
+            return { testName: (symbolCandidate.fullName), isSingleTest: true };
+        }
 
-            symbolCandidate = symbolsInRange.find( (s) => s.documentSymbol.kind === vscode.SymbolKind.Class);
+        symbolCandidate = symbolsInRange.find((s) => s.documentSymbol.kind === vscode.SymbolKind.Class);
 
-            if (symbolCandidate) {
-                return {testName: symbolCandidate.fullName, isSingleTest: false};
-            }
-        });
+        if (symbolCandidate) {
+            return { testName: symbolCandidate.fullName, isSingleTest: false };
+        }
     }
 }

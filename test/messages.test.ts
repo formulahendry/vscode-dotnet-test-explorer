@@ -69,39 +69,36 @@ suite("MessagesController - Show warning message", () => {
         assert(showWarningMessageStub.notCalled, "Suppressed message is shown.");
     });
 
-    test("Adds message type to suppressed messages when suppressMessage action is invoked", () => {
+    test("Adds message type to suppressed messages when suppressMessage action is invoked", async () => {
         showWarningMessageStub.resolves(suppressMessageItem);
 
-        return messagesController.showWarningMessage(message).then(() => {
-            assert(updateSectionStub.calledOnceWith(
-                suppressedMessagesStateKey,
-                sinon.match.array.contains([message.type])),
-                "Message type not added to suppressedMessages state collection");
-        });
+        await messagesController.showWarningMessage(message);
+        assert(updateSectionStub.calledOnceWith(
+            suppressedMessagesStateKey,
+            sinon.match.array.contains([message.type])),
+            "Message type not added to suppressedMessages state collection");
     });
 
-    test("Keeps existing suppressed messages types when suppressMessage action is invoked", () => {
+    test("Keeps existing suppressed messages types when suppressMessage action is invoked", async () => {
         const existingSuppressedMessageType = "existing";
         suppressedMessages.push(existingSuppressedMessageType);
 
         showWarningMessageStub.resolves(suppressMessageItem);
 
-        return messagesController.showWarningMessage(message).then(() => {
-            assert(updateSectionStub.calledOnceWith(
-                suppressedMessagesStateKey,
-                sinon.match.array.contains([existingSuppressedMessageType])),
-                "Message type not added to suppressedMessages state collection");
-        });
+        await messagesController.showWarningMessage(message);
+        assert(updateSectionStub.calledOnceWith(
+            suppressedMessagesStateKey,
+            sinon.match.array.contains([existingSuppressedMessageType])),
+            "Message type not added to suppressedMessages state collection");
     });
 
-    test("Does not duplicate suppressMessage types when suppressMessage action is invoked", () => {
+    test("Does not duplicate suppressMessage types when suppressMessage action is invoked", async () => {
         showWarningMessageStub.resolves(suppressMessageItem);
 
         getSectionStub.onSecondCall().returns([message.type]);
 
-        return messagesController.showWarningMessage(message).then(() => {
-            assert(updateSectionStub.notCalled,
-                "SuppressedMessages configuration setting value was updated.");
-        });
+        await messagesController.showWarningMessage(message);
+        assert(updateSectionStub.notCalled,
+            "SuppressedMessages configuration setting value was updated.");
     });
 });
