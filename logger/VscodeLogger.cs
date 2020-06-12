@@ -9,11 +9,11 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using System.Collections.Generic;
 
-namespace VscodeTestExplorer.DataCollector
+namespace VscodeTestExplorer.Logger
 {
     [FriendlyName("VsCodeLogger")]
     [ExtensionUri("this://is/a/random/path/that/vstest/apparently/expects/whatever/VscodeLogger")]
-    public class TestBla : ITestLoggerWithParameters
+    public class VsCodeLogger : ITestLoggerWithParameters
     {
         int port;
         public void Initialize(TestLoggerEvents events, string testRunDirectory) { }
