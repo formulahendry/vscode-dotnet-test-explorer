@@ -194,7 +194,9 @@ export class TestCommands implements Disposable {
             this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
-            this.discoverTests();
+            if (err.message !== "UserAborted") {
+                this.discoverTests();
+            }
         }
         this.isRunning = false;
     }
