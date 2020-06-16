@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { TestCommands } from "./testCommands";
 import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
+import { Logger } from "./logger";
 
 export interface IDebugRunnerInfo {
     config?: vscode.DebugConfiguration;
@@ -21,7 +22,7 @@ export class Debug {
         }
 
         if (!debugRunnerInfo.waitingForAttach) {
-            debugRunnerInfo.waitingForAttach = data.indexOf("Waiting for debugger attach...") > -1;
+            debugRunnerInfo.waitingForAttach = data.indexOf("Please attach debugger to testhost process to continue") > -1;
         }
 
         if (debugRunnerInfo.processId.length <= 0) {
