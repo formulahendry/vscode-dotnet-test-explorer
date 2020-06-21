@@ -313,5 +313,8 @@
     "glob": "^7.1.6",
     "ts-node": "^8.10.1",
     "xmldom": "^0.3.0"
-  }
+  },
+  "extensionDependencies": [
+    "ms-dotnettools.csharp"
+  ]
 }
