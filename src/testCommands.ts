@@ -226,7 +226,7 @@ export class TestCommands implements Disposable {
 
         return new Promise((resolve, reject) => {
             const testResultFile = path.join(this.testResultsFolder, trxTestName);
-            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
+            let command = `dotnet test${Utility.additionalArgumentsOption} ${Utility.settingsFileOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
 
             if (testName && testName.length) {
                 if (isSingleTest) {

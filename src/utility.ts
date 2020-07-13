@@ -38,6 +38,11 @@ export class Utility {
         return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
     }
 
+    public static get settingsFileOption(): string {
+        const settingsFile = Utility.getConfiguration().get<string>("settingsFile");
+        return (settingsFile && settingsFile.length > 0) ? ` --settings:${settingsFile}` : "";
+    }
+
     public static getConfiguration(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }

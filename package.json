@@ -253,6 +253,11 @@
           "default": "",
           "description": "Additional arguments that are added to the dotnet test command."
         },
+        "dotnet-test-explorer.settingsFile": {
+          "type": "string",
+          "default": "",
+          "description": "Settings file for tests."
+        },
         "dotnet-test-explorer.leftClickAction": {
           "type": "string",
           "default": "gotoTest",

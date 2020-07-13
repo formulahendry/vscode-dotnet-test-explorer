@@ -93,6 +93,7 @@ Text from the dotnet test output as well as debug info is written to the Output/
 * `dotnet-test-explorer.addProblems`: If true, failed tests will add to problems view. (Default is **true**)
 * `dotnet-test-explorer.autoWatch`: If true, starts dotnet watch test after test discovery is completed. (Default is **false**)
 * `dotnet-test-explorer.testArguments`: Additional arguments that are added to the dotnet test command
+* `dotnet-test-explorer.settingsFile`: Optional path to a settings file for the tests
 * `dotnet-test-explorer.leftClickAction`: What happens when a test in the list is left clicked. (Default is **gotoTest**)
 * `dotnet-test-explorer.runInParallel`: If true, will discover/build and run test in parallel if you have multiple test projects (Default is **false**)
 
