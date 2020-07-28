@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
+import * as vscode from "vscode";
 import { commands, Disposable, Event, EventEmitter } from "vscode";
 import { AppInsightsClient } from "./appInsightsClient";
 import { Executor } from "./executor";
@@ -22,6 +23,7 @@ export class TestCommands implements Disposable {
     private onTestDiscoveryFinishedEmitter = new EventEmitter<IDiscoverTestsResult[]>();
     private onTestRunEmitter = new EventEmitter<ITestRunContext>();
     private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
+    private onBuildFailedEmitter = new EventEmitter<ITestRunContext>();
     private lastRunTestContext: ITestRunContext = null;
     private testResultsFolder: string;
     private testResultsFolderWatcher: any;
@@ -102,6 +104,10 @@ export class TestCommands implements Disposable {
         return this.onTestRunEmitter.event;
     }
 
+    public get onBuildFail(): Event<ITestRunContext> {
+        return this.onBuildFailedEmitter.event;
+    }
+
     public get onNewTestResults(): Event<ITestResult> {
         return this.onNewTestResultsEmitter.event;
     }
@@ -112,6 +118,10 @@ export class TestCommands implements Disposable {
 
     public sendRunningTest(testContext: ITestRunContext) {
         this.onTestRunEmitter.fire(testContext);
+    }
+
+    public sendBuildFailed(testContext: ITestRunContext) {
+        this.onBuildFailedEmitter.fire(testContext);
     }
 
     public runAllTests(): void {
@@ -161,6 +171,7 @@ export class TestCommands implements Disposable {
             .getTestDirectories(testName);
 
         if (testDirectories.length < 1) {
+            this.isRunning = false;
             Logger.LogWarning("Could not find a matching test directory for test " + testName);
             return;
         }
@@ -194,9 +205,23 @@ export class TestCommands implements Disposable {
             this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
-            if (err.message !== "UserAborted") {
-                this.discoverTests();
+            
+            if (err.message === "Build command failed") {
+                // vscode.commands.executeCommand("dotnet-test-explorer.stop");
+
+                vscode.window.showErrorMessage("Build failed. Fix your build and try to run the test(s) again");
+
+                for (const { } of testDirectories) {
+                    const testContext = { testName, isSingleTest };
+                    this.lastRunTestContext = testContext;
+                    this.sendBuildFailed(testContext);
+                }
+
+                
             }
+            // else if (err.message !== "UserAborted") {
+            //     this.discoverTests();
+            // }
         }
         this.isRunning = false;
     }

@@ -25,6 +25,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
         testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
+        testCommands.onBuildFail(this.updateTreeWithUnknownStateForCurrentlyRunningTests, this);
         testCommands.onNewTestResults(this.addTestResults, this);
     }
 
@@ -44,9 +45,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     public getTreeItem(element: TestNode): TreeItem {
-        if (element.isError) {
-            return new TreeItem(element.name);
-        }
+        // if (element.isError) {
+        //     return new TreeItem(element.name);
+        // }
 
         return {
             label: element.name,
@@ -128,7 +129,6 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
-
         const filter = testRunContext.isSingleTest ?
             ((testNode: TestNode) => testNode.fqn === testRunContext.testName)
             : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
@@ -139,6 +139,20 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         testRun.forEach((testNode: TestNode) => {
             testNode.setAsLoading();
+            this._onDidChangeTreeData.fire(testNode);
+        });
+    }
+
+    private updateTreeWithUnknownStateForCurrentlyRunningTests(testRunContext: ITestRunContext) {
+
+        const filter = testRunContext.isSingleTest ?
+            ((testNode: TestNode) => testNode.fqn === testRunContext.testName)
+            : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
+
+        const testRun = this.testNodes.filter((testNode: TestNode) => !testNode.isFolder && filter(testNode));
+
+        testRun.forEach((testNode: TestNode) => {
+            testNode.setAsUnknown();
             this._onDidChangeTreeData.fire(testNode);
         });
     }

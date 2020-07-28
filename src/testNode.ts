@@ -2,7 +2,7 @@ import { TestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export class TestNode {
-    private _isError: boolean;
+    private _isUnknown: boolean;
     private _isLoading: boolean;
     private _icon: string;
     private _fqn: string;
@@ -40,25 +40,36 @@ export class TestNode {
         return this._children;
     }
 
-    public get isError(): boolean {
-        return !!this._isError;
-    }
+    // public get isError(): boolean {
+    //     return !!this._isError;
+    // }
 
     public get icon(): string {
-        return (this._isLoading) ? "spinner.svg" : this._icon;
-    }
-
-    public setAsError(error: string) {
-        this._isError = true;
-        this._name = error;
+        if(this._isUnknown) {
+            return "testNotRun.png";
+        } else if(this._isLoading) {
+            return "spinner.svg";
+        } else {
+            return this._icon;
+        }
     }
 
     public setAsLoading() {
+        this._isUnknown = false;
         this._isLoading = true;
+    }
+
+    public getIsLoading() {
+        return this._isLoading;
+    }
+
+    public setAsUnknown() {
+        this._isUnknown = true;
     }
 
     public setIcon(testResults: TestResult[]) {
         this._isLoading = false;
+        this._isUnknown = false;
 
         if (!testResults) {
             this._icon = this.isFolder ? "namespace.png" : "run.png";

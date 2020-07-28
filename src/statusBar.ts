@@ -9,6 +9,7 @@ export class StatusBar {
     public constructor(testCommand: TestCommands) {
         this.status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
         testCommand.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
+        testCommand.onBuildFail(this.updateWithBuildFail, this);
         this.status.command = "dotnet-test-explorer.openPanel";
         this.discovering();
     }
@@ -16,6 +17,12 @@ export class StatusBar {
     public discovering() {
         this.baseStatusText = "";
         this.status.text = `$(beaker) $(sync~spin) Discovering tests`;
+        this.status.show();
+    }
+
+    public buildFailed() {
+        this.baseStatusText = "";
+        this.status.text = `$(beaker) $(dialog-warning) Build failed. Tests not run!`;
         this.status.show();
     }
 
@@ -44,5 +51,9 @@ export class StatusBar {
 
     private updateWithDiscoveringTest() {
         this.discovering();
+    }
+
+    private updateWithBuildFail() {
+        this.buildFailed();
     }
 }
