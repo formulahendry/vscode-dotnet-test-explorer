@@ -8,7 +8,7 @@ import { parseTestName } from "./parseTestName";
 import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
-import { TestNode } from "./testNode";
+import { TestNode, TestNodeIcon } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
@@ -25,6 +25,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         testCommands.onTestDiscoveryFinished(this.updateWithDiscoveredTests, this);
         testCommands.onTestDiscoveryStarted(this.updateWithDiscoveringTest, this);
         testCommands.onTestRun(this.updateTreeWithRunningTests, this);
+        testCommands.onBuildFail(this.updateTreeWithNotRunTests, this);
         testCommands.onNewTestResults(this.addTestResults, this);
     }
 
@@ -44,9 +45,9 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     public getTreeItem(element: TestNode): TreeItem {
-        if (element.isError) {
-            return new TreeItem(element.name);
-        }
+        // if (element.isError) {
+        //     return new TreeItem(element.name);
+        // }
 
         return {
             label: element.name,
@@ -72,7 +73,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         if (!this.discoveredTests) {
             const loadingNode = new TestNode("", "Discovering tests", this.testResults);
-            loadingNode.setAsLoading();
+            loadingNode.setIcon(TestNodeIcon.Running);
             return [loadingNode];
         }
 
@@ -128,19 +129,32 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
     }
 
     private updateTreeWithRunningTests(testRunContext: ITestRunContext) {
+        const runningTests = this.getNodesMatchingTestRun(testRunContext);
 
+        this.statusBar.testRunning(runningTests.length);
+
+        runningTests.forEach((testNode: TestNode) => {
+            testNode.setIcon(TestNodeIcon.Running);
+            this._onDidChangeTreeData.fire(testNode);
+        });
+    }
+
+    private updateTreeWithNotRunTests(testRunContext: ITestRunContext) {
+
+        const runningTests = this.getNodesMatchingTestRun(testRunContext);
+
+        runningTests.forEach((testNode: TestNode) => {
+            testNode.setIcon(TestNodeIcon.TestNotRun);
+            this._onDidChangeTreeData.fire(testNode);
+        });
+    }
+
+    private getNodesMatchingTestRun(testRunContext: ITestRunContext) {
         const filter = testRunContext.isSingleTest ?
             ((testNode: TestNode) => testNode.fqn === testRunContext.testName)
             : ((testNode: TestNode) => testNode.fullName.startsWith(testRunContext.testName));
 
-        const testRun = this.testNodes.filter((testNode: TestNode) => !testNode.isFolder && filter(testNode));
-
-        this.statusBar.testRunning(testRun.length);
-
-        testRun.forEach((testNode: TestNode) => {
-            testNode.setAsLoading();
-            this._onDidChangeTreeData.fire(testNode);
-        });
+        return this.testNodes.filter((testNode: TestNode) => !testNode.isFolder && filter(testNode));
     }
 
     private addTestResults(results: ITestResult) {
