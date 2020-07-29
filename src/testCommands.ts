@@ -205,7 +205,6 @@ export class TestCommands implements Disposable {
             this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
-            
             if (err.message === "Build command failed") {
 
                 vscode
