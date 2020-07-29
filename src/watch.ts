@@ -84,6 +84,8 @@ export class Watch {
                     Logger.Log("Results file detected.");
                     const results = await parseResults(trxPath);
                     this.testCommands.sendNewTestResults({ clearPreviousTestResults: false, testResults: results });
+                } else if (line.indexOf(": error ") > -1) {
+                    this.testCommands.sendBuildFailed({ testName: namespaceForDirectory, isSingleTest: false });
                 }
             }
         });
