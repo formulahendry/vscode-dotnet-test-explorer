@@ -207,7 +207,6 @@ export class TestCommands implements Disposable {
             Logger.Log(`Error while executing test command: ${err}`);
             
             if (err.message === "Build command failed") {
-                // vscode.commands.executeCommand("dotnet-test-explorer.stop");
 
                 vscode.window.showErrorMessage("Build failed. Fix your build and try to run the test(s) again");
 
@@ -216,13 +215,9 @@ export class TestCommands implements Disposable {
                     this.lastRunTestContext = testContext;
                     this.sendBuildFailed(testContext);
                 }
-
-                
             }
-            // else if (err.message !== "UserAborted") {
-            //     this.discoverTests();
-            // }
         }
+        
         this.isRunning = false;
     }
 

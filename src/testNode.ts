@@ -1,6 +1,16 @@
 import { TestResult } from "./testResult";
 import { Utility } from "./utility";
 
+export enum TestNodeIcon {
+    Namespace = "namespace.png",
+    NamespaceFailed = "namespaceFailed.png",
+    NamespaceNotExecuted = "namespaceNotExecuted.png",
+    NamespacePassed = "namespacePassed.png",
+    Run = "run.png",
+    Running = "spinner.svg",
+    TestNotRun = "testNotRun.png",
+}
+
 export class TestNode {
     private _isUnknown: boolean;
     private _isLoading: boolean;
@@ -8,7 +18,7 @@ export class TestNode {
     private _fqn: string;
 
     constructor(private _parentNamespace: string, private _name: string, testResults: TestResult[], private _children?: TestNode[]) {
-        this.setIcon(testResults);
+        this.setIconFromTestResult(testResults);
 
         this._fqn = Utility
             .getFqnTestName(this.fullName)
@@ -40,15 +50,11 @@ export class TestNode {
         return this._children;
     }
 
-    // public get isError(): boolean {
-    //     return !!this._isError;
-    // }
-
     public get icon(): string {
         if(this._isUnknown) {
-            return "testNotRun.png";
+            return TestNodeIcon.TestNotRun;
         } else if(this._isLoading) {
-            return "spinner.svg";
+            return TestNodeIcon.Running;
         } else {
             return this._icon;
         }
@@ -67,25 +73,25 @@ export class TestNode {
         this._isUnknown = true;
     }
 
-    public setIcon(testResults: TestResult[]) {
+    public setIconFromTestResult(testResults: TestResult[]) {
         this._isLoading = false;
         this._isUnknown = false;
 
         if (!testResults) {
-            this._icon = this.isFolder ? "namespace.png" : "run.png";
+            this._icon = this.isFolder ? TestNodeIcon.Namespace : TestNodeIcon.Run;
         } else {
             if (this.isFolder) {
 
                 const testsForFolder = testResults.filter((tr) => tr.fullName.startsWith(this.fullName));
 
                 if (testsForFolder.some((tr) => tr.outcome === "Failed")) {
-                    this._icon = "namespaceFailed.png";
+                    this._icon = TestNodeIcon.NamespaceFailed;
                 } else if (testsForFolder.some((tr) => tr.outcome === "NotExecuted")) {
-                    this._icon = "namespaceNotExecuted.png";
+                    this._icon = TestNodeIcon.NamespaceNotExecuted;
                 } else if (testsForFolder.some((tr) => tr.outcome === "Passed")) {
-                    this._icon = "namespacePassed.png";
+                    this._icon = TestNodeIcon.NamespacePassed;
                 } else {
-                    this._icon = "namespace.png";
+                    this._icon = TestNodeIcon.Namespace;
                 }
             } else {
                 const resultForTest = testResults.find((tr) => tr.fullName === this.fullName);
@@ -93,7 +99,7 @@ export class TestNode {
                 if (resultForTest) {
                     this._icon = "test".concat(resultForTest.outcome, ".png");
                 } else {
-                    this._icon = "testNotRun.png";
+                    this._icon = TestNodeIcon.TestNotRun;
                 }
             }
         }
