@@ -1,3 +1,9 @@
+## 0.7.4 ()
+* [#282](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/282): F build error view
+* [#281](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/281): Bump lodash from 4.17.15 to 4.17.19
+* [#275](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/275): Add the csharp extension as a dependency
+* [#270](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/270): Fix #267 
+
 ## 0.7.3 (2020-06-10)
 * [#268](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/268): Improve test discovery experience
 * [#261](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/261): Filter duplicate detected test folders
