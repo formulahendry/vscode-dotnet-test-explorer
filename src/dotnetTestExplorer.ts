@@ -8,7 +8,7 @@ import { parseTestName } from "./parseTestName";
 import { StatusBar } from "./statusBar";
 import { ITestRunContext, TestCommands } from "./testCommands";
 import { IDiscoverTestsResult } from "./testDiscovery";
-import { TestNode } from "./testNode";
+import { TestNode, TestNodeIcon } from "./testNode";
 import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
@@ -73,7 +73,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
 
         if (!this.discoveredTests) {
             const loadingNode = new TestNode("", "Discovering tests", this.testResults);
-            loadingNode.setAsLoading();
+            loadingNode.setIcon(TestNodeIcon.Running);
             return [loadingNode];
         }
 
@@ -134,7 +134,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         this.statusBar.testRunning(runningTests.length);
 
         runningTests.forEach((testNode: TestNode) => {
-            testNode.setAsLoading();
+            testNode.setIcon(TestNodeIcon.Running);
             this._onDidChangeTreeData.fire(testNode);
         });
     }
@@ -144,7 +144,7 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         const runningTests = this.getNodesMatchingTestRun(testRunContext);
 
         runningTests.forEach((testNode: TestNode) => {
-            testNode.setAsUnknown();
+            testNode.setIcon(TestNodeIcon.TestNotRun);
             this._onDidChangeTreeData.fire(testNode);
         });
     }

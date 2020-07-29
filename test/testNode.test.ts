@@ -1,13 +1,13 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import {TestNode} from "../src/testNode";
+import {TestNode, TestNodeIcon} from "../src/testNode";
 import { TestResult } from "../src/testResult";
 
 suite("Icon tests", () => {
 
     test("Node that is loading", () => {
         const node = new TestNode("", "Loading node", null);
-        node.setAsLoading();
+        node.setIcon(TestNodeIcon.Running);
 
         assert.equal(node.icon, "spinner.svg");
     });

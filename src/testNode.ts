@@ -51,26 +51,31 @@ export class TestNode {
     }
 
     public get icon(): string {
-        if(this._isUnknown) {
-            return TestNodeIcon.TestNotRun;
-        } else if(this._isLoading) {
-            return TestNodeIcon.Running;
-        } else {
-            return this._icon;
-        }
+        return this._icon;
+        // if(this._isUnknown) {
+        //     return TestNodeIcon.TestNotRun;
+        // } else if(this._isLoading) {
+        //     return TestNodeIcon.Running;
+        // } else {
+        //     return this._icon;
+        // }
     }
 
-    public setAsLoading() {
-        this._isUnknown = false;
-        this._isLoading = true;
-    }
+    // public setAsLoading() {
+    //     this._isUnknown = false;
+    //     this._isLoading = true;
+    // }
 
-    public getIsLoading() {
-        return this._isLoading;
-    }
+    // public getIsLoading() {
+    //     return this._isLoading;
+    // }
 
-    public setAsUnknown() {
-        this._isUnknown = true;
+    // public setAsUnknown() {
+    //     this._isUnknown = true;
+    // }
+
+    public setIcon(icon: string) {
+        this._icon = icon;
     }
 
     public setIconFromTestResult(testResults: TestResult[]) {

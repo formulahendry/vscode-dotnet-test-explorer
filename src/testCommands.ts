@@ -208,7 +208,12 @@ export class TestCommands implements Disposable {
             
             if (err.message === "Build command failed") {
 
-                vscode.window.showErrorMessage("Build failed. Fix your build and try to run the test(s) again");
+                vscode
+                    .window
+                    .showErrorMessage("Build failed. Fix your build and try to run the test(s) again", "Re-run test(s)",)
+                    .then(selection => {
+                        vscode.commands.executeCommand("dotnet-test-explorer.rerunLastCommand");
+                    });;
 
                 for (const { } of testDirectories) {
                     const testContext = { testName, isSingleTest };
@@ -217,7 +222,7 @@ export class TestCommands implements Disposable {
                 }
             }
         }
-        
+
         this.isRunning = false;
     }
 
