@@ -78,18 +78,25 @@ function extractTestNames(testCommandStdout: string): string[] {
 }
 
 function extractAssemblyPaths(testCommandStdout: string): string[] {
-    const testRunLineRegex = /^Test run for (.+\.dll)\(.+\)/gm;
+    let results = extractFirstRegexMatch(testCommandStdout, /^Test run for (.+\.dll)\(.+\)/gm);
+    if(results.length == 0)
+    {
+        // fix for dotnet 3.0 or output in other languages.
+        results = extractFirstRegexMatch(testCommandStdout, /^.*"(.+\.dll)"\s*\(.+\)/gm);
+
+    }
+    return results;
+}
+
+function extractFirstRegexMatch(testCommandStdout: string, regex: RegExp) {
     const results = [];
     let match = null;
-
     do {
-        match = testRunLineRegex.exec(testCommandStdout);
+        match = regex.exec(testCommandStdout);
         if (match) {
             results.push(match[1]);
         }
-    }
-    while (match);
-
+    } while (match);
     return results;
 }
 
