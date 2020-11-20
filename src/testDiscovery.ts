@@ -78,7 +78,7 @@ function extractTestNames(testCommandStdout: string): string[] {
 }
 
 function extractAssemblyPaths(testCommandStdout: string): string[] {
-    const testRunLineRegex = /^Test run for (.+\.dll)\(.+\)/gm;
+    const testRunLineRegex = /^Test run for (.+\.dll)/gm;
     const results = [];
     let match = null;
 
