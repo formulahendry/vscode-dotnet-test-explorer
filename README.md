@@ -11,11 +11,9 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.7.4
+## New in 0.7.5
 
-* Build errors occurring when running test(s) are reported more clearly and does not requiere a rediscovery of the tests after fixing the build error.
-
-Many thanks to @GeorchW for contributions to this release!
+* Small update to make nunit and mstest work with .Net 5
 
 ## Usage
 
