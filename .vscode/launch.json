@@ -29,7 +29,21 @@
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
             "preLaunchTask": "npm"
-        },       
+        },     
+        {
+            "name": "Launch Extension (nunit .net 5)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/nunitnet5",
+                "--extensionDevelopmentPath=${workspaceRoot}" 
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/src/**/*.js" ],
+            "preLaunchTask": "npm"
+        },      
         {
             "name": "Launch Extension (mstest)",
             "type": "extensionHost",
