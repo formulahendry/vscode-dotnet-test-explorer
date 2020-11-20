@@ -1,3 +1,6 @@
+## 0.7.5 ()
+* [#289](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/289) : Update assembly extractor regexp to be compatible with net 5
+
 ## 0.7.4 (2020-08-02)
 * [#282](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/282): F build error view
 * [#281](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/281): Bump lodash from 4.17.15 to 4.17.19
