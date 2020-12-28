@@ -10,13 +10,13 @@ suite("Debug tests", () => {
         assert.equal(results.isSettingUp, true);
     });
 
-    test("Detects that debug is ready for attach har started", () => {
+    test("Detects that debug is ready for attach has started", () => {
         const debug = new Debug();
 
         let results = debug.onData("data");
         results = debug.onData(`
             This is output from vstest
-            Waiting for debugger attach...
+            Host debugging is enabled
             Tra la lalala la
         `, results);
 
@@ -44,7 +44,7 @@ suite("Debug tests", () => {
 
         results = debug.onData(`
             This is output from vstest
-            Waiting for debugger attach...
+            Host debugging is enabled
             Tra la lalala la
         `, results);
 
