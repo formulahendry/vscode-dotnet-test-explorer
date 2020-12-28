@@ -1,7 +1,4 @@
 import * as vscode from "vscode";
-import { Logger } from "./logger";
-import { TestCommands } from "./testCommands";
-import { ITestResult, TestResult } from "./testResult";
 import { Utility } from "./utility";
 
 export interface IDebugRunnerInfo {
@@ -28,7 +25,7 @@ export class Debug {
 
         if (debugRunnerInfo.processId.length <= 0) {
             const match = this.processIdRegexp.exec(data);
-            
+
             if (match && match[1]) {
                 debugRunnerInfo.processId = match[1];
             }

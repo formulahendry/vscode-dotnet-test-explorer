@@ -71,11 +71,11 @@ export class Executor {
             this.processes.push(childProcess);
 
             childProcess.stdout.on("data", (buf) => {
-                
+
                 if (this.debugRunnerInfo && this.debugRunnerInfo.isRunning) {
                     return;
                 }
-                
+
                 const stdout = String(buf);
                 Logger.Log(stdout);
 
@@ -87,7 +87,7 @@ export class Executor {
 
                     this.debugRunnerInfo.isRunning = true;
 
-                    vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then( (c) => {
+                    vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], this.debugRunnerInfo.config).then((c) => {
                         // When we attach to the debugger it seems to be stuck before loading the actual assembly that's running in code
                         // This is to try to continue past this invisible break point and into the actual code the user wants to debug
                         setTimeout(() => {
