@@ -272,8 +272,6 @@ export class TestCommands implements Disposable {
                                 reject(new Error("UserAborted"));
                             }
 
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
-
                             resolve();
                         }, testDirectoryPath, true);
                     } else {
@@ -283,8 +281,6 @@ export class TestCommands implements Disposable {
                                 Logger.Log("User has probably cancelled test run");
                                 reject(new Error("UserAborted"));
                             }
-
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
 
                             resolve();
                         }, testDirectoryPath, true);

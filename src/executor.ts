@@ -31,6 +31,9 @@ export class Executor {
             Logger.Log(`Process ${childProcess.pid} started`);
 
             this.processes.push(childProcess);
+            childProcess.stdout.on("data", (buf) => {
+                Logger.Log(buf);
+            });
 
             childProcess.on("close", (code: number) => {
 
@@ -63,24 +66,24 @@ export class Executor {
         if (addToProcessList) {
 
             Logger.Log(`Process ${childProcess.pid} started`);
+            Logger.Log(`Waiting for debugger to attach`);
 
             this.processes.push(childProcess);
 
             childProcess.stdout.on("data", (buf) => {
-
+                
                 if (this.debugRunnerInfo && this.debugRunnerInfo.isRunning) {
                     return;
                 }
-
-                Logger.Log(`Waiting for debugger to attach`);
-
+                
                 const stdout = String(buf);
+                Logger.Log(stdout);
 
                 this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
 
                 if (this.debugRunnerInfo.config) {
 
-                    Logger.Log(`Debugger process found, attaching`);
+                    Logger.Log(`Debugger process found (pid: ${this.debugRunnerInfo.processId}), attaching`);
 
                     this.debugRunnerInfo.isRunning = true;
 
