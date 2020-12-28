@@ -18,6 +18,10 @@ export class Logger {
         Logger.Log(`[WARNING] ${message}`);
     }
 
+    public static Clear(output: string = this.defaultOutput): void {
+        this.outputTerminals[output].clear();
+    }
+
     public static Show(): void {
         if (this.outputTerminals && this.outputTerminals[this.defaultOutput]) {
             this.outputTerminals[this.defaultOutput].show();
