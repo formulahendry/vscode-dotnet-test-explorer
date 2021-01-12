@@ -262,6 +262,10 @@ export class TestCommands implements Disposable {
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
                 .then(() => {
+                    if (Utility.clearTerminalBeforeTestRun){
+                        Logger.Clear();
+                        Logger.Show();
+                    }
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
                     if (!debug) {

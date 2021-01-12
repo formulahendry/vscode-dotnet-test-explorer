@@ -20,10 +20,6 @@ export class Executor {
     }
 
     public static exec(command: string, callback, cwd?: string, addToProcessList?: boolean) {
-        if (Utility.clearTerminalBeforeTestRun){
-            Logger.Clear();
-        }
-
         // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
         // function so we set the variable here instead
         process.env.DOTNET_CLI_UI_LANGUAGE = "en";
@@ -37,7 +33,7 @@ export class Executor {
 
             this.processes.push(childProcess);
             childProcess.stdout.on("data", (buf) => {
-                Logger.Log(buf);
+                Logger.LogRaw(buf);
             });
 
             childProcess.on("close", (code: number) => {
@@ -54,9 +50,6 @@ export class Executor {
     }
 
     public static debug(command: string, callback, cwd?: string, addToProcessList?: boolean) {
-        if (Utility.clearTerminalBeforeTestRun){
-            Logger.Clear();
-        }
         // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
         // function so we set the variable here instead
         process.env.DOTNET_CLI_UI_LANGUAGE = "en";
@@ -85,7 +78,7 @@ export class Executor {
                 }
 
                 const stdout = String(buf);
-                Logger.Log(stdout);
+                Logger.LogRaw(stdout);
 
                 this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
 
