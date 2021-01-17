@@ -36,8 +36,21 @@ export class TestDirectories {
         this.directories = evaluateTestDirectories(matchingDirs);
     }
 
-    public addTestsForDirectory(testsForDirectory) {
-        this.testsForDirectory = this.testsForDirectory.concat(testsForDirectory);
+    public addTestsForDirectory(testsForDirectory): string[] {
+        let tests = [];
+        for (let i = 0; i < testsForDirectory.length; i++) {
+            const exists =
+                this.testsForDirectory.find(
+                    (p) => p.name == testsForDirectory[i].name
+                ) !== undefined;
+            if (!exists) {
+                tests.push(testsForDirectory[i].name)
+                this.testsForDirectory.push(testsForDirectory[i]);
+            } else {
+                Logger.LogWarning(`Test already exist ${testsForDirectory[i].name}`);
+            }
+        }
+        return tests;
     }
 
     public clearTestsForDirectory() {

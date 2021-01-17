@@ -82,9 +82,16 @@ export class TestCommands implements Disposable {
         runSeqOrAsync();
     }
 
-    public async discoverTestsInFolder(dir: string): Promise<IDiscoverTestsResult> {
-        const testsForDir: IDiscoverTestsResult = await discoverTests(dir, Utility.additionalArgumentsOption);
-        this.testDirectories.addTestsForDirectory(testsForDir.testNames.map((tn) => ({ dir, name: tn })));
+    public async discoverTestsInFolder(
+        dir: string
+    ): Promise<IDiscoverTestsResult> {
+        const testsForDir: IDiscoverTestsResult = await discoverTests(
+            dir,
+            Utility.additionalArgumentsOption
+        );
+        const tests = testsForDir.testNames.map((tn) => ({ dir, name: tn }));
+        testsForDir.testNames = this.testDirectories.addTestsForDirectory(tests);
+
         return testsForDir;
     }
 
