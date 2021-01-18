@@ -97,13 +97,14 @@
                 "${workspaceRoot}/test/fsxunittests",
                 "${workspaceRoot}/test/mstest",
                 "${workspaceRoot}/test/.vscode",
+                "${workspaceRoot}/test",
                 "--extensionDevelopmentPath=${workspaceRoot}", 
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [ "${workspaceRoot}/out/test/**/*.js" ],
             "preLaunchTask": "npm"
-        },          
+        },
         {
             "name": "Launch Tests",
             "type": "extensionHost",
