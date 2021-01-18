@@ -1,4 +1,4 @@
-## 0.7.5 ()
+## 0.7.5 (2021-01-18)
 * [#289](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/289) : Update assembly extractor regexp to be compatible with net 5
 
 ## 0.7.4 (2020-08-02)
