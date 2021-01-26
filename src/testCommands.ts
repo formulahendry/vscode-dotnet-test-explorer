@@ -262,6 +262,10 @@ export class TestCommands implements Disposable {
 
             this.runBuildCommandForSpecificDirectory(testDirectoryPath)
                 .then(() => {
+                    if (Utility.clearTerminalBeforeTestRun){
+                        Logger.Clear();
+                        Logger.Show();
+                    }
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
                     if (!debug) {
@@ -272,8 +276,6 @@ export class TestCommands implements Disposable {
                                 reject(new Error("UserAborted"));
                             }
 
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
-
                             resolve();
                         }, testDirectoryPath, true);
                     } else {
@@ -283,8 +285,6 @@ export class TestCommands implements Disposable {
                                 Logger.Log("User has probably cancelled test run");
                                 reject(new Error("UserAborted"));
                             }
-
-                            Logger.Log(stdout, "Test Explorer (Test runner output)");
 
                             resolve();
                         }, testDirectoryPath, true);
