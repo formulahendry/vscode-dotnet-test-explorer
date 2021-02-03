@@ -9,7 +9,7 @@ import { Utility } from "./utility";
 export class TestStatusCodeLensProvider implements CodeLensProvider {
     private disposables: Disposable[] = [];
     private onDidChangeCodeLensesEmitter = new EventEmitter<void>();
-
+    private fsharpSymbolKinds = [SymbolKind.Field, SymbolKind.Variable, SymbolKind.Method];
     // Store everything in a map so we can remember old tests results for the
     // scenario where a single test is ran. If the test no longer exists in
     // code it will never be mapped to the symbol, so no harm (though there is
@@ -38,10 +38,8 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
 
         const symbolFilter =
             document.languageId === 'fsharp'
-            ? ((x: ITestSymbol) =>
-                x.documentSymbol.kind === SymbolKind.Field || x.documentSymbol.kind === SymbolKind.Variable)
-            : ((x: ITestSymbol) =>
-                x.documentSymbol.kind === SymbolKind.Method)
+            ? ((x: ITestSymbol) => this.fsharpSymbolKinds.includes(x.documentSymbol.kind))
+            : ((x: ITestSymbol) => x.documentSymbol.kind === SymbolKind.Method)
 
         const results = this.testResults;
 
