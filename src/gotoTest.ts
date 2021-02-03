@@ -71,6 +71,6 @@ export class GotoTest {
     }
 
     private isSymbolATestCandidate(s: vscode.SymbolInformation): boolean {
-        return s.location.uri.toString().endsWith(".fs") ? s.kind === vscode.SymbolKind.Variable : s.kind === vscode.SymbolKind.Method;
+        return s.location.uri.toString().endsWith(".fs") ? (s.kind === vscode.SymbolKind.Variable || s.kind === vscode.SymbolKind.Field) : s.kind === vscode.SymbolKind.Method;
     }
 }

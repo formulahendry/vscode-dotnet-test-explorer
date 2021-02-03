@@ -36,12 +36,19 @@ export class TestStatusCodeLensProvider implements CodeLensProvider {
             return [];
         }
 
+        const symbolFilter =
+            document.languageId === 'fsharp'
+            ? ((x: ITestSymbol) =>
+                x.documentSymbol.kind === SymbolKind.Field || x.documentSymbol.kind === SymbolKind.Variable)
+            : ((x: ITestSymbol) =>
+                x.documentSymbol.kind === SymbolKind.Method)
+
         const results = this.testResults;
 
         return Symbols.getSymbols(document.uri, true)
         .then((symbols: ITestSymbol[]) => {
             const mapped: CodeLens[] = [];
-            for (const symbol of symbols.filter((x) => x.documentSymbol.kind === SymbolKind.Method)) {
+            for (const symbol of symbols.filter((x) => symbolFilter(x))) {
                 for (const result of results.values()) {
                     if (result.matches(symbol.parentName, symbol.documentSymbol.name)) {
                         const state = TestStatusCodeLens.parseOutcome(result.outcome);
