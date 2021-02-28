@@ -64,5 +64,5 @@ suite("Problems tests", () => {
 });
 
 function GetTestResult(id: string, outcome: string, message: string, stackTrace: string) {
-    return new TestResult(id, outcome, message, stackTrace);
+    return new TestResult(id, outcome, message, stackTrace, "");
 }

@@ -2,6 +2,7 @@
 {
     "version": "0.1.0",
     "configurations": [
+
         {
             "name": "Launch Extension (xunit)",
             "type": "extensionHost",
@@ -116,6 +117,17 @@
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
+            "outFiles": [ "${workspaceRoot}/out/test/**/*.js" ],
+            "preLaunchTask": "npm"
+        },          
+        {
+            "name": "Run Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceRoot}", 
+            ],
             "outFiles": [ "${workspaceRoot}/out/test/**/*.js" ],
             "preLaunchTask": "npm"
         }

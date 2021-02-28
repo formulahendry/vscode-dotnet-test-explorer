@@ -39,6 +39,7 @@ function parseUnitTestResults(xml: Element): TestResult[] {
             getAttributeValue(nodes[i], "outcome"),
             getTextContentForTag(nodes[i], "Message"),
             getTextContentForTag(nodes[i], "StackTrace"),
+            getTextContentForTag(nodes[i], "StdOut"),
         ));
     }
 

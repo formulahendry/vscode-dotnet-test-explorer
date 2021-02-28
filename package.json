@@ -109,6 +109,14 @@
       {
         "command": "dotnet-test-explorer.openPanel",
         "title": "Open Tests Panel"
+      },
+      {
+        "command": "dotnet-test-explorer.showTestOutput",
+        "title": "Show Test Output",
+        "icon": {
+          "light": "resources/light/log.svg",
+          "dark": "resources/dark/log.svg"
+        }
       }
     ],
     "menus": {
@@ -143,7 +151,7 @@
         {
           "command": "dotnet-test-explorer.runTest",
           "when": "view == dotnetTestExplorer",
-          "group": "inline"
+          "group": "inline@0"
         },
         {
           "command": "dotnet-test-explorer.gotoTest",
@@ -154,6 +162,11 @@
           "command": "dotnet-test-explorer.debugTest",
           "when": "viewItem == test",
           "group": "dotnetTestExplorer@2"
+        },
+        {
+          "command": "dotnet-test-explorer.showTestOutput",
+          "when": "viewItem == test",
+          "group": "inline@1"
         }
       ],
       "editor/context": [
