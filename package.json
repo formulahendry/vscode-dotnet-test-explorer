@@ -307,7 +307,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "node ./out/test/runTest.js",
-    "tslint": "tslint -t verbose src/**/*.ts"
+    "tslint": "tslint -t verbose src/**/*.ts",
+    "precompile": "node ./test/restorePackages.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
