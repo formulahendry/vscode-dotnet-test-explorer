@@ -31,7 +31,8 @@ export class TestResult {
     }
 
     public get stdout(): string {
-        return this._stdout;
+        return this._stdout
+            || `${this._message}\r\n${this._stackTrace}` ;
     }
 
     public get name(): string {
