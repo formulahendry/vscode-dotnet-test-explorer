@@ -310,6 +310,6 @@ export class TestCommands implements Disposable {
             });
 
         const doc = await vscode.workspace.openTextDocument(uri);
-        await vscode.window.showTextDocument(doc, { preview: false });
+        await vscode.window.showTextDocument(doc, { preview: true });
     }
 }
