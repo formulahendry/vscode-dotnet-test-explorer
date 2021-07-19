@@ -11,9 +11,10 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
 
-## New in 0.7.5
+## New in 0.7.6
 
-* Small update to make nunit and mstest work with .Net 5
+* A few changes that make discovery and reporting of F# tests more complete
+* Respect the dismiss option for failed build
 
 ## Usage
 
