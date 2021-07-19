@@ -312,7 +312,7 @@
     "applicationinsights": "^1.7.5",
     "glob": "^7.1.6",
     "ts-node": "^8.10.1",
-    "xmldom": "^0.3.0"
+    "xmldom": "^0.6.0"
   },
   "extensionDependencies": [
     "ms-dotnettools.csharp"
