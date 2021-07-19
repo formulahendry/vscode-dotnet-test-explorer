@@ -92,7 +92,7 @@ suite("Icon tests", () => {
 });
 
 function GetTestResult(id: string, outcome: string, className: string, method: string) {
-    const testResult = new TestResult(id, outcome, "", "");
+    const testResult = new TestResult(id, outcome, "", "", "");
     testResult.updateName(className, method);
     return testResult;
 }

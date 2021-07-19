@@ -25,6 +25,7 @@ export class TestCommands implements Disposable {
     private onNewTestResultsEmitter = new EventEmitter<ITestResult>();
     private onBuildFailedEmitter = new EventEmitter<ITestRunContext>();
     private lastRunTestContext: ITestRunContext = null;
+    private lastRunTestResults: TestResult[] = [];
     private testResultsFolder: string;
     private testResultsFolderWatcher: any;
 
@@ -203,6 +204,7 @@ export class TestCommands implements Disposable {
                 allTestResults.push(...testResults);
             }
             this.sendNewTestResults({ clearPreviousTestResults: testName === "", testResults: allTestResults });
+            this.lastRunTestResults = allTestResults;
         } catch (err) {
             Logger.Log(`Error while executing test command: ${err}`);
             if (err.message === "Build command failed") {
@@ -298,5 +300,19 @@ export class TestCommands implements Disposable {
                     reject(err);
                 });
         });
+    }
+
+    public async showTestOutput(test: TestNode) {
+        const testResult = this.lastRunTestResults.find(x => x.name == test.name);
+        if (!testResult) vscode.window.showInformationMessage(`Result not found for test '${test.name}'. Make sure the test is included in a test run.`);
+
+        const uri = vscode.Uri.parse(`dotnet-test-explorer.testResult:${testResult?.name}`)
+            .with({
+                query: testResult.stdout,
+                fragment: testResult.outcome
+            });
+
+        const doc = await vscode.workspace.openTextDocument(uri);
+        await vscode.window.showTextDocument(doc, { preview: true });
     }
 }
