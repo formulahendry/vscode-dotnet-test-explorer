@@ -2,20 +2,28 @@
 import * as vscode from "vscode";
 
 export class Logger {
-    public static Log(message: string, output: string = this.defaultOutput): void {
+    public static LogRaw(message: string, output: string = this.defaultOutput): void {
         if (this.outputTerminals[output] === undefined ) {
             this.outputTerminals[output] = vscode.window.createOutputChannel(output);
         }
 
-        this.outputTerminals[output].appendLine(message);
+        this.outputTerminals[output].appendLine(message.trim());
+    }
+
+    public static Log(message: string): void {
+        Logger.LogRaw(`[INFO] ${message}`);
     }
 
     public static LogError(message: string, error: any): void {
-        Logger.Log(`[ERROR] ${message} - ${Logger.formatError(error)}`);
+        Logger.LogRaw(`[ERROR] ${message} - ${Logger.formatError(error)}`);
     }
 
     public static LogWarning(message: string): void {
-        Logger.Log(`[WARNING] ${message}`);
+        Logger.LogRaw(`[WARNING] ${message}`);
+    }
+
+    public static Clear(output: string = this.defaultOutput): void {
+        this.outputTerminals[output].clear();
     }
 
     public static Show(): void {

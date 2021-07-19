@@ -7,6 +7,7 @@ export class Utility {
 
     public static skipBuild: boolean;
     public static runInParallel: boolean;
+    public static clearTerminalBeforeTestRun: boolean;
 
     public static get codeLensEnabled(): boolean {
         return Utility.showCodeLens;
@@ -74,6 +75,7 @@ export class Utility {
         Utility.autoExpandTree = configuration.get<boolean>("autoExpandTree", false);
         Utility.skipBuild = Utility.additionalArgumentsOption.indexOf("--no-build") > -1;
         Utility.runInParallel = configuration.get<boolean>("runInParallel", false);
+        Utility.clearTerminalBeforeTestRun = configuration.get<boolean>("clearTerminalBeforeTestRun", false);
     }
 
     /**
