@@ -21,7 +21,6 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -52,13 +51,13 @@
      id="layer2"
      inkscape:label="Layer#1">
     <path
-       style="fill:#ffffff;stroke:#424242;stroke-width:0.96296883000000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
+       style="fill:#ffffff;stroke:#c5c5c5;stroke-width:0.96296883000000000px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
        d="m 1.6947762,1.1583542 0,13.9902168 12.5648068,0 0,-12.6701932 -2.241724,-1.3299644 z"
        id="path3009"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cccccc" />
     <path
-       style="fill:#424242;fill-opacity:1;stroke:none;stroke-opacity:0.39215686999999999"
+       style="fill:#c5c5c5;fill-opacity:1;stroke:none"
        d="m 11.929539,1.1144675 0,1.6891385 2.692065,0 z"
        id="path3799"
        inkscape:connector-curvature="0" />
@@ -70,27 +69,27 @@
          inkscape:connector-curvature="0"
          id="path4333"
          d="m 0.5,3.7537463 9.483808,0"
-         style="fill:none;stroke:#505050;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4333-1"
          d="m 0.5,6.005931 9.4838083,0"
-         style="fill:none;stroke:#505050;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4333-7"
          d="m 0.5,8.029378 9.4838083,0"
-         style="fill:none;stroke:#505050;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4333-4"
          d="m 0.5,10.052825 9.4838076,0"
-         style="fill:none;stroke:#505050;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
       <path
          inkscape:connector-curvature="0"
          id="path4333-0"
          d="m 0.5,12.164249 9.483808,0"
-         style="fill:none;stroke:#505050;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+         style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
   </g>
 </svg>
