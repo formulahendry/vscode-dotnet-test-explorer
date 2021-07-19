@@ -63,6 +63,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(
         { language: "csharp", scheme: "file" },
         codeLensProvider));
+    context.subscriptions.push(vscode.languages.registerCodeLensProvider(
+        {language: "fsharp", scheme: "file" },
+        codeLensProvider
+    ));
 
     context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.showLog", () => {
         Logger.Show();
