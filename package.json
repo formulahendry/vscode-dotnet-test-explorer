@@ -7,7 +7,7 @@
   "license": "MIT",
   "icon": "testexplorer_dark.png",
   "engines": {
-    "vscode": "^1.25.1"
+    "vscode": "^1.45.1"
   },
   "categories": [
     "Programming Languages"
@@ -252,6 +252,16 @@
           "type": "string",
           "default": "",
           "description": "Additional arguments that are added to the dotnet test command."
+        },
+        "dotnet-test-explorer.testhost.started.pattern": {
+          "type": "string",
+          "default": "Host debugging is enabled",
+          "description": "Pattern in stdout of testhost that triggers attachment of debugger"
+        },
+        "dotnet-test-explorer.testhost.processId.pattern": {
+          "type": "string",
+          "default": "Process Id: (\\d+),",
+          "description": "Pattern in stdout of testhost that matches its process id"
         },
         "dotnet-test-explorer.leftClickAction": {
           "type": "string",

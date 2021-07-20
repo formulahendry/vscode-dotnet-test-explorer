@@ -38,6 +38,16 @@ export class Utility {
         return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
     }
 
+    public static get testhostStartedPattern(): string {
+        const pattern = Utility.getConfiguration().get<string>("testhost.started.pattern");
+        return (pattern && pattern.length > 0) ? pattern : "Host debugging is enabled";
+    }
+
+    public static get testhostProcessIdPattern(): string {
+        const pattern = Utility.getConfiguration().get<string>("testhost.processId.pattern");
+        return (pattern && pattern.length > 0) ? pattern : "Process Id: (\d+),";
+    }
+
     public static getConfiguration(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }
