@@ -1,4 +1,4 @@
-## 0.7.6 ()
+## 0.7.6 (2021-07-24)
 * [#326](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/326) : Respect the dismiss option for failed build 
 * [#300](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/300) : Fixed typo
 * [#298](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/298) : A few changes that make discovery and reporting of F# tests more complete
