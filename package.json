@@ -7,7 +7,7 @@
   "license": "MIT",
   "icon": "testexplorer_dark.png",
   "engines": {
-    "vscode": "^1.25.1"
+    "vscode": "^1.45.1"
   },
   "categories": [
     "Programming Languages"
