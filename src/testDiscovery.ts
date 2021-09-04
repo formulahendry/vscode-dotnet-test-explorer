@@ -78,14 +78,41 @@ function extractTestNames(testCommandStdout: string): string[] {
 }
 
 function extractAssemblyPaths(testCommandStdout: string): string[] {
-    const testRunLineRegex = /^Test run for (.+\.dll)/gm;
+    /*
+    * The string we need to parse is localized
+    * (see https://github.com/microsoft/vstest/blob/018b6e4cc6e0ea7c8761c2a2f89c3e5032db74aa/src/Microsoft.TestPlatform.Build/Resources/xlf/Resources.xlf#L15-L18).
+    **/
+    const testRunLineStrings = [
+        "Testovací běh pro {0} ({1})",         // cs
+        "Testlauf für \"{0}\" ({1})",          // de
+        "Test run for {0} ({1})",              // en
+        "Serie de pruebas para {0} ({1})",     // es
+        "Série de tests pour {0} ({1})",       // fr
+        "Esecuzione dei test per {0} ({1})",   // it
+        "{0} ({1}) のテスト実行",               // ja
+        "{0}({1})에 대한 테스트 실행",          // ko
+        "Przebieg testu dla: {0} ({1})",       // pl
+        "Execução de teste para {0} ({1})",    // pt-BR
+        "Тестовый запуск для {0} ({1})",       // ru
+        "{0} ({1}) için test çalıştırması",    // tr
+        "{0} ({1})的测试运行",                  // zh-Hans
+        "{0} 的測試回合 ({1})"                  // zh-Hant
+    ];
+    // construct regex that matches any of the above localized strings
+    const r = "^(?:" + testRunLineStrings
+        .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) // escape characters
+        .map((s) => s.replace("\\{0\\}", "(.+\\.dll)").replace("\\{1\\}", ".+"))
+        .join("|")
+        + ")$";
+    const testRunLineRegex = new RegExp(r, "gm")
     const results = [];
     let match = null;
 
     do {
         match = testRunLineRegex.exec(testCommandStdout);
         if (match) {
-            results.push(match[1]);
+            const assemblyPath = match.find((capture, i) => capture && i != 0); // first capture group is the whole match
+            results.push(assemblyPath);
         }
     }
     while (match);
