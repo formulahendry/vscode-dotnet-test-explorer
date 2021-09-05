@@ -240,8 +240,8 @@ function buildDotnetTestOutput(testNames: string[], testAssemblyFilePath: string
 Build started, please wait...
 Build completed.
 
-Test run for ${testAssemblyFilePath}(.NETCoreApp,Version=v2.0)
-Microsoft (R) Test Execution Command Line Tool Version 15.6.0-preview-20180109-01
+Test run for ${testAssemblyFilePath} (.NETCoreApp,Version=v5.0)
+Microsoft (R) Test Execution Command Line Tool Version 16.11.0
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
 The following Tests are available:
@@ -251,8 +251,8 @@ The following Tests are available:
 La build a démarré. Patientez…
 Fin de la build.
 
-Série de tests pour ${testAssemblyFilePath}(.NETCoreApp,Version=v2.1)
-Outil en ligne de commande d'exécution de tests Microsoft (R), version 15.7.0
+Série de tests pour ${testAssemblyFilePath} (.NETCoreApp,Version=v5.0)
+Outil en ligne de commande d'exécution de tests Microsoft (R), version 16.11.0
 Copyright (c) Microsoft Corporation. Tous droits réservés.
 
 Les tests suivants sont disponibles :
@@ -267,7 +267,7 @@ function getDotnetTestOutputWithoutTestAssemblyPath() {
 Build started, please wait...
 Build completed.
 
-Microsoft (R) Test Execution Command Line Tool Version 15.6.0-preview-20180109-01
+Microsoft (R) Test Execution Command Line Tool Version 16.11.0
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
 The following Tests are available:
@@ -284,8 +284,8 @@ function buildDotnetTestSolutionOutput(testNames: string[], testAssemblyFilePath
         output += String.raw`
 Build completed.
 
-Test run for ${testAssemblyFilePath}(.NETCoreApp,Version=v2.0)
-Microsoft (R) Test Execution Command Line Tool Version 15.6.0-preview-20180109-01
+Test run for ${testAssemblyFilePath} (.NETCoreApp,Version=v5.0)
+Microsoft (R) Test Execution Command Line Tool Version 16.11.0
 Copyright (c) Microsoft Corporation.  All rights reserved.
 
 The following Tests are available:
