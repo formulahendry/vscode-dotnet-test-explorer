@@ -59,6 +59,16 @@ suite("Test discovery", () => {
             .then((result) => assert.deepEqual(result.testNames, testNames));
     });
 
+    test("Fully qualified test names returned when dotnet test outputs FQ test names and CLI language is French", () => {
+        const testNames = ["Ns1.Class1.Test1", "Ns1.Class1.Test2"];
+
+        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+            .callsArgWith(1, null, buildDotnetTestOutput(testNames, assemblyFilePath, "fr"), "");
+
+        return discoverTests(testDirectoryPath, dotnetTestOptions)
+            .then((result) => assert.deepEqual(result.testNames, testNames));
+    });
+
     test("Promise rejected when dotnet test failing", () => {
         const error = "error";
 
@@ -73,6 +83,14 @@ suite("Test discovery", () => {
     test("Empty list returned when dotnet test outputs empty list", () => {
         execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
             .callsArgWithAsync(1, null, buildDotnetTestOutput([], assemblyFilePath), "");
+
+        return discoverTests(testDirectoryPath, dotnetTestOptions)
+            .then((result) => assert.deepEqual(result.testNames, []));
+    });
+
+    test("Empty list returned when dotnet test outputs empty list and CLI language is French", () => {
+        execStub.withArgs(dotnetTestExecCmd, sinon.match.func, testDirectoryPath)
+            .callsArgWithAsync(1, null, buildDotnetTestOutput([], assemblyFilePath, "fr"), "");
 
         return discoverTests(testDirectoryPath, dotnetTestOptions)
             .then((result) => assert.deepEqual(result.testNames, []));
@@ -215,9 +233,10 @@ suite("Test discovery", () => {
     });
 });
 
-function buildDotnetTestOutput(testNames: string[], testAssemblyFilePath: string) {
+function buildDotnetTestOutput(testNames: string[], testAssemblyFilePath: string, language: string = "en") {
     const testsLists = testNames.map((n) => `    ${n}`).join("\r\n");
-    return String.raw`
+    if (language === "en") {
+        return String.raw`
 Build started, please wait...
 Build completed.
 
@@ -227,6 +246,20 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 
 The following Tests are available:
 ` + testsLists;
+    } else if (language === "fr") {
+        return String.raw`
+La build a démarré. Patientez…
+Fin de la build.
+
+Série de tests pour ${testAssemblyFilePath}(.NETCoreApp,Version=v2.1)
+Outil en ligne de commande d'exécution de tests Microsoft (R), version 15.7.0
+Copyright (c) Microsoft Corporation. Tous droits réservés.
+
+Les tests suivants sont disponibles :
+` + testsLists;
+    } else {
+        throw new Error("Unexpected language: " + language);
+    }
 }
 
 function getDotnetTestOutputWithoutTestAssemblyPath() {
