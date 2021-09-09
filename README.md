@@ -9,7 +9,7 @@
 ## Prerequisites
 
 * [.NET Core](https://www.microsoft.com/net/core) is installed
-* NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104 and running dotnet tooling in English (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+* NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104.
 
 ## New in 0.7.6
 
@@ -83,8 +83,8 @@ This is because of limitations in the omnisharp extensions. We can only navigate
 ##### Test result is not shown in CodeLens / tree
 Try and change the setting dotnet-test-explorer.pathForResultFile to point to a folder you have access right too. CodeLens functionality also requires the [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)) 
 
-##### No tree view or color coded explorer for NUnit / MSTest
-This requires you to run dotnet SDK version 2.2.104 or higher. The extension tries to run the commands with the English cli but if things are not working as expected anyway it may be due to the cli language (see [#77](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/77) for details).
+##### No tree view or color-coded explorer for NUnit / MSTest
+This requires you to run dotnet SDK version 2.2.104 or higher.
 
 ##### xUnit projects assembly name needs to match the test class namespace
 See [#201](https://github.com/formulahendry/vscode-dotnet-test-explorer/issues/201)
