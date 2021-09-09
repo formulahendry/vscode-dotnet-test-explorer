@@ -80,7 +80,7 @@ export class Executor {
 
                 if (this.debugRunnerInfo.config) {
 
-                    Logger.Log(`Debugger process found, attaching`);
+                    Logger.Log(`Debugger process found (pid: ${this.debugRunnerInfo.processId}), attaching`);
 
                     this.debugRunnerInfo.isRunning = true;
 
