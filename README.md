@@ -11,10 +11,9 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104.
 
-## New in 0.7.6
+## New in 0.7.7
 
-* A few changes that make discovery and reporting of F# tests more complete
-* Respect the dismiss option for failed build
+* Better support for running the dotnet CLI in other language than English.
 
 ## Usage
 
