@@ -1,4 +1,4 @@
-## 0.7.7 ()
+## 0.7.7 (2021-09-09)
 * [#333](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/333) : Support localized strings when parsing test output 
 
 ## 0.7.6 (2021-07-24)
