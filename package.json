@@ -267,6 +267,11 @@
           "type": "boolean",
           "default": false,
           "description": "If true, will discover/build and run test in parallel if you have multiple test projects"
+        },
+        "dotnet-test-explorer.clearTerminalBeforeTestRun": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, clears the output panel before running/debugging test"
         }
       }
     },

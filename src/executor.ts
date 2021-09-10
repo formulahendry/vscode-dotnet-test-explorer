@@ -4,6 +4,7 @@ import { platform } from "os";
 import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
+import { Utility } from "./utility";
 
 export class Executor {
 
@@ -31,6 +32,9 @@ export class Executor {
             Logger.Log(`Process ${childProcess.pid} started`);
 
             this.processes.push(childProcess);
+            childProcess.stdout.on("data", (buf) => {
+                Logger.LogRaw(buf);
+            });
 
             childProcess.on("close", (code: number) => {
 
@@ -63,6 +67,7 @@ export class Executor {
         if (addToProcessList) {
 
             Logger.Log(`Process ${childProcess.pid} started`);
+            Logger.Log(`Waiting for debugger to attach`);
 
             this.processes.push(childProcess);
 
@@ -72,15 +77,14 @@ export class Executor {
                     return;
                 }
 
-                Logger.Log(`Waiting for debugger to attach`);
-
                 const stdout = String(buf);
+                Logger.LogRaw(stdout);
 
                 this.debugRunnerInfo = debug.onData(stdout, this.debugRunnerInfo);
 
                 if (this.debugRunnerInfo.config) {
 
-                    Logger.Log(`Debugger process found, attaching`);
+                    Logger.Log(`Debugger process found (pid: ${this.debugRunnerInfo.processId}), attaching`);
 
                     this.debugRunnerInfo.isRunning = true;
 
