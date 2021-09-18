@@ -101,7 +101,9 @@ function extractAssemblyPaths(testCommandStdout: string): string[] {
     // construct regex that matches any of the above localized strings
     const r = "^(?:" + testRunLineStrings
         .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) // escape characters
-        .map((s) => s.replace("\\{0\\}", "(.+\\.dll)").replace("\\{1\\}", ".+"))
+        .map((s) => s.replace("\\{0\\}", "(.+\\.dll)")
+                     .replace("\\{1\\}", ".+")
+                     .replace(") \\(", ")\\s?\\("))
         .join("|")
         + ")$";
     const testRunLineRegex = new RegExp(r, "gm")
