@@ -251,7 +251,7 @@
         "dotnet-test-explorer.testArguments": {
           "type": "string",
           "default": "",
-          "description": "Additional arguments that are added to the dotnet test command."
+          "description": "Additional arguments that are added to the dotnet test command druing discovery and execution."
         },
         "dotnet-test-explorer.testArgumentsDiscovery": {
             "type": "string",
