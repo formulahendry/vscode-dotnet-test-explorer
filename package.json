@@ -10,9 +10,11 @@
     "vscode": "^1.45.1"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Testing"
   ],
   "keywords": [
+    "testing",
     "MSTest",
     "NUnit",
     "xUnit",
