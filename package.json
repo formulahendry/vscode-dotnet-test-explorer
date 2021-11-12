@@ -273,19 +273,19 @@
     "keybindings": [
       {
         "command": "dotnet-test-explorer.runTestInContext",
-        "key": "alt+r alt+c",
-        "mac": "alt+r alt+c",
+        "key": "ctrl+alt+r alt+c",
+        "mac": "cmd+alt+r alt+c",
         "when": "editorTextFocus"
       },
       {
         "command": "dotnet-test-explorer.rerunLastCommand",
-        "key": "alt+r alt+r",
-        "mac": "alt+r alt+r"
+        "key": "ctrl+alt+r alt+r",
+        "mac": "cmd+alt+r alt+r"
       },
       {
         "command": "dotnet-test-explorer.runAllTests",
-        "key": "alt+r alt+a",
-        "mac": "alt+r alt+a"
+        "key": "ctrl+alt+r alt+a",
+        "mac": "cmd+alt+r alt+a"
       }
     ]
   },
