@@ -19,8 +19,8 @@ export function buildTree(parsedNames: IParsedName[]): ITestTreeNode {
         for (let i = 0; i < parsedName.segments.length - 1; i++) {
             const segment = parsedName.segments[i];
 
-            const part = parsedName.fullName.substr(segment.start, segment.end - segment.start);
-            const fullName = parsedName.fullName.substr(0, segment.end);
+            const part = parsedName.fullName.slice(segment.start, segment.end);
+            const fullName = parsedName.fullName.slice(0, segment.end);
             if (!currentNode.subTrees.has(part)) {
                 const newTree: ITestTreeNode = {
                     fullName,
@@ -36,7 +36,7 @@ export function buildTree(parsedNames: IParsedName[]): ITestTreeNode {
         }
 
         const lastSegment = parsedName.segments[parsedName.segments.length - 1];
-        const testName = parsedName.fullName.substr(lastSegment.start, lastSegment.end - lastSegment.start);
+        const testName = parsedName.fullName.slice(lastSegment.start, lastSegment.end);
         currentNode.tests.push(testName);
     }
     return root;
