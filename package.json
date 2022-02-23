@@ -7,7 +7,7 @@
   "license": "MIT",
   "icon": "testexplorer_dark.png",
   "engines": {
-    "vscode": "^1.45.1"
+    "vscode": "^1.64.0"
   },
   "categories": [
     "Programming Languages"
@@ -301,7 +301,7 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "^14.0.5",
     "@types/sinon": "^9.0.4",
-    "@types/vscode": "^1.45.1",
+    "@types/vscode": "^1.64.0",
     "mocha": "^7.1.2",
     "sinon": "^9.0.2",
     "tslint": "^6.1.2",

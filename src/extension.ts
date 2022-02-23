@@ -1,14 +1,17 @@
 "use strict";
 
+import { exec } from "child_process";
 import * as vscode from "vscode";
 import { AppInsights } from "./appInsights";
 import { AppInsightsClient } from "./appInsightsClient";
+import { buildTree, ITestTreeNode, mergeSingleItemTrees } from "./buildTree";
 import { DotnetTestExplorer } from "./dotnetTestExplorer";
 import { Executor } from "./executor";
 import { FindTestInContext } from "./findTestInContext";
 import { GotoTest } from "./gotoTest";
 import { LeftClickTest } from "./leftClickTest";
 import { Logger } from "./logger";
+import { parseTestName } from "./parseTestName";
 import { Problems } from "./problems";
 import { StatusBar } from "./statusBar";
 import { TestCommands } from "./testCommands";
@@ -29,10 +32,126 @@ export function activate(context: vscode.ExtensionContext) {
     const leftClickTest = new LeftClickTest();
     const appInsights = new AppInsights(testCommands, testDirectories);
 
+    const controller = vscode.tests.createTestController("helloWorldTests", "Hello World Tests");
+
+    for (const folder of vscode.workspace.workspaceFolders) {
+        const cwd = folder.uri.fsPath;
+        exec("dotnet test --list-tests --verbosity=quiet", { cwd }, (error, stdout, stderr) => {
+            console.log(cwd);
+            if (error) {
+                // some error happened
+                // TODO: log it
+                return;
+            }
+
+            const lines = stdout.split(/\n\r?|\r/);
+            const rawTests = lines.filter(line => /^    /.test(line));
+            const parsedTestNames = rawTests.map(x => parseTestName(x.trim()));
+            const tree = mergeSingleItemTrees(buildTree(parsedTestNames));
+
+            // convert the tree into tests
+            const generateNode = (tree: ITestTreeNode) => {
+                const treeNode = controller.createTestItem(tree.fullName, tree.name);
+                for (const subTree of tree.subTrees.values()) {
+                    treeNode.children.add(generateNode(subTree));
+                }
+                for (const test of tree.tests) {
+                    treeNode.children.add(controller.createTestItem(test, test));
+                }
+
+                return treeNode;
+            }
+
+            const rootNode = generateNode(tree);
+            rootNode.label = folder.name;
+            controller.items.add(rootNode);
+        });
+    }
+
+    controller.createRunProfile("Run", vscode.TestRunProfileKind.Run, async (request, token) => {
+        const run = controller.createTestRun(request, "My test run", true);
+        const wait = () => new Promise(resolve => setTimeout(resolve, 1000));
+
+        let tests = request.include ?? controller.items;
+        tests.forEach(test => {
+            run.enqueued(test);
+        })
+        await wait();
+        tests.forEach(test => {
+            run.started(test);
+        })
+        await wait();
+        tests.forEach(test => {
+            run.passed(test);
+        });
+        run.end();
+    });
+
+    controller.createRunProfile("Coverage", vscode.TestRunProfileKind.Coverage, async (request, token) => {
+        const run = controller.createTestRun(request, "My test run", true);
+        const wait = () => new Promise(resolve => setTimeout(resolve, 1000));
+
+        let tests = request.include ?? controller.items;
+        tests.forEach(test => {
+            run.enqueued(test);
+        })
+        await wait();
+        tests.forEach(test => {
+            run.started(test);
+        })
+        await wait();
+        tests.forEach(test => {
+            run.passed(test);
+        });
+        run.end();
+    });
+
+    controller.createRunProfile("Debug", vscode.TestRunProfileKind.Debug, async (request, token) => {
+        const run = controller.createTestRun(request, "My test run", true);
+        const wait = () => new Promise(resolve => setTimeout(resolve, 1000));
+
+        let tests = request.include ?? controller.items;
+        tests.forEach(test => {
+            run.enqueued(test);
+        })
+        await wait();
+        tests.forEach(test => {
+            run.started(test);
+        })
+        await wait();
+        tests.forEach(test => {
+            run.passed(test);
+        });
+        run.end();
+    });
+
+    controller.createRunProfile("Watch", vscode.TestRunProfileKind.Run, async (request, token) => {
+        const run = controller.createTestRun(request, "My test run", true);
+        const wait = () => new Promise(resolve => setTimeout(resolve, 100));
+
+        let tests = request.include ?? controller.items;
+        while (!token.isCancellationRequested) {
+            tests.forEach(test => {
+                run.enqueued(test);
+            })
+            await wait();
+            tests.forEach(test => {
+                run.started(test);
+            })
+            await wait();
+            tests.forEach(test => {
+                run.passed(test);
+            });
+            await wait();
+        }
+        run.end();
+    });
+
     Logger.Log("Starting extension");
 
     testDirectories.parseTestDirectories();
 
+    context.subscriptions.push(controller);
     context.subscriptions.push(problems);
     context.subscriptions.push(statusBar);
     context.subscriptions.push(testCommands);
@@ -64,7 +183,7 @@ export function activate(context: vscode.ExtensionContext) {
         { language: "csharp", scheme: "file" },
         codeLensProvider));
     context.subscriptions.push(vscode.languages.registerCodeLensProvider(
-        {language: "fsharp", scheme: "file" },
+        { language: "fsharp", scheme: "file" },
         codeLensProvider
     ));
 
