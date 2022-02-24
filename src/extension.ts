@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
             const lines = stdout.split(/\n\r?|\r/);
             const rawTests = lines.filter(line => /^    /.test(line));
             const parsedTestNames = rawTests.map(x => parseTestName(x.trim()));
-            const tree = mergeSingleItemTrees(buildTree(parsedTestNames));
+            const rootTree = mergeSingleItemTrees(buildTree(parsedTestNames));
 
             // convert the tree into tests
             const generateNode = (tree: ITestTreeNode) => {
@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
                 return treeNode;
             }
 
-            const rootNode = generateNode(tree);
+            const rootNode = generateNode(rootTree);
             rootNode.label = folder.name;
             controller.items.add(rootNode);
         });
