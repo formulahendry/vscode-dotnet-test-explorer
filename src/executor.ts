@@ -1,9 +1,11 @@
 "use strict";
-import { ChildProcess, exec } from "child_process";
+import { ChildProcess, exec, ExecException } from "child_process";
 import { platform } from "os";
 import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
+
+type ExecCallback = (error: ExecException | null, stdOut: string, stdErr: string) => void;
 
 export class Executor {
 
@@ -18,7 +20,7 @@ export class Executor {
         this.terminals[terminal].sendText(command, addNewLine);
     }
 
-    public static exec(command: string, callback, cwd?: string, addToProcessList?: boolean) {
+    public static exec(command: string, callback: ExecCallback, cwd?: string, addToProcessList?: boolean) {
         // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
         // function so we set the variable here instead
         process.env.DOTNET_CLI_UI_LANGUAGE = "en";
@@ -45,7 +47,7 @@ export class Executor {
         return childProcess;
     }
 
-    public static debug(command: string, callback, cwd?: string, addToProcessList?: boolean) {
+    public static debug(command: string, callback: ExecCallback, cwd?: string, addToProcessList?: boolean) {
         // DOTNET_CLI_UI_LANGUAGE does not seem to be respected when passing it as a parameter to the exec
         // function so we set the variable here instead
         process.env.DOTNET_CLI_UI_LANGUAGE = "en";
