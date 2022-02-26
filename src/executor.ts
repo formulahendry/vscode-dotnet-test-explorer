@@ -4,7 +4,7 @@ import { platform } from "os";
 import * as vscode from "vscode";
 import { Debug, IDebugRunnerInfo } from "./debug";
 import { Logger } from "./logger";
-import { BaseEncodingOptions } from "fs";
+import { ObjectEncodingOptions } from "fs";
 
 export interface IProcessOutput {
     error: ExecException;
@@ -13,7 +13,7 @@ export interface IProcessOutput {
 }
 
 export class Executor {
-    private static defaultOptions: BaseEncodingOptions & ExecOptions = {
+    private static defaultOptions: ObjectEncodingOptions & ExecOptions = {
         encoding: "utf8",
         maxBuffer: 512000
     };
@@ -99,7 +99,7 @@ export class Executor {
     }
 
     private static execInternal(command: string,
-        options: BaseEncodingOptions & ExecOptions,
+        options: ObjectEncodingOptions & ExecOptions,
         callback: (error: ExecException, stdout: string, stderr: string) => void): ChildProcess {
         Logger.Log(`Executing ${command} in ${options.cwd}`);
         const childProcess = exec(this.handleWindowsEncoding(command), options, callback);
@@ -137,7 +137,7 @@ export class Executor {
 
     /** Tries to gracefully terminate a process. If it's not done after a timeout, kill it instead. */
     public static async terminate(process: ChildProcess, killTimeout: number = 3000) {
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             process.on("exit", () => resolve());
             Logger.Log(`Trying to terminate process ${process.pid}...`)
             process.kill("SIGTERM");
