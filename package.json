@@ -2,12 +2,12 @@
   "name": "dotnet-test-explorer",
   "displayName": ".NET Core Test Explorer",
   "description": "Test Explorer for .NET Core (MSTest, xUnit, NUnit)",
-  "version": "0.7.7",
+  "version": "0.7.8-tomas-preview-1",
   "publisher": "formulahendry",
   "license": "MIT",
   "icon": "testexplorer_dark.png",
   "engines": {
-    "vscode": "^1.45.1"
+    "vscode": "^1.70.0"
   },
   "categories": [
     "Programming Languages"

@@ -49,10 +49,19 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         //     return new TreeItem(element.name);
         // }
 
-        const treeItem = new TreeItem(element.name, element.isFolder ? Utility.defaultCollapsibleState : void 0);
+        const treeItem = new TreeItem(
+            element.name,
+            element.isFolder
+                ? Utility.defaultCollapsibleState
+                : void 0
+            );
         treeItem.iconPath = element.icon ? {
-            dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
-            light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
+            dark: this.context.asAbsolutePath(
+                path.join("resources", "dark", element.icon)
+            ),
+            light: this.context.asAbsolutePath(
+                path.join("resources", "light", element.icon)
+            ),
         } : void 0,
         treeItem.contextValue = element.isFolder ? "folder" : "test",
         treeItem.command = element.isFolder ? null : {
