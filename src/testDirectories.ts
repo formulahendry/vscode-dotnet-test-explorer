@@ -66,8 +66,8 @@ export class TestDirectories {
 
 }
 function evaluateTestDirectories(testDirectories: string[]): string[] {
-    const directories = [];
-    const directoriesSet = new Set<string>();
+    const projectPaths = [];
+    const projectPathsSet = new Set<string>();
 
     for (let testProjectFullPath of testDirectories) {
         Logger.Log(`Evaluating match ${testProjectFullPath}`);
@@ -75,19 +75,14 @@ function evaluateTestDirectories(testDirectories: string[]): string[] {
         if (!fs.existsSync(testProjectFullPath)) {
             Logger.LogWarning(`Path ${testProjectFullPath} is not valid`);
         } else {
-
-            if (fs.lstatSync(testProjectFullPath).isFile()) {
-                testProjectFullPath = path.dirname(testProjectFullPath);
-            }
-
-            if (glob.sync(`${testProjectFullPath}/+(*.csproj|*.sln|*.fsproj)`).length < 1) {
-                Logger.LogWarning(`Skipping path ${testProjectFullPath} since it does not contain something we can build (.sln, .csproj, .fsproj)`);
-            } else if (!directoriesSet.has(testProjectFullPath)) {
+            if (fs.lstatSync(testProjectFullPath).isDirectory() && glob.sync(`${testProjectFullPath}/+(*.csproj|*.sln|*.slnf|*.fsproj)`).length < 1) {
+                Logger.LogWarning(`Skipping path ${testProjectFullPath} since it does not contain something we can build (.sln, .slnf, .csproj, .fsproj)`);
+            } else if (!projectPathsSet.has(testProjectFullPath)) {
                 Logger.Log(`Adding directory ${testProjectFullPath}`);
-                directories.push(testProjectFullPath);
-                directoriesSet.add(testProjectFullPath);
+                projectPaths.push(testProjectFullPath);
+                projectPathsSet.add(testProjectFullPath);
             }
         }
     }
-    return directories;
+    return projectPaths;
 }

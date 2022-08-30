@@ -44,9 +44,16 @@ export function discoverTests(testDirectoryPath: string, dotnetTestOptions: stri
         });
 }
 
-function executeDotnetTest(testDirectoryPath: string, dotnetTestOptions: string): Promise<string> {
+function executeDotnetTest(testProjectPath: string, dotnetTestOptions: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        const command = `dotnet test -t -v=q${dotnetTestOptions}`;
+        const isDirectory = fs.lstatSync(testProjectPath).isDirectory();
+        const command = isDirectory
+            ? `dotnet test -t -v=q${dotnetTestOptions}`
+            : `dotnet test -t -v=q${dotnetTestOptions} ${testProjectPath}`;
+
+        const testDirectoryPath = isDirectory
+            ? testProjectPath
+            : path.dirname(testProjectPath);
 
         Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
@@ -169,10 +176,15 @@ function cleanTestOutput(testOutputFilePath: string) {
     fs.rmdirSync(path.dirname(testOutputFilePath));
 }
 
-function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string, testDirectoryPath: string): Promise<string> {
+function executeDotnetVstest(assemblyPaths: string[], listTestsTargetPath: string, testProjectPath: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const testAssembliesParam = assemblyPaths.map((f) => `"${f}"`).join(" ");
         const command = `dotnet vstest ${testAssembliesParam} /ListFullyQualifiedTests /ListTestsTargetPath:"${listTestsTargetPath}"`;
+
+        const isDirectory = fs.lstatSync(testProjectPath).isDirectory();
+        const testDirectoryPath = isDirectory
+            ? testProjectPath
+            : path.dirname(testProjectPath);
 
         Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
