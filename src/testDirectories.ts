@@ -80,8 +80,8 @@ function evaluateTestDirectories(testDirectories: string[]): string[] {
                 testProjectFullPath = path.dirname(testProjectFullPath);
             }
 
-            if (glob.sync(`${testProjectFullPath}/+(*.csproj|*.sln|*.fsproj)`).length < 1) {
-                Logger.LogWarning(`Skipping path ${testProjectFullPath} since it does not contain something we can build (.sln, .csproj, .fsproj)`);
+            if (glob.sync(`${testProjectFullPath}/+(*.csproj|*.sln|*.slnf|*.fsproj)`).length < 1) {
+                Logger.LogWarning(`Skipping path ${testProjectFullPath} since it does not contain something we can build (.sln, .slnf, .csproj, .fsproj)`);
             } else if (!directoriesSet.has(testProjectFullPath)) {
                 Logger.Log(`Adding directory ${testProjectFullPath}`);
                 directories.push(testProjectFullPath);
