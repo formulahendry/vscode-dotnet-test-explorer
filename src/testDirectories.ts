@@ -16,21 +16,24 @@ export class TestDirectories {
             return;
         }
 
-        const testDirectoryGlob = Utility.getConfiguration().get<string>("testProjectPath");
+        const testProjectsConfiguration = Utility.getConfiguration().get("testProjectPath");
+        const testProjectsArray = [].concat(testProjectsConfiguration);
 
         const matchingDirs = [];
 
         vscode.workspace.workspaceFolders.forEach((folder) => {
 
-            const globPattern = folder.uri.fsPath.replace("\\", "/") + "/" + testDirectoryGlob;
+            testProjectsArray.forEach(testProjectGlob => {
+                const globPattern = folder.uri.fsPath.replace("\\", "/") + "/" + testProjectGlob;
 
-            Logger.Log(`Finding projects for pattern ${globPattern}`);
+                Logger.Log(`Finding projects for pattern ${globPattern}`);
 
-            const matchingDirsForWorkspaceFolder = glob.sync(globPattern);
+                const matchingDirsForWorkspaceFolder = glob.sync(globPattern);
 
-            matchingDirs.push(...matchingDirsForWorkspaceFolder);
+                matchingDirs.push(...matchingDirsForWorkspaceFolder);
 
-            Logger.Log(`Found ${matchingDirsForWorkspaceFolder.length} matches for pattern in folder ${folder.uri.fsPath}`);
+                Logger.Log(`Found ${matchingDirsForWorkspaceFolder.length} matches for pattern in folder ${folder.uri.fsPath}`);
+            })
         });
 
         this.directories = evaluateTestDirectories(matchingDirs);
