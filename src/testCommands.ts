@@ -258,11 +258,8 @@ export class TestCommands implements Disposable {
 
     private runTestCommandForSpecificDirectory(testProjectPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean): Promise<any[]> {
 
-        const trxTestName = index + ".trx";
-
         return new Promise((resolve, reject) => {
-            const testResultFile = path.join(this.testResultsFolder, trxTestName);
-            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
+            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger trx -r ${this.testResultsFolder}`;
 
             const isDirectory = fs.lstatSync(testProjectPath).isDirectory();
             if (!isDirectory)
