@@ -49,20 +49,28 @@ export class DotnetTestExplorer implements TreeDataProvider<TestNode> {
         //     return new TreeItem(element.name);
         // }
 
-        return {
-            label: element.name,
-            collapsibleState: element.isFolder ? Utility.defaultCollapsibleState : void 0,
-            iconPath: element.icon ? {
-                dark: this.context.asAbsolutePath(path.join("resources", "dark", element.icon)),
-                light: this.context.asAbsolutePath(path.join("resources", "light", element.icon)),
-            } : void 0,
-            contextValue: element.isFolder ? "folder" : "test",
-            command: element.isFolder ? null : {
-                command: "dotnet-test-explorer.leftClickTest",
-                title: "",
-                arguments: [element],
-            },
+        const treeItem = new TreeItem(
+            element.name,
+            element.isFolder
+                ? Utility.defaultCollapsibleState
+                : void 0
+            );
+        treeItem.iconPath = element.icon ? {
+            dark: this.context.asAbsolutePath(
+                path.join("resources", "dark", element.icon)
+            ),
+            light: this.context.asAbsolutePath(
+                path.join("resources", "light", element.icon)
+            ),
+        } : void 0,
+        treeItem.contextValue = element.isFolder ? "folder" : "test",
+        treeItem.command = element.isFolder ? null : {
+            command: "dotnet-test-explorer.leftClickTest",
+            title: "",
+            arguments: [element],
         };
+
+        return treeItem;
     }
 
     public getChildren(element?: TestNode): TestNode[] | Thenable<TestNode[]> {
