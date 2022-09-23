@@ -1,4 +1,4 @@
-## 0.7.8 ()
+## 0.7.8 (2022-09-23)
 * [#369](https://github.com/formulahendry/vscode-dotnet-test-explorer/pull/333) : Properly initialize tree items 
 
 ## 0.7.7 (2021-09-09)
