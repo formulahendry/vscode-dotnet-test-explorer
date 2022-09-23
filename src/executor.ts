@@ -118,13 +118,22 @@ export class Executor {
     }
 
     public static stop() {
-        this.processes.forEach((p) => {
+        const killPromises = this.processes.map((p) => {
             Logger.Log(`Stop processes requested - ${p.pid} stopped`);
-            p.kill("SIGKILL");
+            return new Promise(resolve => {
+                if (this.isWindows) {
+                    exec(`taskkill /pid ${p.pid} /T /F`).on('close',() => resolve(null));
+                } else {
+                    p.kill("SIGKILL");
+                    resolve(null);
+                }
+            });
         });
 
         this.processes = [];
         this.debugRunnerInfo = null;
+
+        return Promise.all(killPromises);
     }
 
     private static debugRunnerInfo: IDebugRunnerInfo;
