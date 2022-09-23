@@ -11,9 +11,9 @@
 * [.NET Core](https://www.microsoft.com/net/core) is installed
 * NUnit and MSTest requires a dotnet [sdk](https://www.microsoft.com/net/download) version of >= 2.2.104.
 
-## New in 0.7.7
+## New in 0.7.8
 
-* Better support for running the dotnet CLI in other language than English.
+* Bug fix for tree view rendering
 
 ## Usage
 
