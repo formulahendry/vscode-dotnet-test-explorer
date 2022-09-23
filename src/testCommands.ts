@@ -229,7 +229,7 @@ export class TestCommands implements Disposable {
     }
 
     private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
 
             if (Utility.skipBuild) {
                 Logger.Log(`User has passed --no-build, skipping build`);
@@ -277,7 +277,7 @@ export class TestCommands implements Disposable {
 
                             Logger.Log(stdout, "Test Explorer (Test runner output)");
 
-                            resolve();
+                            resolve([]);
                         }, testDirectoryPath, true);
                     } else {
                         return Executor.debug(command, (err, stdout: string) => {
@@ -289,7 +289,7 @@ export class TestCommands implements Disposable {
 
                             Logger.Log(stdout, "Test Explorer (Test runner output)");
 
-                            resolve();
+                            resolve([]);
                         }, testDirectoryPath, true);
                     }
 

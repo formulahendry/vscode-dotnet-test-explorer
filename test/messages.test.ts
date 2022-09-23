@@ -9,10 +9,12 @@ suite("MessagesController - Show warning message", () => {
     const showWarningMessageStub: sinon.SinonStub = sinon.stub(window, "showWarningMessage");
     const getSectionStub = sinon.stub();
     const updateSectionStub = sinon.stub();
+    const getKeysStub = sinon.stub();
 
     const globalState = {
         get: getSectionStub,
         update: updateSectionStub,
+        keys: getKeysStub,
     };
 
     const suppressedMessagesStateKey = "suppressedMessages";
