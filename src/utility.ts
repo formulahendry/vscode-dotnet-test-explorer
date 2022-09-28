@@ -42,6 +42,22 @@ export class Utility {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }
 
+    public static get additionalDiscoveryArgumentsOption() {
+        const testArguments = Utility.getConfiguration().get<string>("testArguments");
+        const discoveryArguments = Utility.getConfiguration().get<string>("testArgumentsDiscovery");
+        let args = (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
+        args = (discoveryArguments && discoveryArguments.length > 0) ? ` ${discoveryArguments}` : "";
+        return args
+    }
+
+    public static get additionalExecutionArgumentsOption() {
+        const testArguments = Utility.getConfiguration().get<string>("testArguments");
+        const execArguments = Utility.getConfiguration().get<string>("testArgumentsExecution");
+        let args = (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
+        args = (execArguments && execArguments.length > 0) ? ` ${execArguments}` : "";
+        return args
+    }
+
     public static getFqnTestName(testName: string): string {
 
         // Converts a test name to a fqn version

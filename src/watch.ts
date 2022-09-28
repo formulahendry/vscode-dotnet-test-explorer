@@ -41,7 +41,7 @@ export class Watch {
         const trxPath = path.join(this.testCommands.testResultFolder, `autoWatch${index}.trx`);
 
         AppInsightsClient.sendEvent("runWatchCommand");
-        const command = `dotnet watch test ${Utility.additionalArgumentsOption}`
+        const command = `dotnet watch test ${Utility.additionalExecutionArgumentsOption}`
             + ` --verbosity:quiet` // be less verbose to avoid false positives when parsing output
             + ` --logger "trx;LogFileName=${trxPath}"`;
 
