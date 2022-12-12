@@ -184,7 +184,17 @@
           "description": "Whether to enable anonymous usage collection."
         },
         "dotnet-test-explorer.testProjectPath": {
-          "type": "string",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ],
           "default": "",
           "description": "Glob pattern that points to path of .NET Core test project(s).",
           "examples": [

@@ -228,16 +228,25 @@ export class TestCommands implements Disposable {
         this.isRunning = false;
     }
 
-    private runBuildCommandForSpecificDirectory(testDirectoryPath: string): Promise<any> {
+    private runBuildCommandForSpecificProject(testProjectPath: string): Promise<any> {
         return new Promise<void>((resolve, reject) => {
 
             if (Utility.skipBuild) {
                 Logger.Log(`User has passed --no-build, skipping build`);
                 resolve();
             } else {
-                Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
+                Logger.Log(`Executing dotnet build in ${testProjectPath}`);
 
-                Executor.exec("dotnet build", (err: any, stdout: string) => {
+                const isDirectory = fs.lstatSync(testProjectPath).isDirectory();
+                const command = isDirectory
+                    ? `dotnet build`
+                    : `dotnet build ${testProjectPath}`;
+
+                const testDirectoryPath = isDirectory
+                    ? testProjectPath
+                    : path.dirname(testProjectPath);
+
+                Executor.exec(command, (err: any, stdout: string) => {
                     if (err) {
                         reject(new Error("Build command failed"));
                     }
@@ -247,13 +256,18 @@ export class TestCommands implements Disposable {
         });
     }
 
-    private runTestCommandForSpecificDirectory(testDirectoryPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean): Promise<any[]> {
-
-        const trxTestName = index + ".trx";
+    private runTestCommandForSpecificDirectory(testProjectPath: string, testName: string, isSingleTest: boolean, index: number, debug?: boolean): Promise<any[]> {
 
         return new Promise((resolve, reject) => {
-            const testResultFile = path.join(this.testResultsFolder, trxTestName);
-            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger \"trx;LogFileName=${testResultFile}\"`;
+            let command = `dotnet test${Utility.additionalArgumentsOption} --no-build --logger trx -r ${this.testResultsFolder}`;
+
+            const isDirectory = fs.lstatSync(testProjectPath).isDirectory();
+            if (!isDirectory)
+                command += ` ${testProjectPath}`;
+
+            const testDirectoryPath = isDirectory
+                ? testProjectPath
+                : path.dirname(testProjectPath);
 
             if (testName && testName.length) {
                 if (isSingleTest) {
@@ -263,7 +277,7 @@ export class TestCommands implements Disposable {
                 }
             }
 
-            this.runBuildCommandForSpecificDirectory(testDirectoryPath)
+            this.runBuildCommandForSpecificProject(testProjectPath)
                 .then(() => {
                     Logger.Log(`Executing ${command} in ${testDirectoryPath}`);
 
