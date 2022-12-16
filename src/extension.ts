@@ -17,6 +17,7 @@ import { TestNode } from "./testNode";
 import { TestStatusCodeLensProvider } from "./testStatusCodeLensProvider";
 import { Utility } from "./utility";
 import { Watch } from "./watch";
+import { TestResultDocumentContentProvider } from './testResultDocumentContentProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     const testDirectories = new TestDirectories();
@@ -118,6 +119,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.window.onDidCloseTerminal((closedTerminal: vscode.Terminal) => {
         Executor.onDidCloseTerminal(closedTerminal);
+    }));
+
+    context.subscriptions.push(vscode.workspace.registerTextDocumentContentProvider("dotnet-test-explorer.testResult", new TestResultDocumentContentProvider()));
+
+    context.subscriptions.push(vscode.commands.registerCommand("dotnet-test-explorer.showTestOutput", (test: TestNode) => {
+        testCommands.showTestOutput(test);
     }));
 }
 
