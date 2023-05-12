@@ -9,7 +9,7 @@ import { Logger } from "./logger";
 import { TestDirectories } from "./testDirectories";
 import { discoverTests, IDiscoverTestsResult } from "./testDiscovery";
 import { TestNode } from "./testNode";
-import { ITestResult, TestResult } from "./testResult";
+import { ITestResult } from "./testResult";
 import { parseResults } from "./testResultsFile";
 import { Utility } from "./utility";
 
@@ -237,7 +237,8 @@ export class TestCommands implements Disposable {
             } else {
                 Logger.Log(`Executing dotnet build in ${testDirectoryPath}`);
 
-                Executor.exec("dotnet build", (err: any, stdout: string) => {
+                let buildCommand = `dotnet build ${Utility.additionalBuildArgumentsOption}`;
+                Executor.exec(buildCommand, (err: any, stdout: string) => {
                     if (err) {
                         reject(new Error("Build command failed"));
                     }
