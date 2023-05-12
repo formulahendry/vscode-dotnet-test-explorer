@@ -1,6 +1,7 @@
 {
     "dotnet-test-explorer.useTreeView": true,
     "dotnet-test-explorer.testArguments": "/p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=../../lcov.info",
+    "dotnet-test-explorer.buildArguments": "--configuration=Release",
     "dotnet-test-explorer.autoWatch": false,
     "dotnet-test-explorer.runInParallel": true
 }

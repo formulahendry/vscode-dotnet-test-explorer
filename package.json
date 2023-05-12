@@ -253,6 +253,11 @@
           "default": "",
           "description": "Additional arguments that are added to the dotnet test command."
         },
+        "dotnet-test-explorer.buildArguments": {
+          "type": "string",
+          "default": "",
+          "description": "Additional arguments that are added to the dotnet build command."
+        },
         "dotnet-test-explorer.leftClickAction": {
           "type": "string",
           "default": "gotoTest",

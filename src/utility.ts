@@ -38,6 +38,11 @@ export class Utility {
         return (testArguments && testArguments.length > 0) ? ` ${testArguments}` : "";
     }
 
+    public static get additionalBuildArgumentsOption(): string {
+        const buildArguments = Utility.getConfiguration().get<string>("buildArguments");
+        return (buildArguments && buildArguments.length > 0) ? ` ${buildArguments}` : "";
+    }
+
     public static getConfiguration(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration("dotnet-test-explorer");
     }

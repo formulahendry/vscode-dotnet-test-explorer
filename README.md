@@ -47,6 +47,10 @@ the glob pattern "+(testProjectOne|testProjectTwo)" or "**/*Tests.csproj" should
 
 Additional arguments that are added to the dotnet test command. These can for instance be used to collect code coverage data (`"/p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:CoverletOutput=../../lcov.info"`) or pass test settings (`"--settings:./myfilename.runSettings"`)
 
+`dotnet-test-explorer.buildArguments`
+
+Additional arguments that are added to the `dotnet build` command. These can for instance be used to change the configuration of your build (e.g. `--configuration Release`).
+
 
 ## Stopping the current test runner(s)
 
