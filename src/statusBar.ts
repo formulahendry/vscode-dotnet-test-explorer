@@ -40,7 +40,7 @@ export class StatusBar {
         const notExecuted = results.filter( (r: TestResult) => r.outcome === "NotExecuted").length;
         const passed = results.filter( (r: TestResult) => r.outcome === "Passed").length;
 
-        this.status.text = `${this.baseStatusText} ($(check) ${passed} | $(x) ${failed}) | $(question) ${notExecuted})`;
+        this.status.text = `${this.baseStatusText} ($(check) ${passed} | $(x) ${failed} | $(question) ${notExecuted})`;
     }
 
     public dispose() {
