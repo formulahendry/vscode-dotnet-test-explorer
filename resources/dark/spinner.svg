@@ -20,8 +20,8 @@
         </g>
 		<animateTransform attributeName="transform"
             type="rotate"
-            from="0 18 18"
-            to="360 18 18"
+            from="360 18 18"
+            to="0 18 18"
             begin="0s"
             dur="0.85s"
             repeatCount="indefinite"
